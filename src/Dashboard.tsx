@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from './hooks/useAuth';
 import { config } from './config';
 import './Dashboard.css';
+import TicketsPage from './Tickets';
 
 interface Message {
   id: string;
@@ -10,12 +11,17 @@ interface Message {
   timestamp: Date;
 }
 
+
 function Dashboard() {
   const { user, logout } = useAuth();
+
+  /** view controls what shows on the right side */
+  type View = 'chat' | 'tickets';
+  const [view, setView] = useState<View>('chat');
+
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [hasStartedChat, setHasStartedChat] = useState(true); // Always in chat layout
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -51,7 +57,8 @@ function Dashboard() {
           messages: [
             {
               role: 'system',
-              content: 'You are JJ.AI, an AI-powered IT support assistant. You help users resolve technical issues, provide guidance on IT problems, and offer solutions for common computer and network issues. Be helpful, professional, and concise in your responses. Focus on practical IT solutions and troubleshooting steps.'
+              content:
+                'You are JJ.AI, an AI-powered IT support assistant. You help users resolve technical issues, provide guidance on IT problems, and offer solutions for common computer and network issues. Be helpful, professional, and concise in your responses. Focus on practical IT solutions and troubleshooting steps.'
             },
             ...messages.map(msg => ({
               role: msg.role,
@@ -59,17 +66,19 @@ function Dashboard() {
             })),
             {
               role: 'user',
-              content: inputMessage
+              content: userMessage.content
             }
           ],
           max_tokens: 500,
           temperature: 0.7
         })
       });
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(`OpenAI API Error: ${errorData.error?.message || 'Unknown error'}`);
       }
+
       const data = await response.json();
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -94,6 +103,7 @@ function Dashboard() {
 
   const handleNewChat = () => {
     setMessages([]);
+    setView('chat'); // ensure right side shows Chat
   };
 
   const handleLogout = async () => {
@@ -118,7 +128,7 @@ function Dashboard() {
       {/* Sidebar */}
       <aside className="sidebar">
         <div className="sidebar-content">
-          <button onClick={handleNewChat} className="sidebar-item new-chat">
+          <button onClick={handleNewChat} className={`sidebar-item new-chat ${view === 'chat' ? 'active' : ''}`}>
             <span className="icon icon-badge">
               <svg viewBox="0 0 24 24" fill="currentColor" className="icon-svg">
                 <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
@@ -126,7 +136,13 @@ function Dashboard() {
             </span>
             <span className="label">New chat</span>
           </button>
-          <button type="button" className="sidebar-item">
+
+          <button
+            type="button"
+            className={`sidebar-item ${view === 'tickets' ? 'active' : ''}`}
+            onClick={() => setView('tickets')}
+            aria-current={view === 'tickets' ? 'page' : undefined}
+          >
             <span className="icon">
               <svg viewBox="0 0 24 24" fill="currentColor" className="icon-svg">
                 <path d="M4 7h12a2 2 0 0 1 2 2v1a2 2 0 1 0 0 4v1a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-1a2 2 0 1 0 0-4V9a2 2 0 0 1 2-2z" />
@@ -148,16 +164,79 @@ function Dashboard() {
           </div>
         </header>
 
-        {/* Chat Area */}
-        <div className="chat-area">
-          {/* Claude-style welcome in right panel */}
-          {messages.length === 0 && (
-            <div className="welcome-screen visible">
-              <div className="welcome-content">
-                <div className="welcome-icon">✨</div>
-                <h1 className="welcome-title">Welcome, {getUsername()}</h1>
-                <form onSubmit={handleSendMessage} className="message-form compact-form">
-                  <div className="input-wrapper compact-input-wrapper">
+        {/* Right side switches between Chat and Tickets */}
+        {view === 'chat' ? (
+          <div className="chat-area">
+            {/* Welcome */}
+            {messages.length === 0 && (
+              <div className="welcome-screen visible">
+                <div className="welcome-content">
+                  <div className="welcome-icon">✨</div>
+                  <h1 className="welcome-title">Welcome, {getUsername()}</h1>
+                  <form onSubmit={handleSendMessage} className="message-form compact-form">
+                    <div className="input-wrapper compact-input-wrapper">
+                      <input
+                        type="text"
+                        value={inputMessage}
+                        onChange={(e) => setInputMessage(e.target.value)}
+                        placeholder="How can I help you today?"
+                        className="message-input"
+                        disabled={isLoading}
+                      />
+                      <div className="input-right-section">
+                        <button
+                          type="submit"
+                          className="send-button"
+                          disabled={isLoading || !inputMessage.trim()}
+                        >
+                          <svg viewBox="0 0 24 24" fill="currentColor" className="send-icon">
+                            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+
+            {/* Messages */}
+            <div className="messages-container">
+              {messages.map((message) => (
+                <div
+                  key={message.id}
+                  className={`message ${message.role === 'user' ? 'user-message' : 'assistant-message'}`}
+                >
+                  <div className="message-avatar">
+                    {message.role === 'user' ? '👤' : '🤖'}
+                  </div>
+                  <div className="message-content">
+                    <div className="message-text">{message.content}</div>
+                    <div className="message-time">{formatTime(message.timestamp)}</div>
+                  </div>
+                </div>
+              ))}
+
+              {isLoading && (
+                <div className="message assistant-message">
+                  <div className="message-avatar">🤖</div>
+                  <div className="message-content">
+                    <div className="typing-indicator">
+                      <span></span>
+                      <span></span>
+                      <span></span>
+                    </div>
+                  </div>
+                </div>
+              )}
+              <div ref={messagesEndRef} />
+            </div>
+
+            {/* Input (bottom) */}
+            {messages.length > 0 && (
+              <div className="input-container">
+                <form onSubmit={handleSendMessage} className="message-form">
+                  <div className="input-wrapper">
                     <input
                       type="text"
                       value={inputMessage}
@@ -179,80 +258,22 @@ function Dashboard() {
                     </div>
                   </div>
                 </form>
-              </div>
-            </div>
-          )}
-
-          {/* Messages */}
-          <div className="messages-container">
-            {messages.map((message) => (
-              <div
-                key={message.id}
-                className={`message ${message.role === 'user' ? 'user-message' : 'assistant-message'}`}
-              >
-                <div className="message-avatar">
-                  {message.role === 'user' ? '👤' : '🤖'}
-                </div>
-                <div className="message-content">
-                  <div className="message-text">{message.content}</div>
-                  <div className="message-time">{formatTime(message.timestamp)}</div>
-                </div>
-              </div>
-            ))}
-            {isLoading && (
-              <div className="message assistant-message">
-                <div className="message-avatar">🤖</div>
-                <div className="message-content">
-                  <div className="typing-indicator">
-                    <span></span>
-                    <span></span>
-                    <span></span>
+                <div className="input-footer">
+                  <div className="tool-status">
+                    <div className="status-dot green"></div>
+                    <div className="status-dot orange"></div>
+                    <div className="status-dot blue"></div>
+                    <svg viewBox="0 0 24 24" fill="currentColor" className="chevron-right">
+                      <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z" />
+                    </svg>
                   </div>
                 </div>
               </div>
             )}
-            <div ref={messagesEndRef} />
           </div>
-
-          {/* Input (bottom) */}
-          {messages.length > 0 && (
-            <div className="input-container">
-              <form onSubmit={handleSendMessage} className="message-form">
-                <div className="input-wrapper">
-                  <input
-                    type="text"
-                    value={inputMessage}
-                    onChange={(e) => setInputMessage(e.target.value)}
-                    placeholder="How can I help you today?"
-                    className="message-input"
-                    disabled={isLoading}
-                  />
-                  <div className="input-right-section">
-                    <button
-                      type="submit"
-                      className="send-button"
-                      disabled={isLoading || !inputMessage.trim()}
-                    >
-                      <svg viewBox="0 0 24 24" fill="currentColor" className="send-icon">
-                        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-              </form>
-              <div className="input-footer">
-                <div className="tool-status">
-                  <div className="status-dot green"></div>
-                  <div className="status-dot orange"></div>
-                  <div className="status-dot blue"></div>
-                  <svg viewBox="0 0 24 24" fill="currentColor" className="chevron-right">
-                    <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z" />
-                  </svg>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
+        ) : (
+          <TicketsPage />
+        )}
       </main>
     </div>
   );
