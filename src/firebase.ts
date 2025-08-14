@@ -1,6 +1,7 @@
 import { initializeApp } from "firebase/app";
 // import { getAnalytics } from "firebase/analytics";
 import { getAuth, GoogleAuthProvider, GithubAuthProvider } from 'firebase/auth';
+import { getFirestore } from 'firebase/firestore';
 
 // Your Firebase configuration object
 // You'll get this from Firebase Console > Project Settings > General > Your apps
@@ -20,6 +21,8 @@ const app = initializeApp(firebaseConfig);
 
 // Initialize Firebase Authentication and get a reference to the service
 export const auth = getAuth(app);
+// Initialize Firestore
+export const db = getFirestore(app);
 
 // Initialize providers
 export const googleProvider = new GoogleAuthProvider();

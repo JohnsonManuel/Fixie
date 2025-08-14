@@ -465,6 +465,63 @@
   padding: 16px;
   overflow: auto;
 }
+.convo-list { margin: 8px 0; padding: 0; list-style: none; }
+
+.convo-item {
+  /* layout (unchanged) */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+
+  /* colors (improved) */
+  background: #202736;            /* base row */
+  transition: background 120ms ease, color 120ms ease;
+  margin: 4px 0;
+}
+.convo-item:hover { background: #2a3142; }   /* hover row */
+.convo-item.active { background: #343e54; }  /* selected row */
+
+.convo-meta { flex: 1 1 auto; min-width: 0; }
+.convo-title { font-weight: 600; font-size: 0.95rem; color: #eef2f7; } /* strong text */
+.convo-preview {
+  color: #b9c1ce;                 /* muted text */
+  font-size: 0.82rem;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+/* Icon button */
+.icon-btn {
+  appearance: none; -webkit-appearance: none;
+  background: transparent;
+  border: 0;
+  padding: 6px;
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  display: inline-flex; align-items: center; justify-content: center;
+  flex: 0 0 auto; line-height: 0; cursor: pointer;
+  color: #b7c0cd;                 /* default icon */
+}
+.icon-btn .icon-svg { width: 16px; height: 16px; }
+.convo-item:hover .icon-btn { color: #e2e8f0; }
+.icon-btn:hover { background: rgba(226, 232, 240, 0.08); }
+
+/* Delete (danger) */
+.delete-btn { color: #ff6b70; }   /* tomato-ish */
+.delete-btn:hover { background: rgba(255, 107, 112, 0.16); color: #ff8a8e; }
+
+/* Spinner */
+.spinner {
+  width: 16px; height: 16px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(1turn); } }
 
 /* Transition keyframes */
 @keyframes fadeOutScale {
