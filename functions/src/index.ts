@@ -1,8 +1,7 @@
 // functions/src/index.ts
 import {onRequest} from "firebase-functions/v2/https";
 import {initializeApp} from "firebase-admin/app";
-import {getFirestore, FieldValue}
-  from "firebase-admin/firestore";
+import {getFirestore, FieldValue} from "firebase-admin/firestore";
 import {getAuth} from "firebase-admin/auth";
 import {defineSecret} from "firebase-functions/params";
 import type {
@@ -24,7 +23,7 @@ export const chat = onRequest(
     timeoutSeconds: 120,
     memory: "256MiB",
   },
-  async (req, res) => {
+  async (req: any, res: any) => {
     try {
       if (req.method !== "POST") {
         res.status(405).json({error: "Method not allowed"});
@@ -55,8 +54,8 @@ export const chat = onRequest(
         .limitToLast(50)
         .get();
 
-      const rawMsgs = snap.docs.map((d) => d.data()) as Array<{
-        role: "user"|"assistant"|"system";
+      const rawMsgs = snap.docs.map((d: any) => d.data()) as Array<{
+        role: "user" | "assistant" | "system";
         content: string;
       }>;
 
@@ -68,12 +67,12 @@ export const chat = onRequest(
 
       const system: ChatCompletionMessageParam = {
         role: "system",
-        content: "You are JJ.AI, a concise IT support assistant.",
+        content: "You are Fixie, a concise IT support assistant.",
       };
 
       const chatMsgs: ChatCompletionMessageParam[] =
         rawMsgs.map((m) => ({
-          role: m.role,
+          role: m.role as "user" | "assistant" | "system",
           content: m.content,
         }));
 

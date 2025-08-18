@@ -1,5 +1,5 @@
 {
-  "name": "clearfeed-landing-page",
+  "name": "fixie-platform",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -19,6 +19,14 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
+  },
+  "hosting": {
+    "public": "build",
+    "ignore": ["**/.*", "**/node_modules/**"],
+    "rewrites": [
+      { "source": "/api/chat", "function": { "functionId": "chat", "region": "europe-west3" } },
+      { "source": "**", "destination": "/index.html" }
+    ]
   },
   "eslintConfig": {
     "extends": [

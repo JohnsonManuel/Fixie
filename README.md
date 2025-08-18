@@ -1,12 +1,12 @@
-# ClearFeed Landing Page
+# Fixie Platform
 
-A modern, responsive landing page that replicates the design and functionality of the ClearFeed website (https://clearfeed.ai/).
+A modern, responsive landing page for Fixie - an AI-powered IT support platform that resolves issues before they slow you down.
 
 ## Features
 
 - **Modern React Components**: Built with React 18 and TypeScript
 - **Responsive Design**: Mobile-first approach with CSS Grid and Flexbox
-- **Professional Styling**: Clean, modern UI similar to ClearFeed's design
+- **Professional Styling**: Clean, modern UI designed for IT support platforms
 - **Interactive Elements**: Hover effects, smooth transitions, and engaging animations
 - **SEO Optimized**: Proper meta tags and semantic HTML structure
 
@@ -18,7 +18,7 @@ A modern, responsive landing page that replicates the design and functionality o
 4. **Trusted By**: Company logos section
 5. **Benefits**: Key value propositions
 6. **Testimonials**: Customer success stories
-7. **Use Cases**: Different ways ClearFeed can help teams
+7. **Use Cases**: Different ways Fixie can help IT teams
 8. **Integrations**: Supported platforms and tools
 9. **Call-to-Action**: Free trial promotion
 10. **Footer**: Comprehensive links and company information
@@ -94,4 +94,4 @@ This project is for demonstration purposes. Please ensure you have the right to 
 
 ## Credits
 
-Inspired by the design and content of [ClearFeed](https://clearfeed.ai/). 
+This project showcases a modern IT support platform design with AI-powered features. 

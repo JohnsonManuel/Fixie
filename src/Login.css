@@ -59,6 +59,9 @@
   flex-direction: column;
   justify-content: center;
   max-width: 500px;
+  margin: 0 auto;
+  width: 100%;
+  align-self: center;
 }
 
 .login-header {
@@ -303,6 +306,22 @@
   font-weight: 500;
 }
 
+.link-button {
+  color: #0070f3;
+  text-decoration: none;
+  font-weight: 500;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-size: inherit;
+  font-family: inherit;
+}
+
+.link-button:hover {
+  text-decoration: underline;
+}
+
 .login-visual {
   background: linear-gradient(135deg, #0070f3 0%, #00c8ff 100%);
   color: white;
@@ -368,6 +387,9 @@
   
   .login-content {
     padding: 30px 24px;
+    margin: 0 auto;
+    width: 100%;
+    max-width: 100%;
   }
   
   .login-visual {
@@ -379,5 +401,21 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 16px;
+  }
+}
+
+/* Additional zoom and centering support */
+@media (max-width: 1200px) {
+  .login-content {
+    margin: 0 auto;
+    padding-left: 40px;
+    padding-right: 40px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .login-content {
+    padding-left: 30px;
+    padding-right: 30px;
   }
 } 

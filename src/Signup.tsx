@@ -4,9 +4,10 @@ import { useAuth } from './hooks/useAuth';
 
 interface SignupProps {
   onBackToHome?: () => void;
+  onSwitchToLogin?: () => void;
 }
 
-function Signup({ onBackToHome }: SignupProps) {
+function Signup({ onBackToHome, onSwitchToLogin }: SignupProps) {
   const { signUp, signInWithGoogle, signInWithGithub, error, clearError } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
@@ -97,7 +98,7 @@ function Signup({ onBackToHome }: SignupProps) {
         <div className="nav-container">
           <div className="nav-left">
             <div className="logo">
-              <span className="logo-text">JJ.AI</span>
+              <span className="logo-text">Fixie</span>
             </div>
           </div>
           <div className="nav-right">
@@ -111,7 +112,7 @@ function Signup({ onBackToHome }: SignupProps) {
         <div className="signup-content">
           <div className="signup-header">
             <h1>Create your account</h1>
-            <p>Start building with JJ.AI today</p>
+            <p>Start building with Fixie today</p>
           </div>
 
           {/* Error Display */}
@@ -224,7 +225,7 @@ function Signup({ onBackToHome }: SignupProps) {
               <a href="#privacy">Privacy Policy</a>
             </p>
             <p className="login-link">
-              Already have an account? <a href="#login">Log in</a>
+              Already have an account? <button onClick={onSwitchToLogin} className="link-button">Log in</button>
             </p>
           </div>
         </div>

@@ -28,6 +28,14 @@ function App() {
     setCurrentPage('home');
   };
 
+  const handleSwitchToSignup = () => {
+    setCurrentPage('signup');
+  };
+
+  const handleSwitchToLogin = () => {
+    setCurrentPage('login');
+  };
+
   // Show loading spinner while checking auth state
   if (loading) {
     return (
@@ -45,12 +53,12 @@ function App() {
 
   // Show signup page
   if (currentPage === 'signup') {
-    return <Signup onBackToHome={handleBackToHome} />;
+    return <Signup onBackToHome={handleBackToHome} onSwitchToLogin={handleSwitchToLogin} />;
   }
 
   // Show login page
   if (currentPage === 'login') {
-    return <Login onBackToHome={handleBackToHome} />;
+    return <Login onBackToHome={handleBackToHome} onSwitchToSignup={handleSwitchToSignup} />;
   }
 
   // Show landing page
@@ -61,7 +69,7 @@ function App() {
         <div className="nav-container">
           <div className="nav-left">
             <div className="logo">
-              <span className="logo-text">JJ.AI</span>
+              <span className="logo-text">Fixie</span>
             </div>
           </div>
           <div className="nav-center">
@@ -329,7 +337,7 @@ function App() {
             </div>
           </div>
           <div className="footer-bottom">
-            <p>&copy; 2025 JJ.AI. All rights reserved.</p>
+            <p>&copy; 2025 Fixie. All rights reserved.</p>
           </div>
         </div>
       </footer>

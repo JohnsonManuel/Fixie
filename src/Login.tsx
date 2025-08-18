@@ -4,9 +4,10 @@ import { useAuth } from './hooks/useAuth';
 
 interface LoginProps {
   onBackToHome?: () => void;
+  onSwitchToSignup?: () => void;
 }
 
-function Login({ onBackToHome }: LoginProps) {
+function Login({ onBackToHome, onSwitchToSignup }: LoginProps) {
   const { signIn, signInWithGoogle, signInWithGithub, error, clearError } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
@@ -83,7 +84,7 @@ function Login({ onBackToHome }: LoginProps) {
         <div className="nav-container">
           <div className="nav-left">
             <div className="logo">
-              <span className="logo-text">JJ.AI</span>
+              <span className="logo-text">Fixie</span>
             </div>
           </div>
           <div className="nav-right">
@@ -97,7 +98,7 @@ function Login({ onBackToHome }: LoginProps) {
         <div className="login-content">
           <div className="login-header">
             <h1>Welcome back</h1>
-            <p>Log in to your JJ.AI account</p>
+            <p>Log in to your Fixie account</p>
           </div>
 
           {/* Error Display */}
@@ -191,7 +192,7 @@ function Login({ onBackToHome }: LoginProps) {
           {/* Signup Link */}
           <div className="login-footer">
             <p className="signup-link">
-              Don't have an account? <a href="#signup">Sign up</a>
+              Don't have an account? <button onClick={onSwitchToSignup} className="link-button">Sign up</button>
             </p>
           </div>
         </div>
@@ -199,7 +200,7 @@ function Login({ onBackToHome }: LoginProps) {
         {/* Right Side Visual */}
         <div className="login-visual">
           <div className="visual-content">
-            <h2>Welcome back to JJ.AI</h2>
+            <h2>Welcome back to Fixie</h2>
             <p>Your AI-powered IT support platform</p>
             <div className="features-list">
               <div className="feature-item">
