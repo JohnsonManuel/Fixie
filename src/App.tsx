@@ -3,6 +3,7 @@ import './App.css';
 import Signup from './Signup';
 import Login from './Login';
 import Dashboard from './Dashboard';
+import Settings from './Settings';
 import { useAuth } from './hooks/useAuth';
 
 function App() {

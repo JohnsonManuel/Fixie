@@ -12,5 +12,13 @@ export const config = {
     messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID || '308405783967',
     appId: process.env.REACT_APP_FIREBASE_APP_ID || '1:308405783967:web:40a3fbdb903262092dc1aa',
     measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID || 'G-P3PFKHR81H'
+  },
+
+  // Firebase Functions endpoints
+  functions: {
+    chat: process.env.REACT_APP_CHAT_ENDPOINT || 'https://europe-west3-jj-ai-platform.cloudfunctions.net/chat',
+    jiraOperations: process.env.REACT_APP_JIRA_OPERATIONS_ENDPOINT || 'https://europe-west3-jj-ai-platform.cloudfunctions.net/jiraOperations',
+    toolOrchestrator: process.env.REACT_APP_TOOL_ORCHESTRATOR_ENDPOINT || 'https://europe-west3-jj-ai-platform.cloudfunctions.net/toolOrchestrator',
+    jiraOAuth: process.env.REACT_APP_JIRA_OAUTH_ENDPOINT || 'https://europe-west3-jj-ai-platform.cloudfunctions.net/jiraOAuthStart'
   }
 }; 

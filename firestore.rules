@@ -15,6 +15,26 @@ service cloud.firestore {
           allow read, write: if request.auth != null && request.auth.uid == uid;
         }
       }
+
+      // Platform connections (Jira, etc.)
+      match /platform-connections/{platform} {
+        allow read, write: if request.auth != null && request.auth.uid == uid;
+      }
+
+      // OAuth state for the user
+      match /oauth-state/{platform} {
+        allow read, write: if request.auth != null && request.auth.uid == uid;
+      }
+
+      // Jira tickets created by the user
+      match /jira-tickets/{ticketId} {
+        allow read, write: if request.auth != null && request.auth.uid == uid;
+      }
+    }
+
+    // Global oauth-states collection (for OAuth callback verification)
+    match /oauth-states/{state} {
+      allow read, write: if request.auth != null;
     }
   }
 }
