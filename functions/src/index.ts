@@ -1,15 +1,9 @@
 // functions/src/index.ts
-// Main entry point - exports all separated functions
+// Main entry point - exports only chat functionality
 
 // Initialize Firebase Admin (only once)
 import { initializeApp } from "firebase-admin/app";
 initializeApp();
 
-// Export separated functions
+// Export only chat function
 export { chat } from "./chat";
-export { jiraOperations } from "./jira-operations";
-export { toolOrchestrator } from "./tool-orchestrator";
-
-// Export existing Jira OAuth functions
-export { jiraOAuthStart, jiraOAuthCallback, jiraConnectionStatus } from "./jira-oauth";
-export { testJiraSetup } from "./test-jira";

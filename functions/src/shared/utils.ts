@@ -27,17 +27,6 @@ export async function getConversationData(userId: string, conversationId: string
   return conversationDoc.data();
 }
 
-export async function getJiraConnectionStatus(userId: string) {
-  const jiraConnectionRef = db.collection("users").doc(userId).collection("platform-connections").doc("jira");
-  const jiraConnectionSnap = await jiraConnectionRef.get();
-  
-  return {
-    exists: jiraConnectionSnap.exists,
-    connected: jiraConnectionSnap.exists && jiraConnectionSnap.data()?.status === 'connected',
-    data: jiraConnectionSnap.exists ? jiraConnectionSnap.data() : null
-  };
-}
-
 export async function addMessageToConversation(
   userId: string, 
   conversationId: string, 

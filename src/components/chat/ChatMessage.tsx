@@ -1,55 +1,29 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import Prism from 'prismjs';
-import 'prismjs/themes/prism.css';
-import 'prismjs/components/prism-javascript';
-import 'prismjs/components/prism-typescript';
-import 'prismjs/components/prism-python';
-import 'prismjs/components/prism-bash';
-import 'prismjs/components/prism-json';
-import 'prismjs/components/prism-yaml';
-import 'prismjs/components/prism-markdown';
-import 'prismjs/components/prism-jsx';
-import 'prismjs/components/prism-tsx';
+import fixieLogo from '../../images/fixie-logo.png';
+
+interface Message {
+  id: string;
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+  createdAt?: any;
+  actions?: any[];
+  tool_results?: any[];
+}
 
 interface ChatMessageProps {
-  message: {
-    id: string;
-    role: 'user' | 'assistant' | 'system';
-    content: string;
-    actions?: any[];
-    tool_calls?: any[];
-    tool_results?: any[];
-  };
+  message: Message;
   onAction?: (action: any) => void;
 }
 
 const ChatMessage: React.FC<ChatMessageProps> = ({ message, onAction }) => {
-  const codeBlockRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (codeBlockRef.current) {
-      Prism.highlightAllUnder(codeBlockRef.current);
-    }
-  }, [message.content]);
-
   const renderContent = () => {
-    if (message.role === 'user') {
+    if (message.content) {
       return (
-        <div className="message-content user-message">
-          {message.content}
-        </div>
-      );
-    }
-
-    if (message.role === 'assistant') {
-      return (
-        <div className="message-content assistant-message" ref={codeBlockRef}>
+        <div className="message-content">
           <ReactMarkdown
-            remarkPlugins={[remarkGfm]}
             components={{
-              // Custom code block rendering with syntax highlighting
+              // Custom code block rendering
               code: ({ className, children, ...props }: any) => {
                 const match = /language-(\w+)/.exec(className || '');
                 const language = match ? match[1] : '';
@@ -79,13 +53,13 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, onAction }) => {
                 );
               },
               // Custom blockquote rendering
-              blockquote: ({ children }) => (
+              blockquote: ({ children }: any) => (
                 <blockquote className="message-blockquote">
                   {children}
                 </blockquote>
               ),
               // Custom table rendering
-              table: ({ children }) => (
+              table: ({ children }: any) => (
                 <div className="table-wrapper">
                   <table className="message-table">
                     {children}
@@ -93,18 +67,18 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, onAction }) => {
                 </div>
               ),
               // Custom list rendering
-              ul: ({ children }) => (
+              ul: ({ children }: any) => (
                 <ul className="message-list">
                   {children}
                 </ul>
               ),
-              ol: ({ children }) => (
+              ol: ({ children }: any) => (
                 <ol className="message-list">
                   {children}
                 </ol>
               ),
               // Custom link rendering
-              a: ({ href, children }) => (
+              a: ({ href, children }: any) => (
                 <a href={href} target="_blank" rel="noopener noreferrer" className="message-link">
                   {children}
                 </a>
@@ -155,7 +129,14 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, onAction }) => {
   return (
     <div className={`message ${message.role}`}>
       <div className="message-avatar">
-        {message.role === 'user' ? '👤' : '🤖'}
+        {message.role === 'user' ? '👤' : (
+          <img 
+            src={fixieLogo} 
+            alt="Fixie AI" 
+            className="fixie-avatar"
+            style={{ width: '100%', height: '100%', borderRadius: '50%' }}
+          />
+        )}
       </div>
       {renderContent()}
     </div>

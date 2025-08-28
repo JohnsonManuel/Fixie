@@ -7,12 +7,8 @@ import {
   signOut,
   onAuthStateChanged
 } from 'firebase/auth';
-import { auth, googleProvider, githubProvider } from '../firebase';
-
-interface AuthError {
-  code: string;
-  message: string;
-}
+import { auth, googleProvider, githubProvider } from '../services/firebase';
+import { AuthError } from '../types';
 
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);

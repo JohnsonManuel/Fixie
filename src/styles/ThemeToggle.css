@@ -1,0 +1,138 @@
+/* Theme Toggle Switch */
+.theme-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+}
+
+.theme-toggle:hover {
+  transform: scale(1.05);
+}
+
+.theme-toggle:active {
+  transform: scale(0.95);
+}
+
+.toggle-track {
+  position: relative;
+  width: 48px;
+  height: 24px;
+  background: var(--toggle-bg);
+  border-radius: 12px;
+  padding: 2px;
+  transition: background-color 0.3s ease;
+  border: 2px solid var(--toggle-border);
+}
+
+.toggle-thumb {
+  position: absolute;
+  top: 0px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  background: var(--toggle-thumb-bg);
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Light mode styles */
+[data-theme="light"] .toggle-track {
+  --toggle-bg: #e5e7eb;
+  --toggle-border: #d1d5db;
+  --toggle-thumb-bg: #ffffff;
+}
+
+[data-theme="light"] .toggle-thumb {
+  left: 0;
+  transform: translateX(0);
+}
+
+[data-theme="light"] .sun-icon {
+  color: #f59e0b;
+  width: 12px;
+  height: 12px;
+}
+
+[data-theme="light"] .moon-icon {
+  display: none;
+}
+
+/* Dark mode styles */
+[data-theme="dark"] .toggle-track {
+  --toggle-bg: #374151;
+  --toggle-border: #4b5563;
+  --toggle-thumb-bg: #1f2937;
+}
+
+[data-theme="dark"] .toggle-thumb {
+  left: calc(100% - 22px);
+  transform: translateX(2px);
+}
+
+[data-theme="dark"] .sun-icon {
+  display: none;
+}
+
+[data-theme="dark"] .moon-icon {
+  color: #60a5fa;
+  width: 12px;
+  height: 12px;
+}
+
+/* Smooth transition for theme changes */
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Dark mode CSS variables */
+[data-theme="dark"] {
+  --bg-primary: #111827;
+  --bg-primary-rgb: 17, 24, 39;
+  --bg-secondary: #1f2937;
+  --bg-secondary-rgb: 31, 41, 55;
+  --bg-tertiary: #374151;
+  --bg-tertiary-rgb: 55, 65, 81;
+  --text-primary: #f9fafb;
+  --text-secondary: #d1d5db;
+  --text-muted: #9ca3af;
+  --border-primary: #374151;
+  --border-secondary: #4b5563;
+  --accent-primary: #3b82f6;
+  --accent-primary-rgb: 59, 130, 246;
+  --accent-secondary: #60a5fa;
+  --accent-secondary-rgb: 96, 165, 250;
+  --shadow-light: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-medium: 0 4px 6px rgba(0, 0, 0, 0.4);
+  --shadow-heavy: 0 10px 15px rgba(0, 0, 0, 0.5);
+}
+
+/* Light mode CSS variables */
+[data-theme="light"] {
+  --bg-primary: #ffffff;
+  --bg-primary-rgb: 255, 255, 255;
+  --bg-secondary: #f9fafb;
+  --bg-secondary-rgb: 249, 250, 251;
+  --bg-tertiary: #f3f4f6;
+  --bg-tertiary-rgb: 243, 244, 246;
+  --text-primary: #111827;
+  --text-secondary: #374151;
+  --text-muted: #6b7280;
+  --border-primary: #e5e7eb;
+  --border-secondary: #d1d5db;
+  --accent-primary: #0070f3;
+  --accent-primary-rgb: 0, 112, 243;
+  --accent-secondary: #0051cc;
+  --accent-secondary-rgb: 0, 81, 204;
+  --shadow-light: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --shadow-medium: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-heavy: 0 10px 15px rgba(0, 0, 0, 0.1);
+}

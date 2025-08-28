@@ -1,11 +1,8 @@
 import React, { useState } from 'react';
-import './Signup.css';
-import { useAuth } from './hooks/useAuth';
-
-interface SignupProps {
-  onBackToHome?: () => void;
-  onSwitchToLogin?: () => void;
-}
+import '../styles/Signup.css';
+import { useAuth } from '../hooks/useAuth';
+import { SignupProps } from '../types';
+import fixieLogo from '../images/fixie-logo.png';
 
 function Signup({ onBackToHome, onSwitchToLogin }: SignupProps) {
   const { signUp, signInWithGoogle, signInWithGithub, error, clearError } = useAuth();
@@ -98,7 +95,7 @@ function Signup({ onBackToHome, onSwitchToLogin }: SignupProps) {
         <div className="nav-container">
           <div className="nav-left">
             <div className="logo">
-              <span className="logo-text">Fixie</span>
+              <img src={fixieLogo} alt="Fixie Logo" className="logo-image" />
             </div>
           </div>
           <div className="nav-right">
@@ -233,6 +230,14 @@ function Signup({ onBackToHome, onSwitchToLogin }: SignupProps) {
         {/* Right Side Visual */}
         <div className="signup-visual">
           <div className="visual-content">
+            <div className="visual-logo">
+              <img 
+                src={fixieLogo} 
+                alt="Fixie AI" 
+                className="signup-main-logo"
+                style={{ width: '80px', height: '80px', marginBottom: '20px' }}
+              />
+            </div>
             <h2>Join thousands of teams</h2>
             <p>Building the future of IT support with AI</p>
             <div className="stats">

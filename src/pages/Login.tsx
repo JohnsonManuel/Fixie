@@ -1,11 +1,8 @@
 import React, { useState } from 'react';
-import './Login.css';
-import { useAuth } from './hooks/useAuth';
-
-interface LoginProps {
-  onBackToHome?: () => void;
-  onSwitchToSignup?: () => void;
-}
+import '../styles/Login.css';
+import { useAuth } from '../hooks/useAuth';
+import { LoginProps } from '../types';
+import fixieLogo from '../images/fixie-logo.png';
 
 function Login({ onBackToHome, onSwitchToSignup }: LoginProps) {
   const { signIn, signInWithGoogle, signInWithGithub, error, clearError } = useAuth();
@@ -84,7 +81,7 @@ function Login({ onBackToHome, onSwitchToSignup }: LoginProps) {
         <div className="nav-container">
           <div className="nav-left">
             <div className="logo">
-              <span className="logo-text">Fixie</span>
+              <img src={fixieLogo} alt="Fixie Logo" className="logo-image" />
             </div>
           </div>
           <div className="nav-right">
@@ -200,6 +197,14 @@ function Login({ onBackToHome, onSwitchToSignup }: LoginProps) {
         {/* Right Side Visual */}
         <div className="login-visual">
           <div className="visual-content">
+            <div className="visual-logo">
+              <img 
+                src={fixieLogo} 
+                alt="Fixie AI" 
+                className="login-main-logo"
+                style={{ width: '80px', height: '80px', marginBottom: '20px' }}
+              />
+            </div>
             <h2>Welcome back to Fixie</h2>
             <p>Your AI-powered IT support platform</p>
             <div className="features-list">
@@ -211,7 +216,9 @@ function Login({ onBackToHome, onSwitchToSignup }: LoginProps) {
                 </div>
               </div>
               <div className="feature-item">
-                <div className="feature-icon">🤖</div>
+                <div className="feature-icon">
+                  <img src={fixieLogo} alt="Fixie Logo" width="40" height="40" />
+                </div>
                 <div className="feature-text">
                   <h3>24/7 AI Support</h3>
                   <p>Always available, never forgets a solution</p>

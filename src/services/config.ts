@@ -16,9 +16,6 @@ export const config = {
 
   // Firebase Functions endpoints
   functions: {
-    chat: process.env.REACT_APP_CHAT_ENDPOINT || 'https://europe-west3-jj-ai-platform.cloudfunctions.net/chat',
-    jiraOperations: process.env.REACT_APP_JIRA_OPERATIONS_ENDPOINT || 'https://europe-west3-jj-ai-platform.cloudfunctions.net/jiraOperations',
-    toolOrchestrator: process.env.REACT_APP_TOOL_ORCHESTRATOR_ENDPOINT || 'https://europe-west3-jj-ai-platform.cloudfunctions.net/toolOrchestrator',
-    jiraOAuth: process.env.REACT_APP_JIRA_OAUTH_ENDPOINT || 'https://europe-west3-jj-ai-platform.cloudfunctions.net/jiraOAuthStart'
+    chat: process.env.REACT_APP_CHAT_ENDPOINT || 'https://europe-west3-jj-ai-platform.cloudfunctions.net/chat'
   }
 }; 

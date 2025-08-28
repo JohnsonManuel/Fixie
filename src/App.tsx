@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import './App.css';
-import Signup from './Signup';
-import Login from './Login';
-import Dashboard from './Dashboard';
-import Settings from './Settings';
+import './styles/App.css';
+import Signup from './pages/Signup';
+import Login from './pages/Login';
+import Dashboard from './pages/Dashboard';
 import { useAuth } from './hooks/useAuth';
+import fixieLogo from './images/fixie-logo.png';
 
 function App() {
   const { user, loading } = useAuth();
@@ -65,31 +65,45 @@ function App() {
   // Show landing page
   return (
     <div className="App">
-      {/* Navigation */}
-      <nav className="navbar">
-        <div className="nav-container">
-          <div className="nav-left">
-            <div className="logo">
-              <span className="logo-text">Fixie</span>
+        {/* Navigation */}
+        <nav className="navbar">
+          <div className="nav-container">
+            <div className="nav-left">
+              <div className="logo">
+                <img 
+                  src={fixieLogo} 
+                  alt="Fixie" 
+                  className="nav-logo"
+                  style={{ width: '32px', height: '32px' }}
+                />
+                <span className="logo-text">Fixie</span>
+              </div>
+            </div>
+            <div className="nav-center">
+              <a href="#features">Features</a>
+              <a href="#how-it-works">How It Works</a>
+              <a href="#integrations">Integrations</a>
+              <a href="#pricing">Pricing</a>
+            </div>
+            <div className="nav-right">
+              <button className="nav-btn-secondary" onClick={handleLoginClick}>Log in</button>
+              <button className="nav-btn-primary" onClick={handleSignupClick}>Sign up</button>
             </div>
           </div>
-          <div className="nav-center">
-            <a href="#features">Features</a>
-            <a href="#how-it-works">How It Works</a>
-            <a href="#integrations">Integrations</a>
-            <a href="#pricing">Pricing</a>
-          </div>
-          <div className="nav-right">
-            <button className="nav-btn-secondary" onClick={handleLoginClick}>Log in</button>
-            <button className="nav-btn-primary" onClick={handleSignupClick}>Sign up</button>
-          </div>
-        </div>
-      </nav>
+        </nav>
 
       {/* Hero Section */}
       <section className="hero">
         <div className="hero-container">
           <div className="hero-content">
+            <div className="hero-logo">
+              <img 
+                src={fixieLogo} 
+                alt="Fixie AI" 
+                className="hero-main-logo"
+                style={{ width: '80px', height: '80px', marginBottom: '20px' }}
+              />
+            </div>
             <h1>Your IT Issues, Resolved Before They Slow You Down</h1>
             <p className="hero-subtitle">
               An AI-powered ticket resolution system that understands, diagnoses, and fixes common IT problems — instantly. 
@@ -118,7 +132,13 @@ function App() {
                 <div className="card-text">Ticket Resolved</div>
               </div>
               <div className="floating-card card-2">
-                <div className="card-icon">🤖</div>
+                <div className="card-icon">
+                  <img 
+                    src={fixieLogo} 
+                    alt="Fixie AI" 
+                    style={{ width: '100%', height: '100%', borderRadius: '50%' }}
+                  />
+                </div>
                 <div className="card-text">AI Processing</div>
               </div>
               <div className="floating-card card-3">
@@ -149,7 +169,15 @@ function App() {
       {/* How It Works */}
       <section className="how-it-works">
         <div className="container">
-          <h2>How It Works</h2>
+          <div className="section-header">
+            <img 
+              src={fixieLogo} 
+              alt="Fixie AI" 
+              className="section-logo"
+              style={{ width: '48px', height: '48px', marginBottom: '16px' }}
+            />
+            <h2>How It Works</h2>
+          </div>
           <div className="flow-container">
             <div className="flow-step">
               <div className="step-number">1</div>
@@ -186,7 +214,15 @@ function App() {
       {/* Key Features */}
       <section className="features">
         <div className="container">
-          <h2>Key Features</h2>
+          <div className="section-header">
+            <img 
+              src={fixieLogo} 
+              alt="Fixie AI" 
+              className="section-logo"
+              style={{ width: '48px', height: '48px', marginBottom: '16px' }}
+            />
+            <h2>Key Features</h2>
+          </div>
           <div className="features-grid">
             <div className="feature-card">
               <div className="feature-icon">🧠</div>
