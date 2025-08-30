@@ -1,0 +1,38 @@
+# SEO and Performance Optimization
+RewriteEngine On
+
+# Force HTTPS for security and SEO
+RewriteCond %{HTTPS} off
+RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# Canonical URL enforcement
+RewriteCond %{HTTP_HOST} !^fixie\.ai$ [NC]
+RewriteRule ^(.*)$ https://fixie.ai/$1 [L,R=301]
+
+# ServiceNow competitive redirects
+Redirect 301 /servicenow-vs-fixie https://fixie.ai/#features
+Redirect 301 /servicenow-alternative https://fixie.ai/
+Redirect 301 /servicenow-competitor https://fixie.ai/
+
+# Cache optimization for better Core Web Vitals
+<IfModule mod_expires.c>
+ExpiresActive on
+ExpiresByType text/css "access plus 1 year"
+ExpiresByType application/javascript "access plus 1 year"
+ExpiresByType image/png "access plus 1 year"
+ExpiresByType image/jpg "access plus 1 year"
+ExpiresByType image/jpeg "access plus 1 year"
+</IfModule>
+
+# Compression for faster loading
+<IfModule mod_deflate.c>
+AddOutputFilterByType DEFLATE text/plain
+AddOutputFilterByType DEFLATE text/html
+AddOutputFilterByType DEFLATE text/xml
+AddOutputFilterByType DEFLATE text/css
+AddOutputFilterByType DEFLATE application/xml
+AddOutputFilterByType DEFLATE application/xhtml+xml
+AddOutputFilterByType DEFLATE application/rss+xml
+AddOutputFilterByType DEFLATE application/javascript
+AddOutputFilterByType DEFLATE application/x-javascript
+</IfModule>

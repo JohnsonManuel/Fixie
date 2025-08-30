@@ -1,0 +1,114 @@
+/* ServiceNow Alternative Page Styles */
+.servicenow-alternative-page {
+  min-height: 100vh;
+  background: #ffffff;
+}
+
+.main-content {
+  padding-top: 80px;
+}
+
+.hero-section {
+  padding: 80px 0;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  text-align: center;
+}
+
+.hero-section h1 {
+  font-size: 48px;
+  font-weight: 800;
+  color: #1a1a1a;
+  margin-bottom: 24px;
+}
+
+.hero-subtitle {
+  font-size: 20px;
+  color: #666;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.comparison-section {
+  padding: 80px 0;
+  background: white;
+}
+
+.comparison-section h2 {
+  text-align: center;
+  font-size: 36px;
+  margin-bottom: 48px;
+  color: #1a1a1a;
+}
+
+.comparison-table {
+  max-width: 900px;
+  margin: 0 auto;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.comparison-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 0;
+}
+
+.comparison-row.header {
+  background: #25D366;
+  color: white;
+  font-weight: 700;
+}
+
+.comparison-row > div {
+  padding: 20px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.comparison-row:nth-child(even) {
+  background: #f9fafb;
+}
+
+.fixie {
+  background: rgba(37, 211, 102, 0.1) !important;
+  color: #128C7E;
+  font-weight: 600;
+}
+
+.migration-section {
+  padding: 80px 0;
+  background: #f8fafc;
+}
+
+.migration-section h2 {
+  text-align: center;
+  font-size: 36px;
+  margin-bottom: 48px;
+  color: #1a1a1a;
+}
+
+.migration-steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 32px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.step {
+  background: white;
+  padding: 32px;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.step h3 {
+  color: #25D366;
+  font-size: 20px;
+  margin-bottom: 16px;
+}
+
+.step p {
+  color: #666;
+  line-height: 1.6;
+}
