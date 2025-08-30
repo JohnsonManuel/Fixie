@@ -76,7 +76,7 @@ function App() {
                   className="nav-logo"
                   style={{ width: '32px', height: '32px' }}
                 />
-                <span className="logo-text">Fixie</span>
+                <span className="logo-text">fixie.ai</span>
               </div>
             </div>
             <div className="nav-center">
@@ -115,15 +115,7 @@ function App() {
                 Get a Demo
               </button>
             </div>
-            <div className="hero-trust">
-              <p>Trusted by teams at:</p>
-              <div className="trust-logos">
-                <span>Google</span>
-                <span>Microsoft</span>
-                <span>Netflix</span>
-                <span>Spotify</span>
-              </div>
-            </div>
+
           </div>
           <div className="hero-visual">
             <div className="hero-image-placeholder">
