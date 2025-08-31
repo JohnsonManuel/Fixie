@@ -8,7 +8,7 @@ import EnterpriseITSM from './pages/EnterpriseITSM';
 import ServiceNowMigration from './pages/ServiceNowMigration';
 import Fortune500ITSM from './pages/Fortune500ITSM';
 import { useAuth } from './hooks/useAuth';
-import fixieLogo from './images/fixie-logo.png';
+import fixieLogo from './images/favicon.png';
 
 function App() {
   const { user, loading } = useAuth();
@@ -41,21 +41,7 @@ function App() {
     setCurrentPage('login');
   };
 
-  const handleServiceNowAlternative = () => {
-    setCurrentPage('servicenow-alternative');
-  };
 
-  const handleEnterpriseITSM = () => {
-    setCurrentPage('enterprise-itsm');
-  };
-
-  const handleServiceNowMigration = () => {
-    setCurrentPage('servicenow-migration');
-  };
-
-  const handleFortune500ITSM = () => {
-    setCurrentPage('fortune500-itsm');
-  };
 
   // Show loading spinner while checking auth state
   if (loading) {
@@ -121,10 +107,6 @@ function App() {
               </div>
             </div>
             <div className="nav-center">
-              <a href="#features" aria-label="View AI IT support features">Features</a>
-              <a href="#how-it-works" aria-label="Learn how AI ticket resolution works">How It Works</a>
-              <a href="#integrations" aria-label="See ITSM integrations">Integrations</a>
-              <a href="#pricing" aria-label="View pricing plans">Pricing</a>
             </div>
             <div className="nav-right">
               <button className="nav-btn-secondary" onClick={handleLoginClick} aria-label="Log in to your account">Log in</button>
@@ -151,12 +133,7 @@ function App() {
               Enterprise AI-powered ITSM platform that resolves tickets 10x faster than ServiceNow. 
               Trusted by global enterprises for intelligent service management with 99.9% uptime and enterprise-grade security.
             </p>
-            <div className="hero-cta">
-              <button className="cta-primary" aria-label="Request free enterprise demo - ServiceNow alternative">
-                <span className="cta-icon" aria-hidden="true">⚡</span>
-                Get Enterprise Demo
-              </button>
-            </div>
+            
 
           </div>
           <div className="hero-visual">

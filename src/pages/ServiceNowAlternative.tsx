@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import '../styles/ServiceNowAlternative.css';
-import fixieLogo from '../images/fixie-logo.png';
+import fixieLogo from '../images/favicon.png';
 
 interface ServiceNowAlternativeProps {
   onBackToHome: () => void;
@@ -8,7 +8,7 @@ interface ServiceNowAlternativeProps {
 
 const ServiceNowAlternative: React.FC<ServiceNowAlternativeProps> = ({ onBackToHome }) => {
   useEffect(() => {
-    document.title = 'ServiceNow Alternative | Enterprise ITSM Platform | Fixie.ai';
+    document.title = 'Fixie.ai';
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
       metaDescription.setAttribute('content', 'Leading ServiceNow alternative with AI automation. 90% faster deployment, 60% cost reduction. Trusted by Fortune 500 companies for enterprise ITSM.');

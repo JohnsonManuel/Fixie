@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import '../styles/Signup.css';
 import { useAuth } from '../hooks/useAuth';
 import { SignupProps } from '../types';
-import fixieLogo from '../images/fixie-logo.png';
+import fixieLogo from '../images/favicon.png';
 
 function Signup({ onBackToHome, onSwitchToLogin }: SignupProps) {
   const { signUp, signInWithGoogle, signInWithGithub, error, clearError } = useAuth();

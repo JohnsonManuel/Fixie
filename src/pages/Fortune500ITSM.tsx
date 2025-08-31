@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import '../styles/Fortune500ITSM.css';
-import fixieLogo from '../images/fixie-logo.png';
+import fixieLogo from '../images/favicon.png';
 
 interface Fortune500ITSMProps {
   onBackToHome: () => void;
@@ -8,7 +8,7 @@ interface Fortune500ITSMProps {
 
 const Fortune500ITSM: React.FC<Fortune500ITSMProps> = ({ onBackToHome }) => {
   useEffect(() => {
-    document.title = 'Fortune 500 ITSM Platform | Enterprise AI Service Management | Fixie.ai';
+    document.title = 'Fixie.ai';
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
       metaDescription.setAttribute('content', 'ITSM platform trusted by Fortune 500 companies. Enterprise-grade AI service management with global scale, security, and compliance standards.');

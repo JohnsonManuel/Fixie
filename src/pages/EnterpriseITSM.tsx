@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import '../styles/EnterpriseITSM.css';
-import fixieLogo from '../images/fixie-logo.png';
+import fixieLogo from '../images/favicon.png';
 
 interface EnterpriseITSMProps {
   onBackToHome: () => void;
@@ -8,7 +8,7 @@ interface EnterpriseITSMProps {
 
 const EnterpriseITSM: React.FC<EnterpriseITSMProps> = ({ onBackToHome }) => {
   useEffect(() => {
-    document.title = 'Enterprise ITSM Platform | AI Service Management | Fixie.ai';
+    document.title = 'Fixie.ai';
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
       metaDescription.setAttribute('content', 'Enterprise-grade ITSM platform with AI automation. SOC2 compliant, global deployment, Fortune 500 security standards. Better than ServiceNow.');

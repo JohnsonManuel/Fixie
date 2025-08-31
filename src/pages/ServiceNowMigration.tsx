@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import '../styles/ServiceNowMigration.css';
-import fixieLogo from '../images/fixie-logo.png';
+import fixieLogo from '../images/favicon.png';
 
 interface ServiceNowMigrationProps {
   onBackToHome: () => void;
@@ -8,7 +8,7 @@ interface ServiceNowMigrationProps {
 
 const ServiceNowMigration: React.FC<ServiceNowMigrationProps> = ({ onBackToHome }) => {
   useEffect(() => {
-    document.title = 'ServiceNow Migration Services | Move to Fixie.ai | Enterprise ITSM';
+    document.title = 'Fixie.ai';
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
       metaDescription.setAttribute('content', 'Professional ServiceNow migration services. Zero-downtime migration to Fixie.ai with 60% cost savings. Enterprise migration specialists available.');

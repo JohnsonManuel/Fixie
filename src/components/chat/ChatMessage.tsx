@@ -1,5 +1,5 @@
 import React from 'react';
-import fixieLogo from '../../images/fixie-logo.png';
+import fixieLogo from '../../images/favicon.png';
 
 interface Message {
   id: string;
