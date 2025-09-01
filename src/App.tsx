@@ -130,8 +130,7 @@ function App() {
             </div>
             <h1>The ServiceNow Alternative That Fortune 500 Companies Choose</h1>
             <p className="hero-subtitle">
-              Enterprise AI-powered ITSM platform that resolves tickets 10x faster than ServiceNow. 
-              Trusted by global enterprises for intelligent service management with 99.9% uptime and enterprise-grade security.
+              Fixie is an AI-powered ticket resolution system that understands, diagnoses, and fixes common IT problems — instantly. Integrates with your existing ticketing platforms, powered by real-time agentic AI tools, and designed to keep your team productive.
             </p>
             
 
@@ -140,7 +139,7 @@ function App() {
             <div className="hero-image-placeholder">
               <div className="floating-card card-1">
                 <div className="card-icon">🔧</div>
-                <div className="card-text">Ticket Resolved</div>
+                <div className="card-text">Tickets resolved with AI</div>
               </div>
               <div className="floating-card card-2">
                 <div className="card-icon">
@@ -150,11 +149,11 @@ function App() {
                     style={{ width: '100%', height: '100%', borderRadius: '50%' }}
                   />
                 </div>
-                <div className="card-text">AI Processing</div>
+                <div className="card-text">Safe and secure</div>
               </div>
               <div className="floating-card card-3">
                 <div className="card-icon">⚡</div>
-                <div className="card-text">Instant Fix</div>
+                <div className="card-text">Integrations with leading IT tools</div>
               </div>
             </div>
           </div>

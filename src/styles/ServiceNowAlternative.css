@@ -55,7 +55,7 @@
 }
 
 .comparison-row.header {
-  background: #25D366;
+  background: #1877F2;
   color: white;
   font-weight: 700;
 }
@@ -70,8 +70,8 @@
 }
 
 .fixie {
-  background: rgba(37, 211, 102, 0.1) !important;
-  color: #128C7E;
+  background: rgba(24, 119, 242, 0.1) !important;
+  color: #0E4F99;
   font-weight: 600;
 }
 
@@ -103,7 +103,7 @@
 }
 
 .step h3 {
-  color: #25D366;
+  color: #1877F2;
   font-size: 20px;
   margin-bottom: 16px;
 }

@@ -53,7 +53,7 @@
   padding: 32px;
   border-radius: 16px;
   text-align: center;
-  border-top: 4px solid #25D366;
+  border-top: 4px solid #1877F2;
 }
 
 .benefit-card h3 {
@@ -94,7 +94,7 @@
 .timeline-number {
   width: 60px;
   height: 60px;
-  background: #25D366;
+  background: #1877F2;
   color: white;
   border-radius: 50%;
   display: flex;
@@ -121,14 +121,14 @@
 }
 
 .timeline-duration {
-  color: #25D366;
+  color: #1877F2;
   font-weight: 600;
   font-size: 14px;
 }
 
 .migration-guarantee {
   padding: 80px 0;
-  background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+  background: linear-gradient(135deg, #1877F2 0%, #0E4F99 100%);
   color: white;
   text-align: center;
 }
@@ -148,7 +148,7 @@
 
 .cta-primary {
   background: white;
-  color: #25D366;
+  color: #1877F2;
   padding: 16px 32px;
   border: none;
   border-radius: 12px;

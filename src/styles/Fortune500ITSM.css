@@ -53,13 +53,13 @@
   padding: 32px;
   background: #f8fafc;
   border-radius: 16px;
-  border-top: 4px solid #25D366;
+  border-top: 4px solid #1877F2;
 }
 
 .stat-number {
   font-size: 48px;
   font-weight: 800;
-  color: #25D366;
+  color: #1877F2;
   margin-bottom: 8px;
 }
 
@@ -131,7 +131,7 @@
   background: #f8fafc;
   padding: 32px;
   border-radius: 16px;
-  border-left: 4px solid #25D366;
+  border-left: 4px solid #1877F2;
 }
 
 .case-study h3 {
@@ -154,7 +154,7 @@
 }
 
 .case-metrics span {
-  background: #25D366;
+  background: #1877F2;
   color: white;
   padding: 4px 12px;
   border-radius: 20px;
@@ -164,7 +164,7 @@
 
 .enterprise-cta {
   padding: 80px 0;
-  background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+  background: linear-gradient(135deg, #1877F2 0%, #0E4F99 100%);
   color: white;
   text-align: center;
 }
@@ -181,7 +181,7 @@
 
 .cta-primary {
   background: white;
-  color: #25D366;
+  color: #1877F2;
   padding: 16px 32px;
   border: none;
   border-radius: 12px;
