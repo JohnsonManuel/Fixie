@@ -3,9 +3,18 @@ import { useAuth } from "../hooks/useAuth";
 import "../styles/Dashboard.css";
 import ChatMessage from "../components/chat/ChatMessage";
 import ThemeToggle from "../components/ThemeToggle";
+import { ThemeProvider } from "../contexts/ThemeContext";
 import { config } from "../services/config";
 import { Message, Conversation } from "../types";
 import { formatTimestamp, formatConversationTitle } from "../utils";
+import { 
+  Delete as DeleteIcon, 
+  Add as AddIcon, 
+  Send as SendIcon,
+  Menu as MenuIcon,
+  Logout as LogoutIcon,
+  Chat as ChatIcon
+} from '@mui/icons-material';
 
 // Firebase client
 import { db } from "../services/firebase";
@@ -26,7 +35,7 @@ import {
 const CHAT_ENDPOINT = config.functions.chat;
 
 /** Enhanced Dashboard with Chat Interface */
-function Dashboard() {
+function DashboardContent() {
   const { user, logout } = useAuth();
 
   // Add authentication state check
@@ -352,9 +361,7 @@ function Dashboard() {
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
               aria-label="Toggle menu"
             >
-              <span className="hamburger-line"></span>
-              <span className="hamburger-line"></span>
-              <span className="hamburger-line"></span>
+              <MenuIcon />
             </button>
             <div className="logo">
               <span className="logo-text">Fixie</span>
@@ -370,7 +377,10 @@ function Dashboard() {
           </div>
           <div className="nav-right">
             <span className="user-email">{user?.email}</span>
-            <button onClick={logout} className="logout-btn">Logout</button>
+            <button onClick={logout} className="logout-btn">
+              <LogoutIcon />
+              Logout
+            </button>
           </div>
         </div>
       </nav>
@@ -390,6 +400,7 @@ function Dashboard() {
           <div className={`sidebar ${isSidebarOpen ? 'sidebar-open' : ''}`}>
             <div className="sidebar-header">
               <button onClick={createNewConversation} className="new-chat-btn">
+                <AddIcon />
                 + New Chat
               </button>
             </div>
@@ -425,7 +436,7 @@ function Dashboard() {
                       className="delete-conversation-btn"
                       title="Delete conversation"
                     >
-                      🗑️
+                      <DeleteIcon />
                     </button>
                   </div>
                 </div>
@@ -494,6 +505,7 @@ function Dashboard() {
                     disabled={isLoading || !inputMessage.trim()}
                     className="send-btn"
                   >
+                    <SendIcon />
                     Send
                   </button>
                 </div>
@@ -503,6 +515,7 @@ function Dashboard() {
                 <h2>Welcome to Fixie!</h2>
                 <p>Start a new conversation to get help with your IT issues. The AI will automatically generate descriptive titles for your conversations.</p>
                 <button onClick={createNewConversation} className="new-chat-btn">
+                  <ChatIcon />
                   Start New Chat
                 </button>
               </div>
@@ -511,6 +524,14 @@ function Dashboard() {
         </div>
       </div>
     </div>
+  );
+}
+
+function Dashboard() {
+  return (
+    <ThemeProvider>
+      <DashboardContent />
+    </ThemeProvider>
   );
 }
 
