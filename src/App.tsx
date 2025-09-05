@@ -7,6 +7,7 @@ import ServiceNowAlternative from './pages/ServiceNowAlternative';
 import EnterpriseITSM from './pages/EnterpriseITSM';
 import ServiceNowMigration from './pages/ServiceNowMigration';
 import Fortune500ITSM from './pages/Fortune500ITSM';
+import DemoForm from './components/DemoForm';
 import { useAuth } from './hooks/useAuth';
 import fixieLogo from './images/favicon.png';
 
@@ -88,6 +89,11 @@ function App() {
     return <Fortune500ITSM onBackToHome={handleBackToHome} />;
   }
 
+  // Show demo form
+  if (currentPage === 'demo') {
+    return <DemoForm onBackToHome={handleBackToHome} />;
+  }
+
   // Show landing page
   return (
     <div className="App">
@@ -128,32 +134,33 @@ function App() {
                 loading="eager"
               />
             </div>
-            <h1>The ServiceNow Alternative That Fortune 500 Companies Choose</h1>
+            <h1>We Fix(ie) IT.</h1>
             <p className="hero-subtitle">
               Fixie is an AI-powered ticket resolution system that understands, diagnoses, and fixes common IT problems — instantly. Integrates with your existing ticketing platforms, powered by real-time agentic AI tools, and designed to keep your team productive.
             </p>
+            <div className="hero-cta">
+              <button className="cta-button" onClick={() => setCurrentPage('demo')}>Book a demo</button>
+            </div>
             
 
           </div>
           <div className="hero-visual">
             <div className="hero-image-placeholder">
               <div className="floating-card card-1">
-                <div className="card-icon">🔧</div>
-                <div className="card-text">Tickets resolved with AI</div>
+                <div className="card-icon">🏢</div>
+                <div className="card-text">AI-Powered Servicedesk Management</div>
               </div>
               <div className="floating-card card-2">
-                <div className="card-icon">
-                  <img 
-                    src={fixieLogo} 
-                    alt="Fixie AI" 
-                    style={{ width: '100%', height: '100%', borderRadius: '50%' }}
-                  />
-                </div>
-                <div className="card-text">Safe and secure</div>
+                <div className="card-icon">⏱️</div>
+                <div className="card-text">Low downtime</div>
               </div>
               <div className="floating-card card-3">
                 <div className="card-icon">⚡</div>
                 <div className="card-text">Integrations with leading IT tools</div>
+              </div>
+              <div className="floating-card card-4">
+                <div className="card-icon">🔒</div>
+                <div className="card-text">Robust security protocols</div>
               </div>
             </div>
           </div>
@@ -164,13 +171,9 @@ function App() {
       <section className="problem-statement" aria-labelledby="problem-heading">
         <div className="container">
           <div className="problem-content">
-            <h2 id="problem-heading">Why Enterprises Are Migrating From ServiceNow</h2>
+            <h2 id="problem-heading">Why SMBs Choose Fixie Over Heavy ITSM Tools</h2>
             <p className="problem-text">
-              ServiceNow's complex licensing, slow implementation, and limited AI capabilities cost enterprises millions in lost productivity.
-            </p>
-            <p className="problem-highlight">
-              Fixie.ai delivers what ServiceNow promises: true AI-powered automation with 90% faster deployment, 
-              60% cost reduction, and enterprise-grade security that Fortune 500 companies trust globally.
+              Big ITSM platforms like ServiceNow are powerful — but often too complex and expensive for firms under 1,000 employees. Smaller teams need something lightweight, fast to set up, and smart enough to handle day-to-day IT problems without layers of forms and approvals.
             </p>
           </div>
         </div>
@@ -193,29 +196,29 @@ function App() {
             <div className="flow-step">
               <div className="step-number">1</div>
               <div className="step-content">
-                <h3>Enterprise Integration</h3>
-                <p>Seamlessly migrate from ServiceNow or integrate with existing enterprise systems. Support for global deployments with multi-language capabilities.</p>
+                <h3>Simple Integration</h3>
+                <p>Connect quickly with the tools SMBs already use — Freshservice, Jira, Zoho Desk, Intune, and more. No months-long migrations or costly consultants. In addition we provide our own in-house Helpdesk platform to create and manage tickets.</p>
               </div>
             </div>
             <div className="flow-step">
               <div className="step-number">2</div>
               <div className="step-content">
-                <h3>AI-Powered Diagnosis</h3>
-                <p>Advanced AI trained on Fortune 500 enterprise scenarios delivers 95% accuracy in root cause analysis - 3x better than ServiceNow's capabilities.</p>
+                <h3>AI-Powered Troubleshooting</h3>
+                <p>Fixie guides employees in plain English, attempts safe fixes automatically, and escalates only when needed. It reduces back-and-forth and saves hours of IT time.</p>
               </div>
             </div>
             <div className="flow-step">
               <div className="step-number">3</div>
               <div className="step-content">
                 <h3>Automated Resolution</h3>
-                <p>Enterprise-grade automation executes complex IT operations with SOC2 compliance and audit trails that meet global regulatory standards.</p>
+                <p>From clearing caches to resetting services, Fixie handles routine fixes instantly. Every action is logged with an audit trail for security and transparency.</p>
               </div>
             </div>
             <div className="flow-step">
               <div className="step-number">4</div>
               <div className="step-content">
-                <h3>Continuous Intelligence</h3>
-                <p>Machine learning algorithms continuously optimize performance across global enterprise environments, reducing ticket volume by 85%.</p>
+                <h3>Built for Lean IT Teams</h3>
+                <p>Fixie learns from recurring issues and suggests faster paths to resolution, helping small IT teams support growing organizations without adding headcount.</p>
               </div>
             </div>
           </div>
@@ -349,9 +352,9 @@ function App() {
       <section className="final-cta">
         <div className="container">
           <h2>"Your IT helpdesk just got superpowers."</h2>
-          <button className="cta-primary large">
+          <button className="cta-primary large" onClick={() => setCurrentPage('demo')}>
             <span className="cta-icon">⚡</span>
-            Schedule a Live Demo
+            Book a demo
           </button>
         </div>
       </section>

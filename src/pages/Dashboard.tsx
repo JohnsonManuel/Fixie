@@ -7,16 +7,6 @@ import { ThemeProvider } from "../contexts/ThemeContext";
 import { config } from "../services/config";
 import { Message, Conversation } from "../types";
 import { formatTimestamp, formatConversationTitle } from "../utils";
-import { 
-  Delete as DeleteIcon, 
-  Add as AddIcon, 
-  Send as SendIcon,
-  Menu as MenuIcon,
-  Logout as LogoutIcon,
-  Chat as ChatIcon
-} from '@mui/icons-material';
-
-// Firebase client
 import { db } from "../services/firebase";
 import {
   addDoc,
@@ -30,6 +20,14 @@ import {
   serverTimestamp,
   writeBatch,
 } from "firebase/firestore";
+
+// Simple icon replacements
+const DeleteIcon = () => <span>🗑️</span>;
+const AddIcon = () => <span>➕</span>;
+const SendIcon = () => <span>📤</span>;
+const MenuIcon = () => <span>☰</span>;
+const LogoutIcon = () => <span>🚪</span>;
+const ChatIcon = () => <span>💬</span>;
 
 /** Use the new separated function endpoints from config */
 const CHAT_ENDPOINT = config.functions.chat;
