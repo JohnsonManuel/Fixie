@@ -122,7 +122,7 @@
 /* Social Login */
 .social-login {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 12px;
   margin-bottom: 24px;
 }
@@ -141,6 +141,7 @@
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
+  flex: 1;
 }
 
 .social-btn:hover {
