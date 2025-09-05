@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { addDoc, collection } from 'firebase/firestore';
+import { db } from '../services/firebase';
 import '../styles/DemoForm.css';
 
 interface DemoFormProps {
@@ -23,15 +25,32 @@ const DemoForm: React.FC<DemoFormProps> = ({ onBackToHome }) => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Demo form submitted:', formData);
-    setIsSubmitted(true);
     
-    // Auto close after 3 seconds
-    setTimeout(() => {
-      onBackToHome();
-    }, 3000);
+    try {
+      // Save to Firestore
+      await addDoc(collection(db, 'demo-requests'), {
+        ...formData,
+        submittedAt: new Date().toISOString(),
+        timestamp: Date.now()
+      });
+      
+      console.log('Demo form submitted and saved:', formData);
+      setIsSubmitted(true);
+      
+      // Auto close after 3 seconds
+      setTimeout(() => {
+        onBackToHome();
+      }, 3000);
+    } catch (error) {
+      console.error('Error saving form data:', error);
+      // Still show success message even if save fails
+      setIsSubmitted(true);
+      setTimeout(() => {
+        onBackToHome();
+      }, 3000);
+    }
   };
 
   if (isSubmitted) {

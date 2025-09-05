@@ -77,21 +77,22 @@
 .login-container {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  min-height: 100vh;
-  padding-top: 80px;
+  height: calc(100vh - 80px);
+  margin-top: 80px;
 }
 
 .login-content {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 60px;
+  padding: 40px;
   background: #ffffff;
+  overflow-y: auto;
 }
 
 .login-header {
   text-align: center;
-  margin-bottom: 40px;
+  margin-bottom: 24px;
 }
 
 .login-header h1 {
@@ -294,7 +295,7 @@
 /* Login Footer */
 .login-footer {
   text-align: center;
-  margin-top: 32px;
+  margin-top: 20px;
 }
 
 .signup-link {
@@ -322,7 +323,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 60px;
+  padding: 40px;
   position: relative;
   overflow: hidden;
 }
