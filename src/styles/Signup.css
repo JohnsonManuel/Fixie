@@ -78,7 +78,7 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   min-height: 100vh;
-  padding-top: 80px;
+  padding-top: 55px;
 }
 
 .signup-content {
