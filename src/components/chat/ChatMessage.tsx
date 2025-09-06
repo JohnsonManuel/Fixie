@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import fixieLogo from '../../images/favicon.png';
+import fixieLogo from '../../images/image.png';
 
 interface Message {
   id: string;

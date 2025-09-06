@@ -9,7 +9,7 @@ import ServiceNowMigration from './pages/ServiceNowMigration';
 import Fortune500ITSM from './pages/Fortune500ITSM';
 import DemoForm from './components/DemoForm';
 import { useAuth } from './hooks/useAuth';
-import fixieLogo from './images/favicon.png';
+import fixieLogo from './images/image.png';
 
 function App() {
   const { user, loading } = useAuth();

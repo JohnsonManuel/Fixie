@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import '../styles/Fortune500ITSM.css';
-import fixieLogo from '../images/favicon.png';
+import fixieLogo from '../images/image.png';
 
 interface Fortune500ITSMProps {
   onBackToHome: () => void;
