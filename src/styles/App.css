@@ -578,6 +578,21 @@ body {
   line-height: 1.6;
 }
 
+/* Product Flow */
+.product-flow {
+  padding: 80px 0;
+  background: #ffffff;
+}
+
+.product-flow-image {
+  width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+}
+
 /* Features */
 .features {
   padding: 80px 0;
