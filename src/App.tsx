@@ -274,13 +274,13 @@ function App() {
                 <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" alt="macOS" />
               </div>
               <div className="logo-item">
-                <img src="https://logos-world.net/wp-content/uploads/2020/12/Zoom-Logo.png" alt="Zoom" />
+                <span className="text-logo">Zoom</span>
               </div>
               <div className="logo-item">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/Microsoft_Office_Teams_%282018%E2%80%93present%29.svg/200px-Microsoft_Office_Teams_%282018%E2%80%93present%29.svg.png" alt="Teams" />
               </div>
               <div className="logo-item">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/6/68/Gnome-logo.svg" alt="GNOME" />
+                <span className="text-logo">GNOME</span>
               </div>
               <div className="logo-item">
                 <span className="text-logo">Freshdesk</span>
