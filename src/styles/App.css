@@ -703,8 +703,25 @@ body {
 /* Integrations */
 .integrations {
   padding: 80px 0;
-  background: #f8fafc;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
   overflow: hidden;
+  position: relative;
+}
+
+.integrations::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(24, 119, 242, 0.03) 0%, rgba(14, 79, 153, 0.03) 100%);
+  pointer-events: none;
+}
+
+.integrations .container {
+  position: relative;
+  z-index: 1;
 }
 
 .integrations h2 {
@@ -714,6 +731,10 @@ body {
   font-family: 'Montserrat', sans-serif;
   margin-bottom: 16px;
   color: #1a1a1a;
+  background: linear-gradient(135deg, #1877F2 0%, #0E4F99 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .integrations-subtitle {
@@ -722,43 +743,84 @@ body {
   color: #666;
   font-family: 'Montserrat', sans-serif;
   margin-bottom: 60px;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .logos-container {
   width: 100%;
   overflow: hidden;
   position: relative;
+  padding: 30px 0;
+  mask: linear-gradient(90deg, transparent, white 10%, white 90%, transparent);
+  -webkit-mask: linear-gradient(90deg, transparent, white 10%, white 90%, transparent);
 }
 
 .logos-scroll {
   display: flex;
-  animation: scroll 3s linear infinite;
-  gap: 60px;
+  animation: scroll 25s linear infinite;
+  gap: 40px;
   align-items: center;
+  will-change: transform;
+}
+
+.logos-scroll:hover {
+  animation-play-state: paused;
 }
 
 .logo-item {
   flex-shrink: 0;
-  padding: 20px 30px;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-  border: 2px solid #e5e7eb;
-  transition: all 0.3s ease;
+  padding: 24px 32px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   white-space: nowrap;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 120px;
-  height: 80px;
-  margin: 10px 0;
+  min-width: 140px;
+  height: 90px;
+  position: relative;
+  overflow: hidden;
+}
+
+.logo-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(24, 119, 242, 0.1), transparent);
+  transition: left 0.6s ease;
+}
+
+.logo-item:hover::before {
+  left: 100%;
+}
+
+.logo-item:hover {
+  transform: translateY(-8px) scale(1.05);
+  box-shadow: 0 20px 40px rgba(24, 119, 242, 0.15);
+  border-color: #1877F2;
+  background: rgba(255, 255, 255, 1);
 }
 
 .logo-item img {
-  max-width: 80px;
-  max-height: 40px;
+  max-width: 90px;
+  max-height: 45px;
   object-fit: contain;
-  transition: all 0.3s ease;
+  transition: all 0.4s ease;
+  filter: brightness(0.8) saturate(0.8);
+}
+
+.logo-item:hover img {
+  filter: brightness(1) saturate(1);
+  transform: scale(1.1);
 }
 
 .logo-item .text-logo {
@@ -766,19 +828,12 @@ body {
   font-weight: 600;
   font-family: 'Montserrat', sans-serif;
   color: #1a1a1a;
+  transition: all 0.3s ease;
 }
 
-.logo-item:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 25px rgba(24, 119, 242, 0.2);
-  border-color: #1877F2;
-}
-
-.logos-container {
-  width: 100%;
-  overflow: hidden;
-  position: relative;
-  padding: 20px 0;
+.logo-item:hover .text-logo {
+  color: #1877F2;
+  transform: scale(1.05);
 }
 
 @keyframes scroll {
@@ -981,6 +1036,83 @@ body {
   
   .features-grid {
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
+}
+
+/* Mobile optimizations for integrations */
+@media (max-width: 768px) {
+  .integrations {
+    padding: 60px 0;
+  }
+  
+  .integrations h2 {
+    font-size: 36px;
+    margin-bottom: 12px;
+  }
+  
+  .integrations-subtitle {
+    font-size: 16px;
+    margin-bottom: 40px;
+    padding: 0 20px;
+  }
+  
+  .logos-scroll {
+    animation: scroll 20s linear infinite;
+    gap: 30px;
+  }
+  
+  .logo-item {
+    padding: 20px 24px;
+    min-width: 120px;
+    height: 80px;
+    border-radius: 12px;
+  }
+  
+  .logo-item img {
+    max-width: 70px;
+    max-height: 35px;
+  }
+  
+  .logo-item .text-logo {
+    font-size: 14px;
+  }
+  
+  .logo-item:hover {
+    transform: translateY(-4px) scale(1.02);
+  }
+}
+
+@media (max-width: 480px) {
+  .integrations {
+    padding: 50px 0;
+  }
+  
+  .integrations h2 {
+    font-size: 28px;
+  }
+  
+  .integrations-subtitle {
+    font-size: 14px;
+  }
+  
+  .logos-scroll {
+    animation: scroll 15s linear infinite;
+    gap: 20px;
+  }
+  
+  .logo-item {
+    padding: 16px 20px;
+    min-width: 100px;
+    height: 70px;
+  }
+  
+  .logo-item img {
+    max-width: 60px;
+    max-height: 30px;
+  }
+  
+  .logo-item .text-logo {
+    font-size: 12px;
   }
 }
 
