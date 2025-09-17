@@ -232,7 +232,7 @@ function App() {
       <section className="product-flow">
         <div className="container">
           <img 
-            src="/Fixie_Product_Flow_090525.png" 
+            src="/Fixie_Product_Flow_091025.png" 
             alt="Fixie Product Flow" 
             className="product-flow-image"
           />
