@@ -269,16 +269,6 @@ function App() {
               <p>Perform real-time actions like system restarts, user provisioning, and software installation.</p>
             </div>
             <div className="feature-card">
-              <div className="feature-icon">📚</div>
-              <h3>Pre-Built Fix Libraries</h3>
-              <p>Hundreds of ready-to-use workflows for common IT issues.</p>
-            </div>
-            <div className="feature-card">
-              <div className="feature-icon">⚙️</div>
-              <h3>Custom Automation Builder</h3>
-              <p>Create your own AI-driven fixes without coding.</p>
-            </div>
-            <div className="feature-card">
               <div className="feature-icon">📊</div>
               <h3>Analytics & Reporting</h3>
               <p>See resolution times drop and user satisfaction soar.</p>
