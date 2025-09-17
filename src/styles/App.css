@@ -732,7 +732,7 @@ body {
 
 .logos-scroll {
   display: flex;
-  animation: scroll 30s linear infinite;
+  animation: scroll 20s linear infinite;
   gap: 60px;
   align-items: center;
 }
@@ -751,18 +751,14 @@ body {
   justify-content: center;
   min-width: 120px;
   height: 80px;
+  margin: 10px 0;
 }
 
 .logo-item img {
   max-width: 80px;
   max-height: 40px;
   object-fit: contain;
-  filter: grayscale(100%);
-  transition: filter 0.3s ease;
-}
-
-.logo-item:hover img {
-  filter: grayscale(0%);
+  transition: all 0.3s ease;
 }
 
 .logo-item .text-logo {
@@ -776,6 +772,13 @@ body {
   transform: translateY(-4px);
   box-shadow: 0 8px 25px rgba(24, 119, 242, 0.2);
   border-color: #1877F2;
+}
+
+.logos-container {
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+  padding: 20px 0;
 }
 
 @keyframes scroll {
