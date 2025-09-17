@@ -295,7 +295,7 @@ function App() {
             <div className="benefit-item">
               <div className="benefit-number">80%</div>
               <h3>Cut Resolution Times</h3>
-              <p>Dramatically reduce the time it takes to resolve IT issues</p>
+              <p>Reduce IT issue resolution time and improve user satisfaction</p>
             </div>
             <div className="benefit-item">
               <div className="benefit-number">24/7</div>
