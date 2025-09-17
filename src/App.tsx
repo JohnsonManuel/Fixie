@@ -307,11 +307,6 @@ function App() {
               <h3>Lower Support Costs</h3>
               <p>Automate high-volume tickets and reduce manual work</p>
             </div>
-            <div className="benefit-item">
-              <div className="benefit-number">100%</div>
-              <h3>User Satisfaction</h3>
-              <p>Instant fixes lead to happier, more productive teams</p>
-            </div>
           </div>
         </div>
       </section>
