@@ -174,9 +174,9 @@ function App() {
       <section className="problem-statement" aria-labelledby="problem-heading">
         <div className="container">
           <div className="problem-content">
-            <h2 id="problem-heading">Why SMBs Choose Fixie Over Heavy ITSM Tools</h2>
+            <h2 id="problem-heading">Simplify IT Support with Chat first Resolution</h2>
             <p className="problem-text">
-              Big ITSM platforms like ServiceNow are powerful — but often too complex and expensive for firms under 1,000 employees. Smaller teams need something lightweight, fast to set up, and smart enough to handle day-to-day IT problems without layers of forms and approvals.
+              Fixie provides employees with a simple chat interface to resolve common IT issues – such as password resets and access requests – without requiring helpdesk intervention. By masking IT complexity behind a conversational experience, Fixie resolves the majority of Level-1 tickets automatically while integrating seamlessly with existing IT systems, reducing support costs and improving employee productivity.
             </p>
           </div>
         </div>
