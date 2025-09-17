@@ -134,7 +134,7 @@ function App() {
                 loading="eager"
               />
             </div>
-            <h1>We Fix(ie) IT.</h1>
+            <h1>We Fix IT.</h1>
             <p className="hero-subtitle">
               Fixie is your team's IT sidekick in chat — resetting passwords, fixing access issues, and solving everyday problems instantly. No forms, no tickets, and no waiting.
             </p>
