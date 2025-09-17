@@ -130,7 +130,7 @@ function App() {
       <section className="problem-statement" aria-labelledby="problem-heading">
         <div className="container">
           <div className="problem-content">
-            <h2 id="problem-heading">Simplify IT Support with Chat first Resolution</h2>
+            <h2 id="problem-heading">Simplify IT Support with Chat-first Resolution</h2>
             <p className="problem-text">
               Fixie provides employees with a simple chat interface to resolve common IT issues – such as password resets and access requests – without requiring helpdesk intervention. By masking IT complexity behind a conversational experience, Fixie resolves the majority of Level-1 tickets automatically while integrating seamlessly with existing IT systems, reducing support costs and improving employee productivity.
             </p>
@@ -251,7 +251,7 @@ function App() {
       {/* Integrations */}
       <section className="integrations">
         <div className="container">
-          <h2>Integrates with Your Existing Tools</h2>
+          <h2>Integrates with all Your Existing IT Tools</h2>
           <p className="integrations-subtitle">Connect seamlessly with the platforms your team already uses</p>
           <div className="logos-container">
             <div className="logos-scroll">
@@ -274,13 +274,13 @@ function App() {
                 <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" alt="macOS" />
               </div>
               <div className="logo-item">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c4/Zoom_logo.svg/200px-Zoom_logo.svg.png" alt="Zoom" />
+                <img src="https://logos-world.net/wp-content/uploads/2020/12/Zoom-Logo.png" alt="Zoom" />
               </div>
               <div className="logo-item">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/Microsoft_Office_Teams_%282018%E2%80%93present%29.svg/200px-Microsoft_Office_Teams_%282018%E2%80%93present%29.svg.png" alt="Teams" />
               </div>
               <div className="logo-item">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/Gnome-logo.svg/200px-Gnome-logo.svg.png" alt="GNOME" />
+                <img src="https://upload.wikimedia.org/wikipedia/commons/6/68/Gnome-logo.svg" alt="GNOME" />
               </div>
               <div className="logo-item">
                 <span className="text-logo">Freshdesk</span>
