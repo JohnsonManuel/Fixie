@@ -700,6 +700,73 @@ body {
   line-height: 1.6;
 }
 
+/* Integrations */
+.integrations {
+  padding: 80px 0;
+  background: #f8fafc;
+  overflow: hidden;
+}
+
+.integrations h2 {
+  text-align: center;
+  font-size: 48px;
+  font-weight: 700;
+  font-family: 'Montserrat', sans-serif;
+  margin-bottom: 16px;
+  color: #1a1a1a;
+}
+
+.integrations-subtitle {
+  text-align: center;
+  font-size: 18px;
+  color: #666;
+  font-family: 'Montserrat', sans-serif;
+  margin-bottom: 60px;
+}
+
+.logos-container {
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+.logos-scroll {
+  display: flex;
+  animation: scroll 30s linear infinite;
+  gap: 60px;
+  align-items: center;
+}
+
+.logo-item {
+  flex-shrink: 0;
+  padding: 20px 30px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  font-size: 16px;
+  font-weight: 600;
+  font-family: 'Montserrat', sans-serif;
+  color: #1a1a1a;
+  border: 2px solid #e5e7eb;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.logo-item:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(24, 119, 242, 0.2);
+  border-color: #1877F2;
+}
+
+@keyframes scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
 /* Use Cases */
 .use-cases {
   padding: 80px 0;

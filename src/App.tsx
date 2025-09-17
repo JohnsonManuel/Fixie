@@ -316,6 +316,41 @@ function App() {
         </div>
       </section>
 
+      {/* Integrations */}
+      <section className="integrations">
+        <div className="container">
+          <h2>Integrates with Your Existing Tools</h2>
+          <p className="integrations-subtitle">Connect seamlessly with the platforms your team already uses</p>
+          <div className="logos-container">
+            <div className="logos-scroll">
+              <div className="logo-item">Freshdesk</div>
+              <div className="logo-item">Jira</div>
+              <div className="logo-item">ManageEngine</div>
+              <div className="logo-item">Slack</div>
+              <div className="logo-item">Zoom</div>
+              <div className="logo-item">Teams</div>
+              <div className="logo-item">Windows</div>
+              <div className="logo-item">macOS</div>
+              <div className="logo-item">GNOME</div>
+              <div className="logo-item">AWS</div>
+              <div className="logo-item">Azure</div>
+              {/* Duplicate for seamless loop */}
+              <div className="logo-item">Freshdesk</div>
+              <div className="logo-item">Jira</div>
+              <div className="logo-item">ManageEngine</div>
+              <div className="logo-item">Slack</div>
+              <div className="logo-item">Zoom</div>
+              <div className="logo-item">Teams</div>
+              <div className="logo-item">Windows</div>
+              <div className="logo-item">macOS</div>
+              <div className="logo-item">GNOME</div>
+              <div className="logo-item">AWS</div>
+              <div className="logo-item">Azure</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Use Cases */}
       <section className="use-cases">
         <div className="container">
