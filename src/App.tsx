@@ -228,16 +228,7 @@ function App() {
         </div>
       </section>
 
-      {/* Product Flow Image */}
-      <section className="product-flow">
-        <div className="container">
-          <img 
-            src="/Fixie_Product_Flow_091025.png" 
-            alt="Fixie Product Flow" 
-            className="product-flow-image"
-          />
-        </div>
-      </section>
+
 
       {/* Key Features */}
       <section className="features" id="features" aria-labelledby="features-heading">

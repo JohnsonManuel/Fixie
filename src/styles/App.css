@@ -403,7 +403,7 @@ body {
   width: 95%;
   max-width: 1200px;
   height: 100%;
-  background: linear-gradient(135deg, #1877F2 0%, #0A3A7A 100%);
+  background: url('/Fixie_Product_Flow_091025.png') center/cover no-repeat;
   border-radius: 20px;
   display: flex;
   align-items: center;
