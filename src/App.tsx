@@ -193,7 +193,7 @@ function App() {
               style={{ width: '48px', height: '48px', marginBottom: '16px' }}
               loading="lazy"
             />
-            <h2 id="how-it-works-heading">Enterprise ITSM That Outperforms ServiceNow</h2>
+            <h2 id="how-it-works-heading">Chat-First IT Support For Companies of All Sizes</h2>
           </div>
           <div className="flow-container">
             <div className="flow-step">
