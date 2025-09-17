@@ -525,7 +525,7 @@ body {
   font-size: 48px;
   font-weight: 700;
   font-family: 'Montserrat', sans-serif;
-  margin-bottom: 60px;
+  margin-bottom: 24px;
   color: #1a1a1a;
 }
 
@@ -604,7 +604,7 @@ body {
   font-size: 48px;
   font-weight: 700;
   font-family: 'Montserrat', sans-serif;
-  margin-bottom: 60px;
+  margin-bottom: 24px;
   color: #1a1a1a;
 }
 
@@ -661,7 +661,7 @@ body {
   font-size: 48px;
   font-weight: 700;
   font-family: 'Montserrat', sans-serif;
-  margin-bottom: 60px;
+  margin-bottom: 24px;
   color: #1a1a1a;
 }
 
@@ -854,7 +854,7 @@ body {
   font-size: 48px;
   font-weight: 700;
   font-family: 'Montserrat', sans-serif;
-  margin-bottom: 60px;
+  margin-bottom: 24px;
   color: #1a1a1a;
 }
 
@@ -910,6 +910,7 @@ body {
   font-family: 'Montserrat', sans-serif;
   margin-bottom: 24px;
   color: #1a1a1a;
+  text-align: center;
 }
 
 .why-choose-text {
@@ -930,7 +931,7 @@ body {
   font-size: 48px;
   font-weight: 700;
   font-family: 'Montserrat', sans-serif;
-  margin-bottom: 40px;
+  margin-bottom: 24px;
   color: #1a1a1a;
 }
 
@@ -1045,8 +1046,19 @@ body {
   }
   
   .integrations h2 {
-    font-size: 36px;
-    margin-bottom: 12px;
+    font-size: 32px;
+    margin-bottom: 16px;
+  }
+  
+  .problem-content h2,
+  .how-it-works h2,
+  .features h2,
+  .benefits h2,
+  .use-cases h2,
+  .why-choose-content h2,
+  .final-cta h2 {
+    font-size: 32px;
+    margin-bottom: 16px;
   }
   
   .integrations-subtitle {
@@ -1087,7 +1099,18 @@ body {
   }
   
   .integrations h2 {
-    font-size: 28px;
+    font-size: 24px;
+  }
+  
+  .problem-content h2,
+  .how-it-works h2,
+  .features h2,
+  .benefits h2,
+  .use-cases h2,
+  .why-choose-content h2,
+  .final-cta h2 {
+    font-size: 24px;
+    margin-bottom: 12px;
   }
   
   .integrations-subtitle {
