@@ -743,13 +743,33 @@ body {
   background: white;
   border-radius: 12px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  border: 2px solid #e5e7eb;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 120px;
+  height: 80px;
+}
+
+.logo-item img {
+  max-width: 80px;
+  max-height: 40px;
+  object-fit: contain;
+  filter: grayscale(100%);
+  transition: filter 0.3s ease;
+}
+
+.logo-item:hover img {
+  filter: grayscale(0%);
+}
+
+.logo-item .text-logo {
   font-size: 16px;
   font-weight: 600;
   font-family: 'Montserrat', sans-serif;
   color: #1a1a1a;
-  border: 2px solid #e5e7eb;
-  transition: all 0.3s ease;
-  white-space: nowrap;
 }
 
 .logo-item:hover {
