@@ -136,7 +136,10 @@ function App() {
             </div>
             <h1>We Fix(ie) IT.</h1>
             <p className="hero-subtitle">
-              Fixie is an AI-powered ticket resolution system that understands, diagnoses, and fixes common IT problems — instantly. Integrates with your existing ticketing platforms, powered by real-time agentic AI tools, and designed to keep your team productive.
+              Fixie is your team's IT sidekick in chat — resetting passwords, fixing access issues, and solving everyday problems instantly. No forms, no tickets, and no waiting.
+            </p>
+            <p className="hero-subtitle">
+              Your employees just need to ask, Fixie handles the Level-1 stuff, and IT can finally focus on the work that matters.
             </p>
             <div className="hero-cta">
               <button className="cta-button" onClick={() => setCurrentPage('demo')}>Book a demo</button>
