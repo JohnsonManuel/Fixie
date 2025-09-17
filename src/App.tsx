@@ -250,7 +250,7 @@ function App() {
               style={{ width: '48px', height: '48px', marginBottom: '16px' }}
               loading="lazy"
             />
-            <h2 id="features-heading">Enterprise Features That Beat ServiceNow</h2>
+            <h2 id="features-heading">Enterprise Features</h2>
           </div>
           <div className="features-grid">
             <div className="feature-card">
@@ -295,17 +295,17 @@ function App() {
             <div className="benefit-item">
               <div className="benefit-number">80%</div>
               <h3>Cut Resolution Times</h3>
-              <p>Reduce IT issue resolution time and improve user satisfaction</p>
+              <p>Reduce IT issue resolution time and improve user satisfaction.</p>
             </div>
             <div className="benefit-item">
               <div className="benefit-number">24/7</div>
               <h3>Always Available</h3>
-              <p>AI never sleeps, providing support around the clock</p>
+              <p>AI never sleeps, providing support around the clock.</p>
             </div>
             <div className="benefit-item">
               <div className="benefit-number">$0</div>
               <h3>Lower Support Costs</h3>
-              <p>Automate high-volume tickets and reduce manual work</p>
+              <p>Automate high-volume tickets and reduce manual work.</p>
             </div>
           </div>
         </div>
