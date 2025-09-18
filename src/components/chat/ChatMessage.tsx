@@ -10,14 +10,25 @@ interface Message {
   createdAt?: any;
   actions?: any[];
   tool_results?: any[];
+  toolCalls?: any[];
+  interactive?: {
+    type: string;
+    buttons: Array<{
+      id: string;
+      label: string;
+      action: string;
+      style?: 'primary' | 'secondary' | 'danger';
+    }>;
+  };
 }
 
 interface ChatMessageProps {
   message: Message;
   onAction?: (action: any) => void;
+  onButtonClick?: (buttonAction: string, messageId: string) => void;
 }
 
-const ChatMessage: React.FC<ChatMessageProps> = ({ message, onAction }) => {
+const ChatMessage: React.FC<ChatMessageProps> = ({ message, onAction, onButtonClick }) => {
   const renderContent = () => {
     if (message.content) {
       return (
@@ -82,7 +93,24 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, onAction }) => {
             </div>
           )}
 
-          {/* Action buttons */}
+          {/* Interactive buttons */}
+          {message.interactive && message.interactive.buttons && (
+            <div className="interactive-buttons">
+              <div className="button-group">
+                {message.interactive.buttons.map((button, index) => (
+                  <button
+                    key={button.id}
+                    className={`interactive-btn ${button.style || 'secondary'}`}
+                    onClick={() => onButtonClick?.(button.action, message.id)}
+                  >
+                    {button.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Legacy action buttons */}
           {message.actions && message.actions.length > 0 && (
             <div className="message-actions">
               {message.actions.map((action, index) => (

@@ -4,6 +4,9 @@ import { getFirestore, FieldValue } from "firebase-admin/firestore";
 import { getAuth } from "firebase-admin/auth";
 import { defineSecret } from "firebase-functions/params";
 import cors from 'cors';
+import { CHAT_CONFIG } from './config';
+import { createSupportTicket } from './ticket-tool';
+import { FRESHWORKS_DOMAIN, FRESHWORKS_API_KEY } from './freshworks-integration';
 
 const db = getFirestore();
 const auth = getAuth();
@@ -22,7 +25,7 @@ const OPENAI_API_KEY = defineSecret("OPENAI_API_KEY");
 export const chat = onRequest(
   { 
     region: REGION,
-    secrets: [OPENAI_API_KEY],
+    secrets: [OPENAI_API_KEY, FRESHWORKS_DOMAIN, FRESHWORKS_API_KEY],
     timeoutSeconds: 120,
     memory: "256MiB",
   },
@@ -31,9 +34,14 @@ export const chat = onRequest(
     return new Promise((resolve, reject) => {
       corsHandler(req, res, async () => {
         try {
+          console.log('Chat function called with method:', req.method);
+          console.log('Request body:', req.body);
+          console.log('Headers:', req.headers);
+
           // Verify authentication
           const idToken = req.body.idToken;
           if (!idToken) {
+            console.log('No ID token provided');
             res.status(401).json({ 
               error: "No ID token provided",
               code: "AUTH_FAILED"
@@ -44,14 +52,19 @@ export const chat = onRequest(
 
           const decodedToken = await auth.verifyIdToken(idToken);
           const userId = decodedToken.uid;
+          console.log('User authenticated:', userId);
+          console.log('User email:', decodedToken.email);
 
           // Get conversation ID and message
           const { conversationId, message } = req.body;
           if (!conversationId || !message) {
+            console.log('Missing conversationId or message');
             res.status(400).json({ error: "Missing conversationId or message" });
             resolve();
             return;
           }
+
+          console.log('Processing message:', message, 'for conversation:', conversationId);
 
           // Get conversation history
           const messagesRef = db.collection("users").doc(userId).collection("conversations").doc(conversationId).collection("messages");
@@ -73,15 +86,59 @@ export const chat = onRequest(
             content: message,
           });
 
-          // Generate AI response using OpenAI
-          const aiResponse = await generateAIResponse(message, chatMsgs);
+          console.log('Generating AI response for message:', message);
+          // Generate AI response using OpenAI with tool calling
+          const aiResponse = await generateAIResponse(message, chatMsgs, userId, conversationId);
+          console.log('AI response generated successfully');
+          console.log('AI response length:', aiResponse.content.length);
+          console.log('AI response preview:', aiResponse.content.substring(0, 200) + '...');
+
+          // Check if we should offer interactive buttons (simplified)
+          let interactiveButtons = null;
+          const shouldOfferButtons = shouldOfferTicketCreationSimple(message, aiResponse.content, chatMsgs);
+          console.log('Should offer buttons:', shouldOfferButtons);
+
+          if (shouldOfferButtons) {
+            interactiveButtons = {
+              type: "ticket_offer",
+              buttons: [
+                {
+                  id: "create_ticket",
+                  label: "✅ Create Support Ticket",
+                  action: "CREATE_TICKET",
+                  style: "primary"
+                },
+                {
+                  id: "cancel",
+                  label: "❌ Try Other Solutions",
+                  action: "CANCEL_TICKET",
+                  style: "secondary"
+                }
+              ]
+            };
+          }
 
           // Save AI response to Firestore (user message already saved by frontend)
-          const aiMessageRef = await messagesRef.add({
+          const messageData: any = {
             role: "assistant",
-            content: aiResponse,
+            content: aiResponse.content,
             createdAt: FieldValue.serverTimestamp(),
-          });
+          };
+
+          // Add interactive buttons to message if applicable
+          if (interactiveButtons) {
+            messageData.interactive = interactiveButtons;
+          }
+
+          // Add tool call information if present
+          if (aiResponse.toolCalls && aiResponse.toolCalls.length > 0) {
+            messageData.toolCalls = aiResponse.toolCalls;
+          }
+
+          console.log('Saving AI response to Firestore');
+          console.log('Message data to save:', JSON.stringify(messageData, null, 2));
+          const aiMessageRef = await messagesRef.add(messageData);
+          console.log('AI message saved with ID:', aiMessageRef.id);
 
           // Update conversation metadata
           const conversationRef = db.collection("users").doc(userId).collection("conversations").doc(conversationId);
@@ -89,16 +146,21 @@ export const chat = onRequest(
             lastMessage: message,
             updatedAt: FieldValue.serverTimestamp(),
           });
+          console.log('Conversation metadata updated');
 
           // Generate/update conversation title if needed
           await updateConversationTitle(userId, conversationId, chatMsgs);
+          console.log('Conversation title updated');
 
-          // Return success response
+          console.log('Returning success response');
+          // Return success response with interactive elements
           res.json({
             success: true,
             messageId: aiMessageRef.id,
-            content: aiResponse,
-            conversationId: conversationId
+            content: aiResponse.content,
+            conversationId: conversationId,
+            toolCalls: aiResponse.toolCalls || [],
+            interactive: interactiveButtons
           });
 
         } catch (error) {
@@ -141,24 +203,89 @@ export const chat = onRequest(
   }
 );
 
-// Enhanced AI response generation using OpenAI
-async function generateAIResponse(userMessage: string, conversationHistory: any[]): Promise<string> {
+// Simple function to check if ticket creation should be offered
+function shouldOfferTicketCreationSimple(userMessage: string, aiResponse: string, conversationHistory: any[]): boolean {
+  try {
+    const escalationKeywords = [
+      'escalate', 'ticket', 'support team', 'human', 'manager', 'supervisor',
+      'create ticket', 'open ticket', 'submit ticket', 'support request'
+    ];
+    
+    const unresolvedKeywords = [
+      'not working', 'still broken', "didn't work", "doesn't help",
+      'tried everything', 'nothing works', 'still having issues'
+    ];
+    
+    const messageLower = userMessage.toLowerCase();
+    const responseLower = aiResponse.toLowerCase();
+    
+    // Check for explicit escalation requests
+    const hasEscalationRequest = escalationKeywords.some(keyword => 
+      messageLower.includes(keyword)
+    );
+    
+    // Check for unresolved issues
+    const hasUnresolvedIssue = unresolvedKeywords.some(keyword => 
+      messageLower.includes(keyword)
+    );
+    
+    // Check if AI response mentions escalation
+    const aiMentionsEscalation = responseLower.includes('escalate') || 
+                                responseLower.includes('support team') ||
+                                responseLower.includes('ticket');
+    
+    // Check conversation length (longer conversations might need escalation)
+    const isLongConversation = conversationHistory.length > 4;
+    
+    return hasEscalationRequest || (hasUnresolvedIssue && isLongConversation) || aiMentionsEscalation;
+  } catch (error) {
+    console.error('Error in shouldOfferTicketCreationSimple:', error);
+    return false;
+  }
+}
+
+// Enhanced AI response generation using OpenAI with tool calling
+async function generateAIResponse(
+  userMessage: string, 
+  conversationHistory: any[], 
+  userId: string, 
+  conversationId: string
+): Promise<{ content: string; toolCalls?: any[] }> {
   try {
     // Check if we have an OpenAI API key
     const apiKey = OPENAI_API_KEY.value();
     if (!apiKey) {
+      console.log('No OpenAI API key, using fallback response');
       // Fallback to simple responses if no API key
-      return generateSimpleResponse(userMessage);
+      return { content: generateSimpleResponse(userMessage) };
     }
+
+    console.log('Generating AI response with OpenAI');
 
     // Prepare conversation context for OpenAI
     const messages = [
       {
         role: "system",
-        content: `You are Fixie, an AI-powered IT support specialist. You help users with technical IT issues and computer-related problems. Be helpful, professional, and provide actionable solutions. Keep responses concise but informative.`
+        content: CHAT_CONFIG.systemPrompt
       },
       ...conversationHistory.slice(-10) // Keep last 10 messages for context
     ];
+
+    // Prepare API request with tools
+    const requestBody: any = {
+      model: CHAT_CONFIG.model,
+      messages: messages,
+      max_tokens: CHAT_CONFIG.maxTokens,
+      temperature: CHAT_CONFIG.temperature,
+    };
+
+    // Add tools if enabled
+    if (CHAT_CONFIG.enableTools) {
+      requestBody.tools = CHAT_CONFIG.tools;
+      requestBody.tool_choice = "auto"; // Let AI decide when to use tools
+    }
+
+    console.log('Calling OpenAI API with model:', CHAT_CONFIG.model);
 
     // Call OpenAI API
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -167,12 +294,7 @@ async function generateAIResponse(userMessage: string, conversationHistory: any[
         "Authorization": `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages: messages,
-        max_tokens: 500,
-        temperature: 0.7,
-      }),
+      body: JSON.stringify(requestBody),
     });
 
     if (!response.ok) {
@@ -182,23 +304,128 @@ async function generateAIResponse(userMessage: string, conversationHistory: any[
     }
 
     const data = await response.json();
-    return data.choices[0].message.content.trim();
+    const choice = data.choices[0];
+    
+    console.log('OpenAI response received, checking for tool calls');
+    
+    // Handle tool calls
+    if (choice.message.tool_calls) {
+      console.log('AI requested tool calls:', choice.message.tool_calls.length);
+      
+      // Execute tool calls
+      const toolResults = await executeToolCalls(choice.message.tool_calls, userId, conversationId);
+      
+      // Add tool call results to conversation and get final response
+      const messagesWithTools = [
+        ...messages,
+        choice.message, // AI's message with tool calls
+        ...toolResults.map(result => ({
+          role: "tool",
+          tool_call_id: result.toolCallId,
+          content: JSON.stringify(result.result)
+        }))
+      ];
+
+      console.log('Getting final response after tool execution');
+
+      // Get final response after tool execution
+      const finalResponse = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: CHAT_CONFIG.model,
+          messages: messagesWithTools,
+          max_tokens: CHAT_CONFIG.maxTokens,
+          temperature: CHAT_CONFIG.temperature,
+        }),
+      });
+
+      if (!finalResponse.ok) {
+        throw new Error(`OpenAI final response error: ${finalResponse.status}`);
+      }
+
+      const finalData = await finalResponse.json();
+      const finalChoice = finalData.choices[0];
+      
+      return {
+        content: finalChoice.message.content,
+        toolCalls: choice.message.tool_calls
+      };
+    }
+
+    console.log('No tool calls, returning regular response');
+    // No tool calls, return regular response
+    return {
+      content: choice.message.content.trim()
+    };
 
   } catch (error) {
     console.error('Error calling OpenAI API:', error);
     // Fallback to simple responses
-    return generateSimpleResponse(userMessage);
+    return { content: generateSimpleResponse(userMessage) };
   }
+}
+
+// Execute tool calls requested by AI
+async function executeToolCalls(toolCalls: any[], userId: string, conversationId: string): Promise<any[]> {
+  const results = [];
+
+  for (const toolCall of toolCalls) {
+    try {
+      console.log(`Executing tool: ${toolCall.function.name}`);
+      
+      if (toolCall.function.name === "createSupportTicket") {
+        const args = JSON.parse(toolCall.function.arguments);
+        const ticketResult = await createSupportTicket({
+          ...args,
+          userId,
+          conversationId
+        });
+        
+        results.push({
+          toolCallId: toolCall.id,
+          result: ticketResult
+        });
+        
+        console.log(`Ticket creation result:`, ticketResult);
+      } else {
+        // Unknown tool
+        results.push({
+          toolCallId: toolCall.id,
+          result: {
+            success: false,
+            message: `Unknown tool: ${toolCall.function.name}`,
+            error: "Tool not implemented"
+          }
+        });
+      }
+    } catch (error) {
+      console.error(`Error executing tool ${toolCall.function.name}:`, error);
+      results.push({
+        toolCallId: toolCall.id,
+        result: {
+          success: false,
+          message: "Tool execution failed",
+          error: error instanceof Error ? error.message : "Unknown error"
+        }
+      });
+    }
+  }
+
+  return results;
 }
 
 // Fallback simple response generator
 function generateSimpleResponse(userMessage: string): string {
   const responses = [
-    "I understand your message. How can I help you further?",
-    "Thank you for sharing that. Is there anything specific you'd like me to assist with?",
-    "I'm here to help! Could you provide more details about what you need?",
-    "That's interesting. Let me know if you have any questions or need assistance.",
-    "I appreciate you reaching out. How can I be of service today?"
+    "I understand your IT support request. How can I help you further?",
+    "Thank you for your technical inquiry. Is there anything specific you'd like me to assist with?",
+    "I'm here to help with your IT issues! Could you provide more details about the technical problem?",
+    "That's an interesting technical challenge. Let me know if you have any specific IT questions or need assistance.",
+    "I appreciate you reaching out for IT support. How can I be of technical assistance today?"
   ];
   
   // Simple response selection based on message length

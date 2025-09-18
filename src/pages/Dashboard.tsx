@@ -48,51 +48,56 @@ function DashboardContent() {
       
       // Check if user has a valid ID token
       user.getIdToken(true).then(token => {
-        console.log('Initial ID token check successful, length:', token.length);
+        console.log('ID token obtained successfully, length:', token.length);
       }).catch(error => {
-        console.error('Initial ID token check failed:', error);
+        console.error('Failed to get ID token:', error);
       });
     } else {
-      console.log('No user authenticated');
+      console.log('User not authenticated');
     }
   }, [user]);
 
   const [view, setView] = useState<"chat">("chat");
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Mobile sidebar state
-
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeConvoId, setActiveConvoId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
-
   const [inputMessage, setInputMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Subscribe to user's conversations (latest first)
+  // Scroll to bottom when new messages arrive
   useEffect(() => {
-    if (!user?.uid) return;
-    const convosRef = collection(db, "users", user.uid, "conversations");
-    const qConvos = query(convosRef, orderBy("updatedAt", "desc"));
-    const unsub = onSnapshot(qConvos, (snap) => {
-      const list: Conversation[] = snap.docs.map((d) => ({
-        id: d.id,
-        ...(d.data() as any),
-      }));
-      setConversations(list);
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
-      if (!activeConvoId && list.length) setActiveConvoId(list[0].id);
-      if (activeConvoId && !list.find((c) => c.id === activeConvoId)) {
-        setActiveConvoId(list[0]?.id ?? null);
+  // Load conversations on mount
+  useEffect(() => {
+    if (!user) return;
+
+    const conversationsRef = collection(db, "users", user.uid, "conversations");
+    const q = query(conversationsRef, orderBy("updatedAt", "desc"));
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const convos = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as Conversation[];
+      setConversations(convos);
+
+      // Set first conversation as active if none is selected
+      if (convos.length > 0 && !activeConvoId) {
+        setActiveConvoId(convos[0].id);
       }
     });
 
-    return unsub;
+    return () => unsubscribe();
   }, [user, activeConvoId]);
 
-  // Subscribe to active conversation's messages
+  // Load messages for active conversation
   useEffect(() => {
-    if (!user?.uid || !activeConvoId) return;
+    if (!user || !activeConvoId) return;
+
     const messagesRef = collection(
       db,
       "users",
@@ -101,95 +106,83 @@ function DashboardContent() {
       activeConvoId,
       "messages"
     );
-    const qMessages = query(messagesRef, orderBy("createdAt", "asc"));
-    const unsub = onSnapshot(qMessages, (snap) => {
-      const list: Message[] = snap.docs.map((d) => ({
-        id: d.id,
-        ...(d.data() as any),
-      }));
-      setMessages(list);
+    const q = query(messagesRef, orderBy("createdAt", "asc"));
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const msgs = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as Message[];
+      setMessages(msgs);
     });
 
-    return unsub;
+    return () => unsubscribe();
   }, [user, activeConvoId]);
 
-  // Auto-scroll to bottom when new messages arrive
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
-
+  // Create new conversation
   const createNewConversation = async () => {
-    if (!user?.uid) return;
-    const convosRef = collection(db, "users", user.uid, "conversations");
-    const newConvo = await addDoc(convosRef, {
-      title: "Start a new conversation...",
+    if (!user) return;
+
+    const conversationsRef = collection(db, "users", user.uid, "conversations");
+    const newConvoRef = await addDoc(conversationsRef, {
+      title: "New Chat",
+      createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
-      lastMessage: "",
-      model: "gpt-4",
     });
-    setActiveConvoId(newConvo.id);
+
+    setActiveConvoId(newConvoRef.id);
+    setMessages([]);
+    setIsSidebarOpen(false); // Close sidebar on mobile
   };
 
+  // Delete conversation
   const deleteConversation = async (convoId: string) => {
-    if (!user?.uid) return;
-    
-    try {
-      // Delete all messages first
-      const messagesRef = collection(
-        db,
-        "users",
-        user.uid,
-        "conversations",
-        convoId,
-        "messages"
-      );
-      const messagesSnap = await getDocs(messagesRef);
-      const batch = writeBatch(db);
-      messagesSnap.docs.forEach((doc) => {
-        batch.delete(doc.ref);
-      });
-      await batch.commit();
+    if (!user) return;
 
-      // Delete conversation
-      await deleteDoc(doc(db, "users", user.uid, "conversations", convoId));
-      
-      // Update local state
-      setConversations(prev => prev.filter(conv => conv.id !== convoId));
-      if (activeConvoId === convoId) {
+    // Delete all messages in the conversation
+    const messagesRef = collection(
+      db,
+      "users",
+      user.uid,
+      "conversations",
+      convoId,
+      "messages"
+    );
+    const messagesSnapshot = await getDocs(messagesRef);
+    
+    const batch = writeBatch(db);
+    messagesSnapshot.docs.forEach((doc) => {
+      batch.delete(doc.ref);
+    });
+    
+    // Delete the conversation itself
+    batch.delete(doc(db, "users", user.uid, "conversations", convoId));
+    
+    await batch.commit();
+
+    // If this was the active conversation, switch to another one
+    if (activeConvoId === convoId) {
+      const remainingConversations = conversations.filter(c => c.id !== convoId);
+      if (remainingConversations.length > 0) {
+        setActiveConvoId(remainingConversations[0].id);
+      } else {
         setActiveConvoId(null);
         setMessages([]);
       }
-    } catch (error) {
-      console.error("Error deleting conversation:", error);
     }
   };
 
+  // Send message
   const handleSendMessage = async (message: string): Promise<void> => {
-    if (!user?.uid || !activeConvoId || !message.trim()) {
-      console.error('Missing required data:', { 
-        hasUser: !!user, 
-        hasUid: !!user?.uid, 
-        hasActiveConvo: !!activeConvoId, 
-        hasMessage: !!message.trim() 
-      });
-      return;
-    }
+    if (!user || !activeConvoId || !message.trim() || isLoading) return;
 
-    console.log('Sending message:', message, 'to conversation:', activeConvoId);
     setIsLoading(true);
-    
     try {
-      // Get fresh ID token with retry logic
-      let idToken;
-      try {
-        idToken = await getFreshIdToken();
-        console.log('ID token obtained successfully, length:', idToken.length);
-      } catch (tokenError) {
-        console.error('Error getting ID token:', tokenError);
-        throw new Error('Failed to get authentication token. Please try logging in again.');
-      }
+      // Get fresh ID token
+      const idToken = await getFreshIdToken();
+      console.log('Using fresh ID token for message send');
 
-      // Add user message to Firestore
+      // Save user message to Firestore first
       const messagesRef = collection(
         db,
         "users",
@@ -296,12 +289,11 @@ function DashboardContent() {
   };
 
   // Check if token is expired and handle accordingly
-  const handleTokenError = async (error: any, retryFunction: () => Promise<any>): Promise<any> => {
-    if (error?.details?.includes('TOKEN_EXPIRED') || 
-        error?.details?.includes('auth/id-token-expired') ||
-        error?.details?.includes('Firebase ID token has expired')) {
-      
-      console.log('Token expired, attempting to refresh...');
+  const handleTokenError = async (error: any, retryFunction: () => Promise<void>): Promise<void> => {
+    console.log('Handling token error:', error);
+    
+    if (error.code === 'TOKEN_EXPIRED' || error.code === 'AUTH_FAILED') {
+      console.log('Token expired or auth failed, attempting to refresh...');
       
       try {
         // Force refresh the token
@@ -312,10 +304,8 @@ function DashboardContent() {
         return await retryFunction();
       } catch (refreshError) {
         console.error('Failed to refresh token:', refreshError);
-        // If refresh fails, redirect to login
-        alert('Your session has expired. Please log in again.');
-        logout();
-        return null;
+        // If we can't refresh the token, the user needs to log in again
+        throw new Error('Authentication failed. Please log in again.');
       }
     }
     
@@ -337,9 +327,38 @@ function DashboardContent() {
     }
   };
 
-
-
-
+  // Handle interactive button clicks
+  const handleButtonClick = async (buttonAction: string, messageId: string) => {
+    console.log('Interactive button clicked:', buttonAction, 'for message:', messageId);
+    
+    // Handle different button actions
+    switch (buttonAction) {
+      case 'CREATE_TICKET':
+        await handleSendMessage("Yes, please create a support ticket for me.");
+        break;
+        
+      case 'CANCEL_TICKET':
+        await handleSendMessage("No, I don't want to create a ticket. Let me try other solutions first.");
+        break;
+        
+      case 'ESCALATE_ISSUE':
+        await handleSendMessage("I need to escalate this issue to your support team.");
+        break;
+        
+      case 'TRY_AGAIN':
+        await handleSendMessage("Let me try the troubleshooting steps again.");
+        break;
+        
+      case 'NEED_HELP':
+        await handleSendMessage("I need additional help with this issue.");
+        break;
+        
+      default:
+        console.log('Unknown button action:', buttonAction);
+        // Send the action as a message for the AI to handle
+        await handleSendMessage(buttonAction);
+    }
+  };
 
   // Handle view change and close sidebar on mobile
   const handleViewChange = (newView: "chat") => {
@@ -347,190 +366,188 @@ function DashboardContent() {
     setIsSidebarOpen(false); // Close sidebar on mobile when switching views
   };
 
+  // Toggle sidebar
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
+  if (!user) {
+    return (
+      <div className="dashboard">
+        <div className="auth-error">
+          <h2>Authentication Error</h2>
+          <p>You must be logged in to access the dashboard.</p>
+          <button onClick={logout}>Logout</button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="dashboard">
-      {/* Navigation */}
-      <nav className="navbar">
-        <div className="nav-container">
-          <div className="nav-left">
-            {/* Mobile menu button */}
-            <button 
-              className="mobile-menu-btn"
-              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              aria-label="Toggle menu"
-            >
-              <MenuIcon />
-            </button>
-            <div className="logo">
-              <span className="logo-text">Fixie</span>
-            </div>
-          </div>
-          <div className="nav-center">
-            <button 
-              className={`nav-btn ${view === 'chat' ? 'active' : ''}`}
-              onClick={() => handleViewChange('chat')}
-            >
-              Chat
-            </button>
-          </div>
-          <div className="nav-right">
-            <span className="user-email">{user?.email}</span>
-            <button onClick={logout} className="logout-btn">
-              <LogoutIcon />
-              Logout
-            </button>
-          </div>
+      {/* Header */}
+      <header className="dashboard-header">
+        <div className="header-left">
+          <button className="menu-btn" onClick={toggleSidebar}>
+            <MenuIcon />
+          </button>
+          <h1>Fixie AI Support</h1>
         </div>
-      </nav>
+        <div className="header-right">
+          <ThemeToggle />
+          <button className="logout-btn" onClick={logout}>
+            <LogoutIcon />
+            Logout
+          </button>
+        </div>
+      </header>
 
-      {/* Main Content */}
-      <div className="dashboard-container">
-        <div className="chat-view">
-          {/* Mobile backdrop overlay */}
-          {isSidebarOpen && (
-            <div 
-              className="sidebar-backdrop"
-              onClick={() => setIsSidebarOpen(false)}
-            />
-          )}
+      <div className="dashboard-content">
+        {/* Sidebar */}
+        <div className={`sidebar ${isSidebarOpen ? 'open' : ''}`}>
+          <div className="sidebar-header">
+            <h2>Conversations</h2>
+            <button className="new-chat-btn" onClick={createNewConversation}>
+              <AddIcon />
+              New Chat
+            </button>
+          </div>
           
-          {/* Sidebar */}
-          <div className={`sidebar ${isSidebarOpen ? 'sidebar-open' : ''}`}>
-            <div className="sidebar-header">
-              <button onClick={createNewConversation} className="new-chat-btn">
-                <AddIcon />
-                + New Chat
-              </button>
-            </div>
-            <div className="conversations-list">
-              {conversations.map((convo) => (
-                <div
-                  key={convo.id}
-                  className={`conversation-item ${
-                    activeConvoId === convo.id ? "active" : ""
-                  }`}
-                  onClick={() => {
-                    setActiveConvoId(convo.id);
-                    setIsSidebarOpen(false); // Close sidebar on mobile when selecting conversation
-                  }}
-                >
+          <div className="conversations-list">
+            {conversations.map((convo) => (
+              <div
+                key={convo.id}
+                className={`conversation-item ${
+                  activeConvoId === convo.id ? "active" : ""
+                }`}
+                onClick={() => {
+                  setActiveConvoId(convo.id);
+                  setIsSidebarOpen(false); // Close sidebar on mobile
+                }}
+              >
+                <div className="conversation-content">
                   <div className="conversation-title">
-                    {formatConversationTitle(convo.title || "New Conversation", activeConvoId === convo.id)}
-                  </div>
-                  <div className="conversation-preview">
-                    {convo.lastMessage || "Start a new conversation..."}
+                    {formatConversationTitle(convo.title || "New Chat", activeConvoId === convo.id)}
                   </div>
                   <div className="conversation-meta">
-                    {convo.updatedAt && (
-                      <span className="conversation-date">
-                        {formatTimestamp(convo.updatedAt)}
-                      </span>
-                    )}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        deleteConversation(convo.id);
-                      }}
-                      className="delete-conversation-btn"
-                      title="Delete conversation"
-                    >
-                      <DeleteIcon />
+                    {formatTimestamp(convo.updatedAt)}
+                  </div>
+                </div>
+                <button
+                  className="delete-conversation-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    deleteConversation(convo.id);
+                  }}
+                >
+                  <DeleteIcon />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <main className="main-content">
+          {view === "chat" && (
+            <div className="chat-view">
+              {!activeConvoId ? (
+                <div className="no-conversation">
+                  <div className="no-conversation-content">
+                    <ChatIcon />
+                    <h2>Welcome to Fixie AI Support</h2>
+                    <p>Start a new conversation to get help with your IT issues.</p>
+                    <button className="start-chat-btn" onClick={createNewConversation}>
+                      <AddIcon />
+                      Start New Chat
                     </button>
                   </div>
                 </div>
-              ))}
-            </div>
-            <div className="sidebar-footer">
-              <div className="theme-toggle-container">
-                <span className="theme-label">Theme</span>
-                <ThemeToggle />
-              </div>
-            </div>
-          </div>
+              ) : (
+                <div className="chat-container">
+                  <div className="chat-header">
+                    <h3>
+                      {conversations.find(c => c.id === activeConvoId)?.title || "Chat"}
+                    </h3>
+                  </div>
 
-          {/* Chat Interface */}
-          <div className="chat-interface">
-            {activeConvoId ? (
-              <div className="chat-container">
-                <div className="chat-messages">
-                  {messages.map((msg) => (
-                    <ChatMessage
-                      key={msg.id}
-                      message={msg}
-                      onAction={handleAction}
-                    />
-                  ))}
-                  {isLoading && (
-                    <div className="message assistant">
-                      <div className="message-content">
-                        <div className="typing-indicator">
-                          <span></span>
-                          <span></span>
-                          <span></span>
+                  {/* Chat Interface */}
+                  <div className="chat-interface">
+                    {activeConvoId ? (
+                      <div className="chat-container">
+                        <div className="chat-messages">
+                          {messages.map((msg) => (
+                            <ChatMessage
+                              key={msg.id}
+                              message={msg}
+                              onAction={handleAction}
+                              onButtonClick={handleButtonClick}
+                            />
+                          ))}
+                          {isLoading && (
+                            <div className="message assistant">
+                              <div className="message-content">
+                                <div className="typing-indicator">
+                                  <span></span>
+                                  <span></span>
+                                  <span></span>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                          <div ref={messagesEndRef} />
+                        </div>
+                        
+                        {/* Removed Jira project selector */}
+
+                        <div className="chat-input">
+                          <input
+                            type="text"
+                            value={inputMessage}
+                            onChange={(e) => setInputMessage(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" && !e.shiftKey) {
+                                e.preventDefault();
+                                if (inputMessage.trim() && !isLoading) {
+                                  handleSendMessage(inputMessage);
+                                  setInputMessage("");
+                                }
+                              }
+                            }}
+                            placeholder="Type your message..."
+                            disabled={isLoading}
+                          />
+                          <button
+                            onClick={() => {
+                              if (inputMessage.trim() && !isLoading) {
+                                handleSendMessage(inputMessage);
+                                setInputMessage("");
+                              }
+                            }}
+                            disabled={!inputMessage.trim() || isLoading}
+                            className="send-btn"
+                          >
+                            <SendIcon />
+                          </button>
                         </div>
                       </div>
-                    </div>
-                  )}
-                  <div ref={messagesEndRef} />
+                    ) : null}
+                  </div>
                 </div>
-                
-                {/* Removed Jira project selector */}
-
-                <div className="chat-input">
-                  <input
-                    type="text"
-                    value={inputMessage}
-                    onChange={(e) => setInputMessage(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && !e.shiftKey) {
-                        e.preventDefault();
-                        if (inputMessage.trim() && !isLoading) {
-                          handleSendMessage(inputMessage);
-                          setInputMessage("");
-                        }
-                      }
-                    }}
-                    placeholder="Type your message..."
-                    disabled={isLoading}
-                  />
-                  <button
-                    onClick={() => {
-                      if (inputMessage.trim() && !isLoading) {
-                        handleSendMessage(inputMessage);
-                        setInputMessage("");
-                      }
-                    }}
-                    disabled={isLoading || !inputMessage.trim()}
-                    className="send-btn"
-                  >
-                    <SendIcon />
-                    Send
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="no-conversation">
-                <h2>Welcome to Fixie!</h2>
-                <p>Start a new conversation to get help with your IT issues. The AI will automatically generate descriptive titles for your conversations.</p>
-                <button onClick={createNewConversation} className="new-chat-btn">
-                  <ChatIcon />
-                  Start New Chat
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
+              )}
+            </div>
+          )}
+        </main>
       </div>
     </div>
   );
 }
 
-function Dashboard() {
+/** Main Dashboard Component with Theme Provider */
+export default function Dashboard() {
   return (
     <ThemeProvider>
       <DashboardContent />
     </ThemeProvider>
   );
 }
-
-export default Dashboard;
