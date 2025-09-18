@@ -8,6 +8,9 @@ import EnterpriseITSM from './pages/EnterpriseITSM';
 import ServiceNowMigration from './pages/ServiceNowMigration';
 import Fortune500ITSM from './pages/Fortune500ITSM';
 import DemoForm from './components/DemoForm';
+import HeroSection from './components/HeroSection';
+import FeaturesSection from './components/FeaturesSection';
+import IntegrationsSection from './components/IntegrationsSection';
 import { useAuth } from './hooks/useAuth';
 import fixieLogo from './images/image.png';
 
@@ -121,59 +124,15 @@ function App() {
           </div>
         </nav>
 
-      {/* Hero Section */}
-      <header className="hero">
-        <div className="hero-container">
-          <div className="hero-content">
-            <div className="hero-logo">
-              <img 
-                src={fixieLogo} 
-                alt="Fixie.ai - Intelligent IT Support Automation Platform" 
-                className="hero-main-logo"
-                style={{ width: '80px', height: '80px', marginBottom: '20px' }}
-                loading="eager"
-              />
-            </div>
-            <h1>We Fix(ie) IT.</h1>
-            <p className="hero-subtitle">
-              Fixie is an AI-powered ticket resolution system that understands, diagnoses, and fixes common IT problems — instantly. Integrates with your existing ticketing platforms, powered by real-time agentic AI tools, and designed to keep your team productive.
-            </p>
-            <div className="hero-cta">
-              <button className="cta-button" onClick={() => setCurrentPage('demo')}>Book a demo</button>
-            </div>
-            
-
-          </div>
-          <div className="hero-visual">
-            <div className="hero-image-placeholder">
-              <div className="floating-card card-1">
-                <div className="card-icon">🏢</div>
-                <div className="card-text">AI-Powered Servicedesk Management</div>
-              </div>
-              <div className="floating-card card-2">
-                <div className="card-icon">⏱️</div>
-                <div className="card-text">Low downtime</div>
-              </div>
-              <div className="floating-card card-3">
-                <div className="card-icon">⚡</div>
-                <div className="card-text">Integrations with leading IT tools</div>
-              </div>
-              <div className="floating-card card-4">
-                <div className="card-icon">🔒</div>
-                <div className="card-text">Robust security protocols</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
+      <HeroSection onDemoClick={() => setCurrentPage('demo')} />
 
       {/* Problem Statement */}
       <section className="problem-statement" aria-labelledby="problem-heading">
         <div className="container">
           <div className="problem-content">
-            <h2 id="problem-heading">Why SMBs Choose Fixie Over Heavy ITSM Tools</h2>
+            <h2 id="problem-heading">Simplify IT Support with Chat-first Resolution</h2>
             <p className="problem-text">
-              Big ITSM platforms like ServiceNow are powerful — but often too complex and expensive for firms under 1,000 employees. Smaller teams need something lightweight, fast to set up, and smart enough to handle day-to-day IT problems without layers of forms and approvals.
+              Fixie provides employees with a simple chat interface to resolve common IT issues – such as password resets and access requests – without requiring helpdesk intervention. By masking IT complexity behind a conversational experience, Fixie resolves the majority of Level-1 tickets automatically while integrating seamlessly with existing IT systems, reducing support costs and improving employee productivity.
             </p>
           </div>
         </div>
@@ -190,7 +149,7 @@ function App() {
               style={{ width: '48px', height: '48px', marginBottom: '16px' }}
               loading="lazy"
             />
-            <h2 id="how-it-works-heading">Enterprise ITSM That Outperforms ServiceNow</h2>
+            <h2 id="how-it-works-heading">Chat-First IT Support For Companies of All Sizes</h2>
           </div>
           <div className="flow-container">
             <div className="flow-step">
@@ -225,16 +184,7 @@ function App() {
         </div>
       </section>
 
-      {/* Product Flow Image */}
-      <section className="product-flow">
-        <div className="container">
-          <img 
-            src="/Fixie_Product_Flow_090525.png" 
-            alt="Fixie Product Flow" 
-            className="product-flow-image"
-          />
-        </div>
-      </section>
+
 
       {/* Key Features */}
       <section className="features" id="features" aria-labelledby="features-heading">
@@ -247,7 +197,7 @@ function App() {
               style={{ width: '48px', height: '48px', marginBottom: '16px' }}
               loading="lazy"
             />
-            <h2 id="features-heading">Enterprise Features That Beat ServiceNow</h2>
+            <h2 id="features-heading">Enterprise Features</h2>
           </div>
           <div className="features-grid">
             <div className="feature-card">
@@ -266,16 +216,6 @@ function App() {
               <p>Perform real-time actions like system restarts, user provisioning, and software installation.</p>
             </div>
             <div className="feature-card">
-              <div className="feature-icon">📚</div>
-              <h3>Pre-Built Fix Libraries</h3>
-              <p>Hundreds of ready-to-use workflows for common IT issues.</p>
-            </div>
-            <div className="feature-card">
-              <div className="feature-icon">⚙️</div>
-              <h3>Custom Automation Builder</h3>
-              <p>Create your own AI-driven fixes without coding.</p>
-            </div>
-            <div className="feature-card">
               <div className="feature-icon">📊</div>
               <h3>Analytics & Reporting</h3>
               <p>See resolution times drop and user satisfaction soar.</p>
@@ -292,22 +232,96 @@ function App() {
             <div className="benefit-item">
               <div className="benefit-number">80%</div>
               <h3>Cut Resolution Times</h3>
-              <p>Dramatically reduce the time it takes to resolve IT issues</p>
+              <p>Reduce IT issue resolution time and improve user satisfaction.</p>
             </div>
             <div className="benefit-item">
               <div className="benefit-number">24/7</div>
               <h3>Always Available</h3>
-              <p>AI never sleeps, providing support around the clock</p>
+              <p>AI never sleeps, providing support around the clock.</p>
             </div>
             <div className="benefit-item">
               <div className="benefit-number">$0</div>
               <h3>Lower Support Costs</h3>
-              <p>Automate high-volume tickets and reduce manual work</p>
+              <p>Automate high-volume tickets and reduce manual work.</p>
             </div>
-            <div className="benefit-item">
-              <div className="benefit-number">100%</div>
-              <h3>User Satisfaction</h3>
-              <p>Instant fixes lead to happier, more productive teams</p>
+          </div>
+        </div>
+      </section>
+
+      {/* Integrations */}
+      <section className="integrations">
+        <div className="container">
+          <h2>Integrates with all Your Existing IT Tools</h2>
+          <p className="integrations-subtitle">Connect seamlessly with the platforms your team already uses</p>
+          <div className="logos-container">
+            <div className="logos-scroll">
+              <div className="logo-item">
+                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/slack/slack-original.svg" alt="Slack" />
+              </div>
+              <div className="logo-item">
+                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/jira/jira-original.svg" alt="Jira" />
+              </div>
+              <div className="logo-item">
+                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/amazonwebservices/amazonwebservices-original-wordmark.svg" alt="AWS" />
+              </div>
+              <div className="logo-item">
+                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/azure/azure-original.svg" alt="Azure" />
+              </div>
+              <div className="logo-item">
+                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" alt="Windows" />
+              </div>
+              <div className="logo-item">
+                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" alt="macOS" />
+              </div>
+              <div className="logo-item">
+                <span className="text-logo">Zoom</span>
+              </div>
+              <div className="logo-item">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/Microsoft_Office_Teams_%282018%E2%80%93present%29.svg/200px-Microsoft_Office_Teams_%282018%E2%80%93present%29.svg.png" alt="Teams" />
+              </div>
+              <div className="logo-item">
+                <span className="text-logo">GNOME</span>
+              </div>
+              <div className="logo-item">
+                <span className="text-logo">Freshdesk</span>
+              </div>
+              <div className="logo-item">
+                <span className="text-logo">ManageEngine</span>
+              </div>
+              {/* Duplicate for seamless loop */}
+              <div className="logo-item">
+                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/slack/slack-original.svg" alt="Slack" />
+              </div>
+              <div className="logo-item">
+                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/jira/jira-original.svg" alt="Jira" />
+              </div>
+              <div className="logo-item">
+                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/amazonwebservices/amazonwebservices-original-wordmark.svg" alt="AWS" />
+              </div>
+              <div className="logo-item">
+                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/azure/azure-original.svg" alt="Azure" />
+              </div>
+              <div className="logo-item">
+                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" alt="Windows" />
+              </div>
+              <div className="logo-item">
+                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" alt="macOS" />
+              </div>
+              <div className="logo-item">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c4/Zoom_logo.svg/200px-Zoom_logo.svg.png" alt="Zoom" />
+              </div>
+              <div className="logo-item">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/Microsoft_Office_Teams_%282018%E2%80%93present%29.svg/200px-Microsoft_Office_Teams_%282018%E2%80%93present%29.svg.png" alt="Teams" />
+              </div>
+              <div className="logo-item">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/Gnome-logo.svg/200px-Gnome-logo.svg.png" alt="GNOME" />
+              </div>
+              <div className="logo-item">
+                <span className="text-logo">Freshdesk</span>
+              </div>
+              <div className="logo-item">
+                <span className="text-logo">ManageEngine</span>
+              </div>
             </div>
           </div>
         </div>
