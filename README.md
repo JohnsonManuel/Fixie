@@ -486,39 +486,6 @@ interface ChatResponse {
 
 ---
 
-## 🤝 Contributing
-
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
-
-### Development Setup
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
-
-### Code of Conduct
-
-Please read our [Code of Conduct](CODE_OF_CONDUCT.md) before contributing.
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
-## 🆘 Support & Documentation
-
-- **Documentation**: [docs.fixie.ai](https://docs.fixie.ai)
-- **Support**: [support@fixie.ai](mailto:support@fixie.ai)
-- **Community**: [Discord Server](https://discord.gg/fixie)
-- **Issues**: [GitHub Issues](https://github.com/your-org/fixie-platform/issues)
-
----
-
 <div align="center">
   <p>Built with ❤️ by the Fixie Team</p>
   <p>© 2024 Fixie. All rights reserved.</p>
