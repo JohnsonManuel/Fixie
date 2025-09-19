@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './styles/App.css';
+import './styles/KeyCapabilities.css';
 import Signup from './pages/Signup';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
@@ -125,6 +126,57 @@ function App() {
         </nav>
 
       <HeroSection onDemoClick={() => setCurrentPage('demo')} />
+
+      {/* Problem Statement */}
+      <section className="problem-statement" aria-labelledby="problem-heading">
+        <div className="container">
+          <div className="problem-content">
+            <h2 id="problem-heading">Simplify IT Support with Chat-first Resolution</h2>
+            <p className="problem-text">
+              Fixie provides employees with a simple chat interface to resolve common IT issues – such as password resets and access requests – without requiring helpdesk intervention. By masking IT complexity behind a conversational experience, Fixie resolves the majority of Level-1 tickets automatically while integrating seamlessly with existing IT systems, reducing support costs and improving employee productivity.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Product Flow Visual */}
+      <section className="product-flow-visual">
+        <div className="container">
+          <div className="hero-visual">
+            <div className="hero-image-placeholder">
+              {/* Product flow background image is set via CSS */}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Key Capabilities */}
+      <section className="key-capabilities">
+        <div className="container">
+          <div className="capabilities-grid">
+            <div className="capability-card">
+              <div className="capability-icon">🏢</div>
+              <h3>AI-Powered Servicedesk Management</h3>
+              <p>Intelligent automation for modern IT support workflows</p>
+            </div>
+            <div className="capability-card">
+              <div className="capability-icon">⏱️</div>
+              <h3>Minimal Downtime</h3>
+              <p>Proactive monitoring and instant issue resolution</p>
+            </div>
+            <div className="capability-card">
+              <div className="capability-icon">⚡</div>
+              <h3>Seamless Integrations</h3>
+              <p>Connect with all your existing IT tools and platforms</p>
+            </div>
+            <div className="capability-card">
+              <div className="capability-icon">🔒</div>
+              <h3>Enterprise Security</h3>
+              <p>Robust security protocols and compliance standards</p>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Problem Statement */}
       <section className="problem-statement" aria-labelledby="problem-heading">

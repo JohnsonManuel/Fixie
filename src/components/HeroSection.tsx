@@ -30,26 +30,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onDemoClick }) => {
             <button className="cta-button" onClick={onDemoClick}>Book a demo</button>
           </div>
         </div>
-        <div className="hero-visual">
-          <div className="hero-image-placeholder">
-            <div className="floating-card card-1">
-              <div className="card-icon">🏢</div>
-              <div className="card-text">AI-Powered Servicedesk Management</div>
-            </div>
-            <div className="floating-card card-2">
-              <div className="card-icon">⏱️</div>
-              <div className="card-text">Low downtime</div>
-            </div>
-            <div className="floating-card card-3">
-              <div className="card-icon">⚡</div>
-              <div className="card-text">Integrations with leading IT tools</div>
-            </div>
-            <div className="floating-card card-4">
-              <div className="card-icon">🔒</div>
-              <div className="card-text">Robust security protocols</div>
-            </div>
-          </div>
-        </div>
+
       </div>
     </header>
   );
