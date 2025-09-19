@@ -178,18 +178,6 @@ function App() {
         </div>
       </section>
 
-      {/* Problem Statement */}
-      <section className="problem-statement" aria-labelledby="problem-heading">
-        <div className="container">
-          <div className="problem-content">
-            <h2 id="problem-heading">Simplify IT Support with Chat-first Resolution</h2>
-            <p className="problem-text">
-              Fixie provides employees with a simple chat interface to resolve common IT issues – such as password resets and access requests – without requiring helpdesk intervention. By masking IT complexity behind a conversational experience, Fixie resolves the majority of Level-1 tickets automatically while integrating seamlessly with existing IT systems, reducing support costs and improving employee productivity.
-            </p>
-          </div>
-        </div>
-      </section>
-
       {/* How It Works */}
       <section className="how-it-works" id="how-it-works" aria-labelledby="how-it-works-heading">
         <div className="container">
