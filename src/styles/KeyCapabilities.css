@@ -40,8 +40,8 @@
 
 .capabilities-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 32px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
   position: relative;
   z-index: 1;
 }
@@ -109,6 +109,13 @@
 }
 
 /* Mobile Responsive */
+@media (max-width: 1024px) {
+  .capabilities-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+}
+
 @media (max-width: 768px) {
   .product-flow-visual {
     padding: 40px 0;
