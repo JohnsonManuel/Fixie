@@ -11,7 +11,6 @@ import { db } from "../services/firebase";
 import {
   addDoc,
   collection,
-  deleteDoc,
   doc,
   getDocs,
   onSnapshot,
@@ -57,7 +56,7 @@ function DashboardContent() {
     }
   }, [user]);
 
-  const [view, setView] = useState<"chat">("chat");
+  const view = "chat";
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeConvoId, setActiveConvoId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -360,11 +359,6 @@ function DashboardContent() {
     }
   };
 
-  // Handle view change and close sidebar on mobile
-  const handleViewChange = (newView: "chat") => {
-    setView(newView);
-    setIsSidebarOpen(false); // Close sidebar on mobile when switching views
-  };
 
   // Toggle sidebar
   const toggleSidebar = () => {
