@@ -10,8 +10,6 @@ import ServiceNowMigration from './pages/ServiceNowMigration';
 import Fortune500ITSM from './pages/Fortune500ITSM';
 import DemoForm from './components/DemoForm';
 import HeroSection from './components/HeroSection';
-import FeaturesSection from './components/FeaturesSection';
-import IntegrationsSection from './components/IntegrationsSection';
 import { useAuth } from './hooks/useAuth';
 import fixieLogo from './images/image.png';
 
@@ -113,7 +111,7 @@ function App() {
                   style={{ width: '32px', height: '32px' }}
                   loading="eager"
                 />
-                <span className="logo-text">fixie.ai</span>
+                <span className="logo-text">fixie</span>
               </div>
             </div>
             <div className="nav-center">
