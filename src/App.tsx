@@ -301,9 +301,9 @@ function App() {
                 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/Microsoft_Office_Teams_%282018%E2%80%93present%29.svg/200px-Microsoft_Office_Teams_%282018%E2%80%93present%29.svg.png" alt="Teams" />
               </div>
               <div className="logo-item">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/a/aa/GNOME_logo_2013.svg" alt="GNOME" onError={(e) => {
+                <img src="https://upload.wikimedia.org/wikipedia/commons/6/68/Gnome-logo.svg" alt="GNOME" onError={(e) => {
                   e.currentTarget.onerror = null;
-                  e.currentTarget.src = 'https://cdn.worldvectorlogo.com/logos/gnome-1.svg';
+                  e.currentTarget.src = 'https://logos-download.com/wp-content/uploads/2016/09/GNOME_logo.png';
                   e.currentTarget.onerror = () => {
                     e.currentTarget.style.display = 'none';
                     const nextElement = e.currentTarget.nextElementSibling as HTMLElement;
