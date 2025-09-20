@@ -288,13 +288,29 @@ function App() {
                 <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" alt="macOS" />
               </div>
               <div className="logo-item">
-                <span className="text-logo">Zoom</span>
+                <img src="https://cdn.worldvectorlogo.com/logos/zoom-communications-logo.svg" alt="Zoom" onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = 'https://upload.wikimedia.org/wikipedia/commons/7/7b/Zoom_Communications_Logo.svg';
+                  e.currentTarget.onerror = () => {
+                    e.currentTarget.style.display = 'none';
+                    e.currentTarget.nextElementSibling.style.display = 'block';
+                  };
+                }} />
+                <span className="text-logo" style={{display: 'none'}}>Zoom</span>
               </div>
               <div className="logo-item">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/Microsoft_Office_Teams_%282018%E2%80%93present%29.svg/200px-Microsoft_Office_Teams_%282018%E2%80%93present%29.svg.png" alt="Teams" />
               </div>
               <div className="logo-item">
-                <span className="text-logo">GNOME</span>
+                <img src="https://upload.wikimedia.org/wikipedia/commons/a/aa/GNOME_logo_2013.svg" alt="GNOME" onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = 'https://cdn.worldvectorlogo.com/logos/gnome-1.svg';
+                  e.currentTarget.onerror = () => {
+                    e.currentTarget.style.display = 'none';
+                    e.currentTarget.nextElementSibling.style.display = 'block';
+                  };
+                }} />
+                <span className="text-logo" style={{display: 'none'}}>GNOME</span>
               </div>
               <div className="logo-item">
                 <span className="text-logo">Freshdesk</span>

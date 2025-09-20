@@ -179,6 +179,9 @@
   text-align: center;
   margin: 24px 0;
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .divider::before {
@@ -189,6 +192,7 @@
   right: 0;
   height: 1px;
   background: #e5e7eb;
+  z-index: 1;
 }
 
 .divider span {
@@ -196,6 +200,8 @@
   padding: 0 16px;
   color: #6b7280;
   font-size: 14px;
+  position: relative;
+  z-index: 2;
 }
 
 /* Signup Form */
