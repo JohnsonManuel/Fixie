@@ -291,7 +291,8 @@ function App() {
                   e.currentTarget.src = 'https://upload.wikimedia.org/wikipedia/commons/7/7b/Zoom_Communications_Logo.svg';
                   e.currentTarget.onerror = () => {
                     e.currentTarget.style.display = 'none';
-                    e.currentTarget.nextElementSibling.style.display = 'block';
+                    const nextElement = e.currentTarget.nextElementSibling as HTMLElement;
+                    if (nextElement) nextElement.style.display = 'block';
                   };
                 }} />
                 <span className="text-logo" style={{display: 'none'}}>Zoom</span>
@@ -305,7 +306,8 @@ function App() {
                   e.currentTarget.src = 'https://cdn.worldvectorlogo.com/logos/gnome-1.svg';
                   e.currentTarget.onerror = () => {
                     e.currentTarget.style.display = 'none';
-                    e.currentTarget.nextElementSibling.style.display = 'block';
+                    const nextElement = e.currentTarget.nextElementSibling as HTMLElement;
+                    if (nextElement) nextElement.style.display = 'block';
                   };
                 }} />
                 <span className="text-logo" style={{display: 'none'}}>GNOME</span>
