@@ -488,5 +488,5 @@ interface ChatResponse {
 
 <div align="center">
   <p>Built with ❤️ by the Fixie Team</p>
-  <p>© 2024 Fixie. All rights reserved.</p>
+  <p>© 2025 Fixie. All rights reserved.</p>
 </div>
