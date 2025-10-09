@@ -18,7 +18,7 @@ import { motion } from "motion/react";
 
 export function ProductHighlights() {
   return (
-    <div className="w-full bg-neutral-100 dark:bg-neutral-900 pt-5">
+    <div className="w-full bg-neutral-50 dark:bg-neutral-900 pt-5">
         {/* <h1 className="text-2xl md:text-6xl leading-relaxed leading-relaxed text-center font-bold text-gray-900 dark:text-white mb-10">Product Highlights</h1> */}
         <h1 className="text-4xl md:text-4xl text-center leading-relaxed font-bold text-gray-900 dark:text-white mb-5 mt-5">Platform Highlights</h1>
         <BentoGrid className="max-w-6xl mx-auto md:auto-rows-[20rem] pb-5">
@@ -162,7 +162,7 @@ const SkeletonTwo = () => {
           style={{
             maxWidth: Math.random() * (100 - 40) + 40 + "%",
           }}
-          className="flex flex-row rounded-full border border-neutral-100 dark:border-white/[0.2] p-2  items-center space-x-2 bg-neutral-100 dark:bg-black w-full h-4"
+          className="flex flex-row rounded-full border border-neutral-100 dark:border-white/[0.2] p-2  items-center space-x-2 bg-neutral-50 dark:bg-black w-full h-4"
         ></motion.div>
       ))}
     </motion.div>
@@ -228,7 +228,7 @@ const SkeletonFour = () => {
     >
       <motion.div
         variants={first}
-        className="h-full w-1/3 rounded-2xl font-bold bg-neutral-100 p-4 dark:bg-neutral-900 dark:border-white/[0.1] border border-neutral-200 flex flex-col items-center justify-center"
+        className="h-full w-1/3 rounded-2xl font-bold bg-neutral-50 p-4 dark:bg-neutral-900 dark:border-white/[0.1] border border-neutral-200 flex flex-col items-center justify-center"
       >
         <NumberTicker
           value={80}
@@ -243,7 +243,7 @@ const SkeletonFour = () => {
           Reduce IT issue resolution time and improve user satisfaction.
         </p>
       </motion.div>
-      <motion.div className="h-full relative z-20 w-1/3 rounded-2xl bg-neutral-100 p-4 dark:bg-neutral-900 dark:border-white/[0.1] border border-neutral-200 flex flex-col items-center justify-center">
+      <motion.div className="h-full relative z-20 w-1/3 rounded-2xl bg-neutral-50 p-4 dark:bg-neutral-900 dark:border-white/[0.1] border border-neutral-200 flex flex-col items-center justify-center">
         <NumberTicker
           value={24}
           extras=" / 7"
@@ -259,7 +259,7 @@ const SkeletonFour = () => {
       </motion.div>
       <motion.div
         variants={second}
-        className="h-full w-1/3 rounded-2xl bg-neutral-100 p-4 dark:bg-neutral-900 dark:border-white/[0.1] border border-neutral-200 flex flex-col items-center justify-center"
+        className="h-full w-1/3 rounded-2xl bg-neutral-50 p-4 dark:bg-neutral-900 dark:border-white/[0.1] border border-neutral-200 flex flex-col items-center justify-center"
       >
         <NumberTicker
           value={0}
@@ -339,25 +339,25 @@ const SkeletonFive = () => {
 const items = [
   {
     title: "Benefits for your Organisation",
-    description: (
-      <span className="text-sm">
-        {/* Understand the sentiment of your text with AI analysis. */}
-      </span>
-    ),
+    description: "",
     header: <SkeletonFour />,
     className: "md:col-span-4",
     icon: <IconTableColumn className="h-4 w-4 text-neutral-500" />,
   },
   {
     title: "Example Use Cases",
-    description: "",
+    description: <span className="text-sm">
+        Fixie can Help you with so much more and make everything easy related to IT.
+      </span>,
     header: <AnimatedBeamMultipleOutputDemo />,
     className: "md:col-span-2 md:row-span-2",
     icon: <IconClipboardCopy className="h-4 w-4 text-neutral-500" />,
   },
   {
     title: "Integrates with all Your Existing IT Tools",
-    description: "",
+    description:  <span className="text-sm">
+        Seamless integration with all popular tools!
+      </span>,
     header: <OrbitingCirclesDemo />,
     className: "md:col-span-2 md:row-span-2",
     icon: <IconFileBroken className="h-4 w-4 text-neutral-500" />,

@@ -123,7 +123,7 @@ const testimonials = [
           </button>
         </div>
       </BackgroundBeamsWithCollision>
-      <div className="w-full pb-5 bg-white dark:bg-neutral-900 flex justify-center items-center">
+      <div className="w-full pb-5 dark:bg-neutral-900 flex justify-center items-center">
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}

@@ -120,7 +120,7 @@ export const NavItems = ({ items, className, onItemClick }: NavItemsProps) => {
     <motion.div
       onMouseLeave={() => setHovered(null)}
       className={cn(
-        "absolute inset-0 hidden flex-1 flex-row items-center justify-center space-x-2 text-sm font-bold text-zinc-600 transition duration-200 hover:text-zinc-800 lg:flex lg:space-x-2",
+        "absolute inset-0 hidden flex-1 flex-row items-center justify-center space-x-2 text-sm font-bold text-zinc-600 transition duration-200 hover:text-zinc-800 lg:flex lg:space-x-2 border-transparent [border-image:linear-gradient(to_right,#6366f1,#a855f7)_1] [border-image-slice:1]",
         className,
       )}
     >
