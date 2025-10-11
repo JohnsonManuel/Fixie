@@ -25,8 +25,8 @@ export function Features() {
     {
       title: "Minimal Downtime",
       description:
-        "Proactive monitoring and instant issue resolution.",
-      icon: <span className="text-3xl">⏱️</span>,
+        "AI agents ensuring minimal downtime through instant issue resolution.",
+      icon: <span className="text-3xl">🤖</span>,
     },
     {
       title: "Seamless Integrations",
@@ -39,28 +39,7 @@ export function Features() {
       description: "Robust security protocols and compliance standards.",
       icon: <span className="text-3xl">🔒</span>,
     },
-    {
-      title: "AI-Powered Resolution Engine",
-      description: "Go beyond simple scripts; our AI understands context and user intent.",
-      icon: <span className="text-3xl">🧠</span>,
-    },
-    {
-      title: "Seamless ITSM Integrations",
-      description:
-        "Connect with ServiceNow, Jira Desk, Zendesk, Freshdesk, and others.",
-      icon: <span className="text-3xl">🔗</span>,
-    },
-    {
-      title: "Agent Tool Calling",
-      description:
-        "Perform real-time actions like system restarts, user provisioning, and software installation.",
-      icon: <span className="text-3xl">🛠️</span>,
-    },
-    {
-      title: "Analytics & Reporting",
-      description: "See resolution times drop and user satisfaction soar.",
-      icon: <span className="text-3xl">📊</span>,
-    },
+    
   ];
   return (
     <div className="w-full bg-white dark:bg-neutral-900 pt-5">
@@ -86,7 +65,7 @@ export function Features() {
           {/* <PointerHighlight> <span>The New Way</span> </PointerHighlight>to build IT support. */}
         {/* </h1> */}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 py-10 bg-white dark:bg-neutral-900">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 py-10 bg-white dark:bg-neutral-900">
           {features.map((feature, index) => (
             <Feature key={feature.title} {...feature} index={index} />
           ))}
@@ -129,7 +108,10 @@ const Feature = ({
             {title}
             </span>
         </div>
-        <p className="text-sm text-neutral-600 dark:text-neutral-300 max-w-xs relative z-10 px-10">
+        {/* <div className="relative">
+
+        </div> */}
+        <p className=" absolute inset-0 flex items-center justify-center text-sm text-neutral-600 dark:text-neutral-300 max-w-100 mt-5 relative  z-10 px-10">
             {description}
         </p>
         </div>

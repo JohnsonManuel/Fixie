@@ -13,8 +13,8 @@ interface HeroSectionProps {
 }
 
 const HeroSection: React.FC<HeroSectionProps> = ({ onDemoClick }) => {
-  const text = "We Fix It!";
-  const chars = ["logo", ...text.split("")];
+  const text = "Mask your IT Complexity!";
+  const chars = [ ...text.split("")];
 
 const features = [
   {
@@ -93,7 +93,11 @@ const testimonials = [
                     type: "spring",
                     stiffness: 60,
                   }}
-                >
+                >{
+                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-500 via-violet-500 to-pink-500">
+                    {char === " " ? "\u00A0" : char}
+                  </span>
+                }
                 </motion.span>
               ))}
             </div>
