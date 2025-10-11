@@ -94,17 +94,6 @@ const testimonials = [
                     stiffness: 60,
                   }}
                 >
-                  {char === "logo" ? (
-                    <img
-                      src={fixieLogo}
-                      alt="Fixie logo"
-                      className="inline-block h-16 w-16 md:h-24 md:w-24 mr-2"
-                    />
-                  ) : (
-                    <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-500 via-violet-500 to-pink-500">
-                      {char === " " ? "\u00A0" : char}
-                    </span>
-                  )}
                 </motion.span>
               ))}
             </div>
