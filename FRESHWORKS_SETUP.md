@@ -6,7 +6,7 @@
 1. Log in to your Freshdesk account
 2. Go to **Admin** → **API Settings**
 3. Copy your **API Key**
-4. Note your domain (e.g., `yourcompany.freshdesk.com`)
+4. Note your domain (e.g., `yourcompany.freshdesk.com`) 
 
 ### For Freshservice:
 1. Log in to your Freshservice account
