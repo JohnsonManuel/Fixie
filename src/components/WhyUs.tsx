@@ -1,6 +1,10 @@
 import { WarpBackground } from "../components/ui/wrap-backgraound";
 
-export function WhyUs() {
+interface WhyUsProps {
+  onDemoClick?: () => void;
+}
+
+export function WhyUs({ onDemoClick }: WhyUsProps) {
   return (
 <WarpBackground
   className="bg-white dark:bg-neutral-900"
@@ -36,11 +40,14 @@ export function WhyUs() {
             <span className="text-indigo-600 dark:text-indigo-400">Superpowers!</span>
           </blockquote>
 
-          <div className="mt-8">
-            <button className="inline-flex items-center gap-2 px-8 py-3 rounded-lg 
-              bg-gradient-to-r from-indigo-500 to-purple-600 
-              text-white font-semibold shadow-md hover:shadow-lg 
-              transition-transform duration-300 hover:scale-[1.03]">
+          <div className="mt-8 flex justify-center">
+            <button 
+              onClick={onDemoClick}
+              className="inline-flex items-center justify-center gap-2 px-8 py-3 rounded-lg 
+                bg-gradient-to-r from-indigo-500 to-purple-600 
+                text-white font-semibold shadow-md hover:shadow-lg 
+                transition-transform duration-300 hover:scale-[1.03] text-center"
+            >
               ⚡ Book a demo
             </button>
           </div>

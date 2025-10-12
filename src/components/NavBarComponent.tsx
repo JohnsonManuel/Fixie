@@ -10,10 +10,16 @@ import {
   MobileNavToggle,
   MobileNavMenu,
 } from "./ui/resizable-navbar";
+import ThemeToggle from "./ThemeToggle";
+import { ThemeProvider } from "../contexts/ThemeContext";
 
 import { useState } from "react";
 
-export function NavbarComponent() {
+interface NavbarComponentContentProps {
+  onNavigate?: (page: 'demo' | 'login') => void;
+}
+
+function NavbarComponentContent({ onNavigate }: NavbarComponentContentProps) {
   const navItems = [
     {
       name: "Features",
@@ -39,8 +45,8 @@ export function NavbarComponent() {
           <NavbarLogo />
           <NavItems items={navItems} />
           <div className="flex items-center gap-4">
-            <NavbarButton variant="secondary">Login</NavbarButton>
-            <NavbarButton variant="primary">Book a call</NavbarButton>
+            <NavbarButton onClick={() => onNavigate?.('login')} variant="secondary">Login</NavbarButton>
+            <NavbarButton onClick={() => onNavigate?.('demo')} variant="primary">Book a call</NavbarButton>
           </div>
         </NavBody>
 
@@ -68,16 +74,26 @@ export function NavbarComponent() {
                 <span className="block">{item.name}</span>
               </a>
             ))}
+            <div className="flex w-full items-center justify-between py-4">
+              <span className="text-neutral-600 dark:text-neutral-300 font-medium">Theme</span>
+              <ThemeToggle />
+            </div>
             <div className="flex w-full flex-col gap-4">
               <NavbarButton
-                onClick={() => setIsMobileMenuOpen(false)}
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  onNavigate?.('login');
+                }}
                 variant="primary"
                 className="w-full"
               >
                 Login
               </NavbarButton>
               <NavbarButton
-                onClick={() => setIsMobileMenuOpen(false)}
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  onNavigate?.('demo');
+                }}
                 variant="primary"
                 className="w-full"
               >
@@ -88,5 +104,13 @@ export function NavbarComponent() {
         </MobileNav>
       </Navbar>
     </div>
+  );
+}
+
+export function NavbarComponent({ onNavigate }: { onNavigate?: (page: 'demo' | 'login') => void }) {
+  return (
+    <ThemeProvider>
+      <NavbarComponentContent onNavigate={onNavigate} />
+    </ThemeProvider>
   );
 }

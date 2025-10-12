@@ -51,7 +51,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
       {/* <AnimatedBeamMultipleOutputDemo /> */}
       {/* <AnimatedListDemo /> */}
       {/* <OrbitingCirclesDemo /> */}
-      <WhyUs />
+      <WhyUs onDemoClick={() => onNavigate("demo")} />
       <MoreInfo />
       <footer className="footer">
         <div className="container">

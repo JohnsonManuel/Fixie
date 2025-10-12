@@ -72,7 +72,7 @@ const Layout: React.FC<{ children: React.ReactNode; onNavigate?: React.Dispatch<
               {isDark ? <Moon /> : <SunDim />}
             </NavbarButton>
             <NavbarButton onClick={() => onNavigate?.('login')} variant="primary">Login</NavbarButton>
-            <NavbarButton variant="primary">Book a call</NavbarButton>
+            <NavbarButton onClick={() => onNavigate?.('demo')} variant="primary">Book a call</NavbarButton>
           </div>
         </NavBody>
 
@@ -100,6 +100,16 @@ const Layout: React.FC<{ children: React.ReactNode; onNavigate?: React.Dispatch<
                 <span className="block">{item.name}</span>
               </a>
             ))}
+            <div className="flex w-full items-center justify-between py-4">
+              <span className="text-neutral-600 dark:text-neutral-300 font-medium">Theme</span>
+              <button
+                onClick={toggleTheme}
+                className="flex items-center justify-center p-2 rounded-md bg-gray-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors"
+                aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
+              >
+                {isDark ? <Moon size={20} /> : <SunDim size={20} />}
+              </button>
+            </div>
             <div className="flex w-full flex-col gap-4">
               <NavbarButton
                 onClick={() => {
@@ -112,7 +122,10 @@ const Layout: React.FC<{ children: React.ReactNode; onNavigate?: React.Dispatch<
                 Login
               </NavbarButton>
               <NavbarButton
-                onClick={() => setIsMobileMenuOpen(false)}
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  onNavigate?.('demo');
+                }}
                 variant="primary"
                 className="w-full"
               >
