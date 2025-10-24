@@ -12,6 +12,7 @@ import {
 } from "../components/ui/resizable-navbar";
 import { Moon, SunDim } from "lucide-react";
 import { DarkModeToggle } from "../components/ui-utils/toggleButton";
+import { useNavigate } from "react-router-dom";
 
 const navItems = [
   { name: "Features", link: "#features" },
@@ -30,9 +31,10 @@ type PageName =
   | 'fortune500-itsm'
   | 'demo';
 
-const Layout: React.FC<{ children: React.ReactNode; onNavigate?: React.Dispatch<React.SetStateAction<PageName>> }> = ({ children, onNavigate }) => {
+const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDark, setIsDark] = useState(false);
+   const navigate = useNavigate();
   
     useEffect(() => {
       // on mount, check saved theme or system preference
@@ -71,8 +73,12 @@ const Layout: React.FC<{ children: React.ReactNode; onNavigate?: React.Dispatch<
             <NavbarButton onClick={toggleTheme} variant="secondary">
               {isDark ? <Moon /> : <SunDim />}
             </NavbarButton>
-            <NavbarButton onClick={() => onNavigate?.('login')} variant="primary">Login</NavbarButton>
-            <NavbarButton onClick={() => onNavigate?.('demo')} variant="primary">Book a call</NavbarButton>
+            <NavbarButton onClick={() => navigate("/login")} variant="primary">
+            Login
+          </NavbarButton>
+          <NavbarButton onClick={() => navigate("/demo")} variant="primary">
+            Book a call
+          </NavbarButton>
           </div>
         </NavBody>
 
@@ -111,10 +117,13 @@ const Layout: React.FC<{ children: React.ReactNode; onNavigate?: React.Dispatch<
               </button>
             </div>
             <div className="flex w-full flex-col gap-4">
+              <NavbarButton onClick={toggleTheme} variant="secondary">
+                {isDark ? <Moon /> : <SunDim />}
+              </NavbarButton>
               <NavbarButton
                 onClick={() => {
                   setIsMobileMenuOpen(false);
-                  onNavigate?.('login');
+                  navigate("/login")
                 }}
                 variant="primary"
                 className="w-full"
@@ -124,7 +133,7 @@ const Layout: React.FC<{ children: React.ReactNode; onNavigate?: React.Dispatch<
               <NavbarButton
                 onClick={() => {
                   setIsMobileMenuOpen(false);
-                  onNavigate?.('demo');
+                  navigate("/demo")
                 }}
                 variant="primary"
                 className="w-full"

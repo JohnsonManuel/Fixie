@@ -3,8 +3,14 @@ import '../styles/Login.css';
 import { useAuth } from '../hooks/useAuth';
 import { LoginProps } from '../types';
 import fixieLogo from '../images/image.png';
+import { getFirestore, doc, getDoc } from "firebase/firestore";
+import { useNavigate } from "react-router-dom";
 
-function Login({ onBackToHome, onSwitchToSignup }: LoginProps) {
+function Login({ onBackToHome }: LoginProps) {
+
+  const navigate = useNavigate();
+  const db = getFirestore();
+
   const { signIn, signInWithGoogle, signInWithGithub, error, clearError } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
@@ -27,14 +33,33 @@ function Login({ onBackToHome, onSwitchToSignup }: LoginProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     setIsLoading(true);
-    setFormError('');
+    setFormError("");
 
     try {
-      await signIn(formData.email, formData.password);
-      // Success! User will be redirected or you can show success message
-      console.log('User logged in successfully!');
+      const result = await signIn(formData.email, formData.password);
+      const user = result.user;
+
+      // 1️⃣ Check email verification
+      if (!user.emailVerified) {
+        alert("Please verify your email before logging in.");
+        await user.delete; // optional: sign out if desired
+        setIsLoading(false);
+        return;
+      }
+
+      // 2️⃣ Get Firestore user record
+      const snap = await getDoc(doc(db, "users", user.uid));
+      const data = snap.exists() ? snap.data() : null;
+
+      // 3️⃣ Route based on role
+      if (data?.role === "admin") {
+        console.log("Redirecting admin to org setup");
+        navigate("/organization-setup");
+      } else {
+        console.log("Redirecting user to dashboard");
+        navigate("/dashboard");
+      }
     } catch (err: any) {
       setFormError(err.message);
     } finally {
@@ -53,6 +78,7 @@ function Login({ onBackToHome, onSwitchToSignup }: LoginProps) {
       setIsLoading(false);
     }
   };
+  
 
   const handleGithubLogin = async () => {
     setIsLoading(true);
@@ -189,7 +215,7 @@ function Login({ onBackToHome, onSwitchToSignup }: LoginProps) {
           {/* Signup Link */}
           <div className="login-footer">
             <p className="signup-link">
-              Don't have an account? <button onClick={onSwitchToSignup} className="link-button">Sign up</button>
+              Don't have an account? <button onClick={() => navigate('/signup')} className="link-button">Sign up</button>
             </p>
           </div>
         </div>
