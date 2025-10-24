@@ -5,10 +5,15 @@ import {
   createUserWithEmailAndPassword,
   signInWithPopup,
   signOut,
-  onAuthStateChanged
+  onAuthStateChanged,
+  sendEmailVerification,
+
 } from 'firebase/auth';
+import { getFirestore, doc, setDoc } from "firebase/firestore";
 import { auth, googleProvider, githubProvider } from '../services/firebase';
 import { AuthError } from '../types';
+
+const db = getFirestore();
 
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -24,6 +29,25 @@ export const useAuth = () => {
 
     return () => unsubscribe();
   }, []);
+
+  const signUpAdmin = async (email: string, password: string) => {
+    const result = await createUserWithEmailAndPassword(auth, email, password);
+    const user = result.user;
+
+    // send verification
+    await sendEmailVerification(user);
+
+    // Firestore record
+    await setDoc(doc(db, "users", user.uid), {
+      email: user.email,
+      role: "admin",
+      verified: false,
+      profileComplete: false,
+      createdAt: new Date().toISOString(),
+    });
+
+    return user;
+  };
 
   // Sign up with email and password
   const signUp = async (email: string, password: string) => {
@@ -118,6 +142,7 @@ export const useAuth = () => {
     signInWithGoogle,
     signInWithGithub,
     logout,
-    clearError
+    clearError,
+    signUpAdmin
   };
 }; 
