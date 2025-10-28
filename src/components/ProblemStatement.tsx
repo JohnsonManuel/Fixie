@@ -13,7 +13,7 @@ const ProblemStatement: React.FC = () => (
       className="max-w-4xl mx-auto text-center px-4 py-20 text-gray-900 "
     >
 <h1 className="text-2xl md:text-6xl leading-relaxed font-bold text-gray-900 dark:text-white">
-  <span className="inline-block mb-2">Simplify IT Support</span>{" "}</h1>
+  <span className="inline-block mb-2">Simplify IT Support with</span>{" "}</h1>
   <h1 className="text-2xl md:text-6xl mt-5 leading-relaxed font-bold text-gray-900 dark:text-white">
   <Highlight className="inline-block text-black dark:text-white">
     Chat-first

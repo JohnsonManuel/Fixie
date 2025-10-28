@@ -13,7 +13,7 @@ interface HeroSectionProps {
 }
 
 const HeroSection: React.FC<HeroSectionProps> = ({ onDemoClick }) => {
-  const text = "Mask your IT Complexity!";
+  const text = "Mask your IT Complexity from your End Users!";
   const chars = [ ...text.split("")];
 
 const features = [
