@@ -138,7 +138,7 @@ export default function TabsWithRightCard() {
   const activeTab = tabs.find((t) => t.key === active)!
 
   return (
-    <div className="min-h-[70vh] bg-white dark:bg-neutral-900 pt-5">
+    <div id="features" className="min-h-[70vh] bg-white dark:bg-neutral-900 pt-5">
       <h1 className="mt-5 text-2xl md:text-4xl leading-relaxed text-center font-bold text-gray-900 dark:text-white mb-10">
         Chat-First IT Support For Companies of All Sizes
       </h1>
