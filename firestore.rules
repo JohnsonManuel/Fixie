@@ -42,5 +42,11 @@ service cloud.firestore {
       allow write: if true;
       allow read: if request.auth != null;
     }
+
+    // Contact messages - allow anyone to write, only authenticated users to read
+    match /contact-messages/{messageId} {
+      allow write: if true;
+      allow read: if request.auth != null;
+    }
   }
 }
