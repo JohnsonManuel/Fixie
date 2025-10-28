@@ -30,6 +30,12 @@
     ExpiresByType text/html "access plus 1 hour"
 </IfModule>
 
+# MIME Types for XML files
+<IfModule mod_mime.c>
+    AddType application/xml .xml
+    AddType text/xml .xml
+</IfModule>
+
 # Security Headers
 <IfModule mod_headers.c>
     Header always set X-Content-Type-Options nosniff
@@ -37,6 +43,11 @@
     Header always set X-XSS-Protection "1; mode=block"
     Header always set Referrer-Policy "strict-origin-when-cross-origin"
     Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+    
+    # Set proper content type for XML files
+    <FilesMatch "\.(xml)$">
+        Header set Content-Type "application/xml; charset=utf-8"
+    </FilesMatch>
 </IfModule>
 
 # Redirect HTTP to HTTPS
@@ -49,9 +60,14 @@ RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{THE_REQUEST} /+[^?\s]*?/[\s?]
 RewriteRule ^(.+)/ /$1 [R=301,L]
 
+# Serve XML files directly
+RewriteCond %{REQUEST_URI} \.(xml)$ [NC]
+RewriteRule ^(.*)$ /$1 [L]
+
 # Handle React Router (SPA)
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_URI} !\.(xml|txt|png|jpg|jpeg|gif|css|js|ico)$ [NC]
 RewriteRule . /index.html [L]
 
 # SEO-friendly URLs
