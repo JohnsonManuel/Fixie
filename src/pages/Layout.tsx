@@ -17,7 +17,7 @@ import { useNavigate } from "react-router-dom";
 const navItems = [
   { name: "Features", link: "/features" },
   { name: "Pricing", link: "/pricing" },
-  { name: "Contact", link: "#contact" },
+  { name: "Contact", link: "/contact" },
 ];
 
 type PageName =

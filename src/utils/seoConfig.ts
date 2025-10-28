@@ -117,6 +117,20 @@ export const seoConfig = {
       "description": "Advanced AI features for intelligent IT support",
       "url": "https://fixiechat.ai/features"
     }
+  },
+  
+  contact: {
+    title: "Contact Us | Fixie AI-Powered IT Support Platform - Get in Touch",
+    description: "Contact Fixie for AI-powered IT support solutions. Get pricing, schedule a demo, or ask questions. Phone: +1 (405) 894-9696, Email: joeathimala@gmail.com",
+    keywords: "contact Fixie, AI IT support contact, get in touch, Fixie support, AI helpdesk contact, enterprise IT support contact, schedule demo, sales inquiry",
+    canonical: "https://fixiechat.ai/contact",
+    structuredData: {
+      "@context": "https://schema.org",
+      "@type": "ContactPage",
+      "name": "Contact - Fixie AI Platform",
+      "description": "Get in touch with Fixie for AI-powered IT support",
+      "url": "https://fixiechat.ai/contact"
+    }
   }
 };
 

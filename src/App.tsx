@@ -15,6 +15,7 @@ import OrganizationSetup from "./pages/OrganizationSetup"; // you'll build this 
 import SignupAdmin from "./pages/SignupAdmin";
 import PricingPage from "./pages/PricingPage";
 import FeaturesPage from "./pages/FeaturesPage";
+import ContactPage from "./pages/ContactPage";
 
 // 🔒 Protect routes that need authentication
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
@@ -58,6 +59,7 @@ function App() {
         <Route path="/demo" element={<DemoForm onBackToHome={() => window.location.href = '/'} />} />
         <Route path="/pricing" element={<PricingPage />} />
         <Route path="/features" element={<FeaturesPage />} />
+        <Route path="/contact" element={<ContactPage />} />
         {/* <Route path="/servicenow-alternative" element={<ServiceNowAlternative />} />
         <Route path="/enterprise-itsm" element={<EnterpriseITSM />} />
         <Route path="/servicenow-migration" element={<ServiceNowMigration />} />
