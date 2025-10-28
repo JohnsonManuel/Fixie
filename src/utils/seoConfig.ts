@@ -89,6 +89,34 @@ export const seoConfig = {
       "description": "Schedule a personalized demo of Fixie AI platform",
       "url": "https://fixiechat.ai/demo"
     }
+  },
+  
+  pricing: {
+    title: "Pricing | Fixie AI-Powered IT Support Platform - Simple & Transparent",
+    description: "Simple, transparent pricing for Fixie's AI-powered IT support platform. Start free, scale as you grow. Plans for teams of all sizes with enterprise-grade features.",
+    keywords: "Fixie pricing, AI IT support pricing, ITSM platform cost, IT support platform pricing, AI helpdesk pricing, enterprise IT support cost, chat-first ITSM pricing, automated IT support pricing",
+    canonical: "https://fixiechat.ai/pricing",
+    structuredData: {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "Pricing - Fixie AI Platform",
+      "description": "Simple, transparent pricing for AI-powered IT support",
+      "url": "https://fixiechat.ai/pricing"
+    }
+  },
+  
+  features: {
+    title: "Features | Fixie AI-Powered IT Support Platform - Advanced AI Capabilities",
+    description: "Discover Fixie's powerful AI features for modern IT support. Intelligent troubleshooting, seamless integrations, enterprise security, and 24/7 availability.",
+    keywords: "Fixie features, AI IT support features, intelligent troubleshooting, IT support automation, AI helpdesk capabilities, enterprise IT features, chat-first support features, automated IT resolution",
+    canonical: "https://fixiechat.ai/features",
+    structuredData: {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "Features - Fixie AI Platform",
+      "description": "Advanced AI features for intelligent IT support",
+      "url": "https://fixiechat.ai/features"
+    }
   }
 };
 

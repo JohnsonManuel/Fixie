@@ -13,6 +13,8 @@ import Fortune500ITSM from "./pages/Fortune500ITSM";
 import DemoForm from "./components/DemoForm";
 import OrganizationSetup from "./pages/OrganizationSetup"; // you'll build this next
 import SignupAdmin from "./pages/SignupAdmin";
+import PricingPage from "./pages/PricingPage";
+import FeaturesPage from "./pages/FeaturesPage";
 
 // 🔒 Protect routes that need authentication
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
@@ -54,6 +56,8 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signupadmin" element={<SignupAdmin />} />
         <Route path="/demo" element={<DemoForm onBackToHome={() => window.location.href = '/'} />} />
+        <Route path="/pricing" element={<PricingPage />} />
+        <Route path="/features" element={<FeaturesPage />} />
         {/* <Route path="/servicenow-alternative" element={<ServiceNowAlternative />} />
         <Route path="/enterprise-itsm" element={<EnterpriseITSM />} />
         <Route path="/servicenow-migration" element={<ServiceNowMigration />} />

@@ -15,8 +15,8 @@ import { DarkModeToggle } from "../components/ui-utils/toggleButton";
 import { useNavigate } from "react-router-dom";
 
 const navItems = [
-  { name: "Features", link: "#features" },
-  { name: "Pricing", link: "#pricing" },
+  { name: "Features", link: "/features" },
+  { name: "Pricing", link: "/pricing" },
   { name: "Contact", link: "#contact" },
 ];
 
@@ -116,6 +116,8 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                     if (element) {
                       element.scrollIntoView({ behavior: 'smooth' });
                     }
+                  } else {
+                    navigate(item.link);
                   }
                   setIsMobileMenuOpen(false);
                 }}
