@@ -53,8 +53,8 @@ function App() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signupadmin" element={<SignupAdmin />} />
-        {/* <Route path="/demo" element={<DemoForm />} />
-        <Route path="/servicenow-alternative" element={<ServiceNowAlternative />} />
+        <Route path="/demo" element={<DemoForm onBackToHome={() => window.location.href = '/'} />} />
+        {/* <Route path="/servicenow-alternative" element={<ServiceNowAlternative />} />
         <Route path="/enterprise-itsm" element={<EnterpriseITSM />} />
         <Route path="/servicenow-migration" element={<ServiceNowMigration />} />
         <Route path="/fortune500-itsm" element={<Fortune500ITSM />} /> */}

@@ -46,9 +46,9 @@ export function WhyUs({ onDemoClick }: WhyUsProps) {
               className="inline-flex items-center justify-center gap-2 px-8 py-3 rounded-lg 
                 bg-gradient-to-r from-indigo-500 to-purple-600 
                 text-white font-semibold shadow-md hover:shadow-lg 
-                transition-transform duration-300 hover:scale-[1.03] text-center"
+                transition-transform duration-300 hover:scale-[1.03] text-center w-auto min-w-[160px]"
             >
-              ⚡ Book a demo
+              <span className="text-center w-full">⚡ Book a demo</span>
             </button>
           </div>
         </div>
