@@ -21,7 +21,7 @@ export function ProductHighlights() {
     <div className="w-full bg-neutral-50 dark:bg-neutral-900 pt-5">
         {/* <h1 className="text-2xl md:text-6xl leading-relaxed leading-relaxed text-center font-bold text-gray-900 dark:text-white mb-10">Product Highlights</h1> */}
         <h1 className="text-4xl md:text-4xl text-center leading-relaxed font-bold text-gray-900 dark:text-white mb-5 mt-5">Platform Highlights</h1>
-        <BentoGrid className="max-w-6xl mx-auto md:auto-rows-[20rem] pb-5">
+        <BentoGrid className="max-w-6xl mx-auto px-4 md:auto-rows-[20rem] pb-5">
             {items.map((item, i) => (
                 <BentoGridItem
                 key={i}

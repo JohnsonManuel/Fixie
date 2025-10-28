@@ -15,15 +15,20 @@ export function OrbitingCirclesDemo() {
     "https://upload.wikimedia.org/wikipedia/commons/6/68/Gnomelogo.svg",]
 
   return (
-    <div className="relative bg-neutral-100 dark:bg-neutral-900 flex h-[500px] w-full flex-col items-center justify-center overflow-hidden">
+    <div className="relative bg-neutral-100 dark:bg-neutral-900 flex h-[400px] sm:h-[500px] w-full flex-col items-center justify-center overflow-hidden px-4">
       {/* Outer orbit */}
-      <OrbitingCircles iconSize={60} radius={180} speed={1.5}>
+      <OrbitingCircles 
+        iconSize={50} 
+        radius={120} 
+        speed={1.5}
+        className="sm:!w-[60px] sm:!h-[60px]"
+      >
         {logos.map((src, idx) => (
           <img
             key={idx}
             src={src}
             alt={`logo-${idx}`}
-            className="h-10 w-10 object-contain dark:brightness-90 transition-transform duration-300 hover:scale-110"
+            className="h-8 w-8 sm:h-10 sm:w-10 object-contain dark:brightness-90 transition-transform duration-300 hover:scale-110"
             onError={(e) => {
               e.currentTarget.onerror = null
               e.currentTarget.style.display = "none"
@@ -32,14 +37,20 @@ export function OrbitingCirclesDemo() {
         ))}
       </OrbitingCircles>
 
-      {/* Inner orbit (text-based for Freshdesk, ManageEngine) */}
-      <OrbitingCircles iconSize={40} radius={100} reverse speed={2}>
+      {/* Inner orbit */}
+      <OrbitingCircles 
+        iconSize={35} 
+        radius={70} 
+        reverse 
+        speed={2}
+        className="sm:!w-[40px] sm:!h-[40px]"
+      >
         {textLogos.map((src, idx) => (
           <img
             key={idx}
             src={src}
             alt={`logo-${idx}`}
-            className="h-10 w-10 object-contain dark:brightness-90 transition-transform duration-300 hover:scale-110"
+            className="h-6 w-6 sm:h-8 sm:w-8 object-contain dark:brightness-90 transition-transform duration-300 hover:scale-110"
             onError={(e) => {
               e.currentTarget.onerror = null
               e.currentTarget.style.display = "none"
