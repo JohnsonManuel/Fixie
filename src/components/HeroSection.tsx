@@ -105,10 +105,8 @@ const testimonials = [
 
       
           <p className="max-w-xl mx-auto mt-4 text-sm md:text-lg text-neutral-700 dark:text-neutral-400">
-            Fixie is your team's IT sidekick in chat — resetting passwords, fixing access issues,
-            and solving everyday problems instantly. No forms, no tickets, and no waiting.
-            Your employees just need to ask, Fixie handles the Level-1 stuff, and IT can finally
-            focus on the work that matters.
+            Fixie is your team's AI-Powered IT sidekick in chat — fixing ITSM problems on it's own
+            and integrating with all your IT Tools so your End User can focus on work that actually matters.
           </p>
 
           <button 

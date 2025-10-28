@@ -1,20 +1,20 @@
 // SEO Configuration for all pages
 export const seoConfig = {
   home: {
-    title: "Fixie - AI-Powered IT Support Platform | ServiceNow Alternative for SMBs",
-    description: "Enterprise-grade AI IT Support that outperforms traditional ITSM. Deploy in hours, not months. 90% cost reduction vs ServiceNow. GPT-4o powered intelligent troubleshooting for SMBs under 1,000 employees.",
-    keywords: "ServiceNow alternative, AI IT support, enterprise ITSM platform, ServiceNow competitor, IT service desk software, AI helpdesk, automated IT support, ServiceNow replacement, intelligent service management, enterprise helpdesk platform, AI-powered ITSM, ServiceNow pricing alternative, ServiceNow migration, enterprise service management, Fortune 500 ITSM, IT automation platform, ServiceNow portal alternative, enterprise ticket management, AI service desk, ServiceNow cost reduction, GPT-4 IT support, conversational AI helpdesk, SMB ITSM solution, IT support automation, intelligent troubleshooting, enterprise AI platform",
+    title: "Fixie - AI-Powered IT Support Platform | Chat-First ITSM Solution",
+    description: "Fixie is your AI-powered IT sidekick that fixes ITSM problems automatically and integrates with all your IT tools. Chat-first resolution for enterprise teams. Deploy in hours, reduce IT workload by 80%.",
+    keywords: "AI IT support, chat-first ITSM, AI-powered helpdesk, intelligent IT support, automated IT resolution, conversational AI support, enterprise AI platform, IT support automation, AI ITSM platform, smart IT helpdesk, GPT-4 IT support, AI service desk, intelligent troubleshooting, enterprise IT automation, AI-powered service management, chat-based IT support, automated help desk, AI IT assistant, enterprise chatbot IT, intelligent service desk, AI support platform, automated IT solutions, smart ITSM platform, AI IT sidekick, Fixie AI, fixiechat.ai",
     canonical: "https://fixiechat.ai",
     structuredData: {
       "@context": "https://schema.org",
       "@type": "WebPage",
       "name": "Fixie - AI-Powered IT Support Platform",
-      "description": "Enterprise-grade AI IT Support that outperforms traditional ITSM",
+      "description": "AI-powered IT sidekick that fixes ITSM problems automatically",
       "url": "https://fixiechat.ai",
       "mainEntity": {
         "@type": "SoftwareApplication",
         "name": "Fixie",
-        "applicationCategory": "BusinessApplication",
+        "applicationCategory": "AI IT Support Platform",
         "operatingSystem": "Web Browser"
       }
     }
