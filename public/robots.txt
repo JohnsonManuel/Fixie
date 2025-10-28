@@ -1,13 +1,70 @@
+# Robots.txt for Fixie - AI-Powered IT Support Platform
+# https://fixiechat.ai/robots.txt
+
+# Allow all search engines to crawl the site
 User-agent: *
 Allow: /
 
-# Sitemap
-Sitemap: https://fixie.ai/sitemap.xml
-
-# Crawl-delay for respectful crawling
+# Crawl-delay for respectful crawling (1 second)
 Crawl-delay: 1
 
-# Block access to admin areas (if any)
+# Block access to sensitive areas
 Disallow: /admin/
 Disallow: /api/
+Disallow: /dashboard/
+Disallow: /login
+Disallow: /signup
+Disallow: /organization-setup
+Disallow: /signupadmin
 Disallow: /*.json$
+Disallow: /static/js/
+Disallow: /static/css/
+Disallow: /build/
+Disallow: /node_modules/
+Disallow: /.git/
+Disallow: /.firebase/
+Disallow: /functions/
+
+# Allow important static assets
+Allow: /static/media/
+Allow: /images/
+Allow: /favicon.png
+Allow: /manifest.json
+Allow: /og-image.png
+Allow: /twitter-image.png
+
+# Special rules for Google
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 1
+
+# Special rules for Bing
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+# Special rules for Yandex
+User-agent: YandexBot
+Allow: /
+Crawl-delay: 2
+
+# Block AI training crawlers (optional)
+User-agent: GPTBot
+Disallow: /
+
+User-agent: ChatGPT-User
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: anthropic-ai
+Disallow: /
+
+User-agent: Claude-Web
+Disallow: /
+
+# Sitemaps
+Sitemap: https://fixiechat.ai/sitemap.xml
+Sitemap: https://fixiechat.ai/sitemap-images.xml
+Sitemap: https://fixiechat.ai/sitemap-news.xml

@@ -1,15 +1,85 @@
 {
   "short_name": "Fixie",
   "name": "Fixie - AI-Powered IT Support Platform",
+  "description": "Enterprise-grade AI IT Support that outperforms traditional ITSM. Deploy in hours, not months. 90% cost reduction vs ServiceNow.",
   "icons": [
     {
       "src": "favicon.png",
       "type": "image/png",
-      "sizes": "192x192"
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "favicon.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "favicon.png",
+      "type": "image/png",
+      "sizes": "144x144",
+      "purpose": "any"
+    },
+    {
+      "src": "favicon.png",
+      "type": "image/png",
+      "sizes": "96x96",
+      "purpose": "any"
+    },
+    {
+      "src": "favicon.png",
+      "type": "image/png",
+      "sizes": "72x72",
+      "purpose": "any"
+    },
+    {
+      "src": "favicon.png",
+      "type": "image/png",
+      "sizes": "48x48",
+      "purpose": "any"
     }
   ],
-  "start_url": ".",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "orientation": "portrait-primary",
   "theme_color": "#1877F2",
-  "background_color": "#ffffff"
+  "background_color": "#ffffff",
+  "categories": ["business", "productivity", "utilities"],
+  "lang": "en-US",
+  "dir": "ltr",
+  "iarc_rating_id": "e84b072d-71b3-4d3e-86ae-31a8ce4e53b7",
+  "prefer_related_applications": false,
+  "screenshots": [
+    {
+      "src": "Fixie Product Flow.png",
+      "type": "image/png",
+      "sizes": "1200x800",
+      "form_factor": "wide",
+      "label": "Fixie AI-Powered IT Support Platform Dashboard"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Book Demo",
+      "short_name": "Demo",
+      "description": "Schedule a demo of Fixie AI platform",
+      "url": "/demo",
+      "icons": [{
+        "src": "favicon.png",
+        "sizes": "96x96"
+      }]
+    },
+    {
+      "name": "ServiceNow Alternative",
+      "short_name": "Alternative",
+      "description": "Learn about Fixie as ServiceNow alternative",
+      "url": "/servicenow-alternative",
+      "icons": [{
+        "src": "favicon.png",
+        "sizes": "96x96"
+      }]
+    }
+  ]
 }

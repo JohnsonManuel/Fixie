@@ -1,5 +1,6 @@
 import React from "react";
 import HeroSection from "../components/HeroSection";
+import SEOHead from "../components/SEOHead";
 import "../styles/App.css";
 import "../styles/KeyCapabilities.css";
 import ProblemStatement from "../components/ProblemStatement";
@@ -16,12 +17,21 @@ import { AnimatedListDemo } from "../components/IntegrationsList";
 import { OrbitingCirclesDemo } from "../components/OrbitDemo";
 import HorizontalFeatureStepper from "../components/stepper";
 import { useNavigate } from "react-router-dom";
+import { getPageSEO } from "../utils/seoConfig";
 
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
+  const seo = getPageSEO('home');
 
   return (
     <Layout>
+      <SEOHead
+        title={seo.title}
+        description={seo.description}
+        keywords={seo.keywords}
+        canonical={seo.canonical}
+        structuredData={seo.structuredData}
+      />
       {/* Hero section with "Book Demo" or CTA buttons */}
       <HeroSection onDemoClick={() => navigate("/demo")} />
 

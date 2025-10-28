@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+  
+  <url>
+    <loc>https://fixiechat.ai/</loc>
+    <image:image>
+      <image:loc>https://fixiechat.ai/Fixie Product Flow.png</image:loc>
+      <image:title>Fixie AI-Powered IT Support Platform Dashboard</image:title>
+      <image:caption>Complete workflow visualization of Fixie's AI-powered IT support platform showing automated ticket management and intelligent troubleshooting</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://fixiechat.ai/favicon.png</image:loc>
+      <image:title>Fixie Logo</image:title>
+      <image:caption>Official Fixie AI-powered IT support platform logo</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://fixiechat.ai/images/Ai-powered.png</image:loc>
+      <image:title>AI-Powered IT Support</image:title>
+      <image:caption>Illustration of Fixie's AI-powered intelligent IT support capabilities</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://fixiechat.ai/images/automated.png</image:loc>
+      <image:title>Automated IT Support</image:title>
+      <image:caption>Automated IT support and ticket management system visualization</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://fixiechat.ai/images/analytics.png</image:loc>
+      <image:title>IT Support Analytics</image:title>
+      <image:caption>Real-time analytics and reporting dashboard for IT support metrics</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://fixiechat.ai/images/Seamless.png</image:loc>
+      <image:title>Seamless Integration</image:title>
+      <image:caption>Seamless integration with existing enterprise systems and workflows</image:caption>
+    </image:image>
+  </url>
+  
+</urlset>
