@@ -4,39 +4,39 @@
   "description": "Enterprise-grade AI IT Support that outperforms traditional ITSM. Deploy in hours, not months. 90% cost reduction vs ServiceNow.",
   "icons": [
     {
-      "src": "favicon.png",
+      "src": "favicon-192x192.png",
       "type": "image/png",
       "sizes": "192x192",
       "purpose": "any maskable"
     },
     {
-      "src": "favicon.png",
+      "src": "favicon-512x512.png",
       "type": "image/png",
       "sizes": "512x512",
       "purpose": "any maskable"
     },
     {
-      "src": "favicon.png",
+      "src": "apple-touch-icon-144x144.png",
       "type": "image/png",
       "sizes": "144x144",
       "purpose": "any"
     },
     {
-      "src": "favicon.png",
+      "src": "favicon-32x32.png",
       "type": "image/png",
-      "sizes": "96x96",
+      "sizes": "32x32",
       "purpose": "any"
     },
     {
-      "src": "favicon.png",
+      "src": "apple-touch-icon-72x72.png",
       "type": "image/png",
       "sizes": "72x72",
       "purpose": "any"
     },
     {
-      "src": "favicon.png",
+      "src": "favicon-16x16.png",
       "type": "image/png",
-      "sizes": "48x48",
+      "sizes": "16x16",
       "purpose": "any"
     }
   ],
@@ -67,8 +67,8 @@
       "description": "Schedule a demo of Fixie AI platform",
       "url": "/demo",
       "icons": [{
-        "src": "favicon.png",
-        "sizes": "96x96"
+        "src": "favicon-32x32.png",
+        "sizes": "32x32"
       }]
     },
     {
@@ -77,8 +77,8 @@
       "description": "Learn about Fixie as ServiceNow alternative",
       "url": "/servicenow-alternative",
       "icons": [{
-        "src": "favicon.png",
-        "sizes": "96x96"
+        "src": "favicon-32x32.png",
+        "sizes": "32x32"
       }]
     }
   ]

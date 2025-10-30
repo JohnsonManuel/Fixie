@@ -37,13 +37,13 @@ const ContactPage: React.FC = () => {
     {
       icon: <Phone className="w-6 h-6" />,
       title: "Phone",
-      details: "+1 (405) 894-9696",
+      details: "+1 (555) 123-4567",
       description: "Mon-Fri from 8am to 6pm CST"
     },
     {
       icon: <Mail className="w-6 h-6" />,
       title: "Email",
-      details: "joeathimala@gmail.com",
+      details: "contact@fixiechat.ai",
       description: "We'll respond within 24 hours"
     },
     {
@@ -73,7 +73,7 @@ const ContactPage: React.FC = () => {
       title: "Technical Support",
       description: "Get help with implementation and troubleshooting",
       action: "Contact Support",
-      onClick: () => window.location.href = "mailto:joeathimala@gmail.com?subject=Technical Support"
+      onClick: () => window.location.href = "mailto:contact@fixiechat.ai?subject=Technical Support"
     },
     {
       icon: <Globe className="w-8 h-8" />,

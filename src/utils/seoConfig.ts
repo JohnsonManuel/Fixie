@@ -1,19 +1,19 @@
 // SEO Configuration for all pages
 export const seoConfig = {
   home: {
-    title: "Fixie - AI-Powered IT Support Platform | Chat-First ITSM Solution",
-    description: "Fixie is your AI-powered IT sidekick that fixes ITSM problems automatically and integrates with all your IT tools. Chat-first resolution for enterprise teams. Deploy in hours, reduce IT workload by 80%.",
-    keywords: "AI IT support, chat-first ITSM, AI-powered helpdesk, intelligent IT support, automated IT resolution, conversational AI support, enterprise AI platform, IT support automation, AI ITSM platform, smart IT helpdesk, GPT-4 IT support, AI service desk, intelligent troubleshooting, enterprise IT automation, AI-powered service management, chat-based IT support, automated help desk, AI IT assistant, enterprise chatbot IT, intelligent service desk, AI support platform, automated IT solutions, smart ITSM platform, AI IT sidekick, Fixie AI, fixiechat.ai",
+    title: "Fixie Chat AI - AI-Powered IT Support Platform | Chat-First ITSM Solution",
+    description: "Fixie Chat AI is your AI-powered IT sidekick that fixes ITSM problems automatically and integrates with all your IT tools. Chat-first resolution for enterprise teams. Deploy in hours, reduce IT workload by 80%.",
+    keywords: "Fixie Chat AI, AI IT support, chat-first ITSM, AI-powered helpdesk, intelligent IT support, automated IT resolution, conversational AI support, enterprise AI platform, IT support automation, AI ITSM platform, smart IT helpdesk, GPT-4 IT support, AI service desk, intelligent troubleshooting, enterprise IT automation, AI-powered service management, chat-based IT support, automated help desk, AI IT assistant, enterprise chatbot IT, intelligent service desk, AI support platform, automated IT solutions, smart ITSM platform, AI IT sidekick, Fixie AI, fixiechat.ai",
     canonical: "https://fixiechat.ai",
     structuredData: {
       "@context": "https://schema.org",
       "@type": "WebPage",
-      "name": "Fixie - AI-Powered IT Support Platform",
+      "name": "Fixie Chat AI - AI-Powered IT Support Platform",
       "description": "AI-powered IT sidekick that fixes ITSM problems automatically",
       "url": "https://fixiechat.ai",
       "mainEntity": {
         "@type": "SoftwareApplication",
-        "name": "Fixie",
+        "name": "Fixie Chat AI",
         "applicationCategory": "AI IT Support Platform",
         "operatingSystem": "Web Browser"
       }
@@ -92,43 +92,43 @@ export const seoConfig = {
   },
   
   pricing: {
-    title: "Pricing | Fixie AI-Powered IT Support Platform - Simple & Transparent",
-    description: "Simple, transparent pricing for Fixie's AI-powered IT support platform. Start free, scale as you grow. Plans for teams of all sizes with enterprise-grade features.",
-    keywords: "Fixie pricing, AI IT support pricing, ITSM platform cost, IT support platform pricing, AI helpdesk pricing, enterprise IT support cost, chat-first ITSM pricing, automated IT support pricing",
+    title: "Pricing | Fixie Chat AI - Simple & Transparent Plans",
+    description: "Simple, transparent pricing for Fixie Chat AI's AI-powered IT support platform. Start free, scale as you grow. Plans for teams of all sizes with enterprise-grade features.",
+    keywords: "Fixie Chat AI pricing, AI IT support pricing, ITSM platform cost, IT support platform pricing, AI helpdesk pricing, enterprise IT support cost, chat-first ITSM pricing, automated IT support pricing",
     canonical: "https://fixiechat.ai/pricing",
     structuredData: {
       "@context": "https://schema.org",
       "@type": "WebPage",
-      "name": "Pricing - Fixie AI Platform",
+      "name": "Pricing - Fixie Chat AI",
       "description": "Simple, transparent pricing for AI-powered IT support",
       "url": "https://fixiechat.ai/pricing"
     }
   },
   
   features: {
-    title: "Features | Fixie AI-Powered IT Support Platform - Advanced AI Capabilities",
-    description: "Discover Fixie's powerful AI features for modern IT support. Intelligent troubleshooting, seamless integrations, enterprise security, and 24/7 availability.",
-    keywords: "Fixie features, AI IT support features, intelligent troubleshooting, IT support automation, AI helpdesk capabilities, enterprise IT features, chat-first support features, automated IT resolution",
+    title: "Features | Fixie Chat AI - Advanced AI Capabilities",
+    description: "Discover Fixie Chat AI's powerful AI features for modern IT support. Intelligent troubleshooting, seamless integrations, enterprise security, and 24/7 availability.",
+    keywords: "Fixie Chat AI features, AI IT support features, intelligent troubleshooting, IT support automation, AI helpdesk capabilities, enterprise IT features, chat-first support features, automated IT resolution",
     canonical: "https://fixiechat.ai/features",
     structuredData: {
       "@context": "https://schema.org",
       "@type": "WebPage",
-      "name": "Features - Fixie AI Platform",
+      "name": "Features - Fixie Chat AI",
       "description": "Advanced AI features for intelligent IT support",
       "url": "https://fixiechat.ai/features"
     }
   },
   
   contact: {
-    title: "Contact Us | Fixie AI-Powered IT Support Platform - Get in Touch",
-    description: "Contact Fixie for AI-powered IT support solutions. Get pricing, schedule a demo, or ask questions. Phone: +1 (405) 894-9696, Email: joeathimala@gmail.com",
-    keywords: "contact Fixie, AI IT support contact, get in touch, Fixie support, AI helpdesk contact, enterprise IT support contact, schedule demo, sales inquiry",
+    title: "Contact Us | Fixie Chat AI - Get in Touch",
+    description: "Contact Fixie Chat AI for AI-powered IT support solutions. Get pricing, schedule a demo, or ask questions. Phone: +1 (555) 123-4567, Email: contact@fixiechat.ai",
+    keywords: "contact Fixie Chat AI, AI IT support contact, get in touch, Fixie support, AI helpdesk contact, enterprise IT support contact, schedule demo, sales inquiry",
     canonical: "https://fixiechat.ai/contact",
     structuredData: {
       "@context": "https://schema.org",
       "@type": "ContactPage",
-      "name": "Contact - Fixie AI Platform",
-      "description": "Get in touch with Fixie for AI-powered IT support",
+      "name": "Contact - Fixie Chat AI",
+      "description": "Get in touch with Fixie Chat AI for AI-powered IT support",
       "url": "https://fixiechat.ai/contact"
     }
   }

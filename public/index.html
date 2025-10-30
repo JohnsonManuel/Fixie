@@ -2,10 +2,15 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <link rel="icon" type="image/png" sizes="32x32" href="%PUBLIC_URL%/favicon.png?v=3" />
-    <link rel="icon" type="image/png" sizes="16x16" href="%PUBLIC_URL%/favicon.png?v=3" />
-    <link rel="icon" href="%PUBLIC_URL%/favicon.png?v=3" />
-    <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.png?v=3" />
+    <!-- Standard favicon -->
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico" />
+    
+    <!-- PNG favicons for better quality -->
+    <link rel="icon" type="image/png" sizes="32x32" href="%PUBLIC_URL%/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="%PUBLIC_URL%/favicon-16x16.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="%PUBLIC_URL%/favicon-192x192.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="%PUBLIC_URL%/favicon-512x512.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#1877F2" />
     
@@ -77,15 +82,16 @@
     {
       "@context": "https://schema.org",
       "@type": "Organization",
-      "name": "Fixie",
-      "alternateName": "Fixie AI",
+      "name": "Fixie Chat AI",
+      "alternateName": ["Fixie AI", "Fixie"],
       "url": "https://fixiechat.ai",
       "logo": "https://fixiechat.ai/favicon.png",
       "description": "Enterprise-grade AI IT Support platform that outperforms traditional ITSM solutions",
       "foundingDate": "2024",
       "contactPoint": {
         "@type": "ContactPoint",
-        "telephone": "+1-800-FIXIE-AI",
+        "telephone": "+1-555-123-4567",
+        "email": "contact@fixiechat.ai",
         "contactType": "Customer Service",
         "availableLanguage": ["English"]
       },
@@ -163,12 +169,13 @@
     }
     </script>
     
-    <!-- Structured Data - WebSite -->
+    <!-- Structured Data - WebSite with Sitelinks -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "WebSite",
-      "name": "Fixie",
+      "name": "Fixie Chat AI",
+      "alternateName": "Fixie AI-Powered IT Support Platform",
       "url": "https://fixiechat.ai",
       "description": "AI-Powered IT Support Platform for Enterprise",
       "potentialAction": {
@@ -182,6 +189,39 @@
       "publisher": {
         "@type": "Organization",
         "name": "Fixie"
+      },
+      "mainEntity": {
+        "@type": "ItemList",
+        "itemListElement": [
+          {
+            "@type": "SiteNavigationElement",
+            "position": 1,
+            "name": "Features",
+            "description": "Discover Fixie's AI-powered features for intelligent IT support",
+            "url": "https://fixiechat.ai/features"
+          },
+          {
+            "@type": "SiteNavigationElement",
+            "position": 2,
+            "name": "Pricing",
+            "description": "Simple, transparent pricing for AI-powered IT support",
+            "url": "https://fixiechat.ai/pricing"
+          },
+          {
+            "@type": "SiteNavigationElement",
+            "position": 3,
+            "name": "Contact",
+            "description": "Get in touch with Fixie for AI IT support solutions",
+            "url": "https://fixiechat.ai/contact"
+          },
+          {
+            "@type": "SiteNavigationElement",
+            "position": 4,
+            "name": "Demo",
+            "description": "Schedule a personalized demo of Fixie AI platform",
+            "url": "https://fixiechat.ai/demo"
+          }
+        ]
       }
     }
     </script>
@@ -197,19 +237,19 @@
     <link rel="dns-prefetch" href="//www.google-analytics.com" />
     
     <!-- Apple Touch Icons -->
-    <link rel="apple-touch-icon" sizes="180x180" href="%PUBLIC_URL%/favicon.png?v=3" />
-    <link rel="apple-touch-icon" sizes="152x152" href="%PUBLIC_URL%/favicon.png?v=3" />
-    <link rel="apple-touch-icon" sizes="144x144" href="%PUBLIC_URL%/favicon.png?v=3" />
-    <link rel="apple-touch-icon" sizes="120x120" href="%PUBLIC_URL%/favicon.png?v=3" />
-    <link rel="apple-touch-icon" sizes="114x114" href="%PUBLIC_URL%/favicon.png?v=3" />
-    <link rel="apple-touch-icon" sizes="76x76" href="%PUBLIC_URL%/favicon.png?v=3" />
-    <link rel="apple-touch-icon" sizes="72x72" href="%PUBLIC_URL%/favicon.png?v=3" />
-    <link rel="apple-touch-icon" sizes="60x60" href="%PUBLIC_URL%/favicon.png?v=3" />
-    <link rel="apple-touch-icon" sizes="57x57" href="%PUBLIC_URL%/favicon.png?v=3" />
+    <link rel="apple-touch-icon" sizes="180x180" href="%PUBLIC_URL%/apple-touch-icon.png" />
+    <link rel="apple-touch-icon" sizes="152x152" href="%PUBLIC_URL%/apple-touch-icon-152x152.png" />
+    <link rel="apple-touch-icon" sizes="144x144" href="%PUBLIC_URL%/apple-touch-icon-144x144.png" />
+    <link rel="apple-touch-icon" sizes="120x120" href="%PUBLIC_URL%/apple-touch-icon-120x120.png" />
+    <link rel="apple-touch-icon" sizes="114x114" href="%PUBLIC_URL%/apple-touch-icon-114x114.png" />
+    <link rel="apple-touch-icon" sizes="76x76" href="%PUBLIC_URL%/apple-touch-icon-76x76.png" />
+    <link rel="apple-touch-icon" sizes="72x72" href="%PUBLIC_URL%/apple-touch-icon-72x72.png" />
+    <link rel="apple-touch-icon" sizes="60x60" href="%PUBLIC_URL%/apple-touch-icon-60x60.png" />
+    <link rel="apple-touch-icon" sizes="57x57" href="%PUBLIC_URL%/apple-touch-icon-57x57.png" />
     
     <!-- Microsoft Tiles -->
     <meta name="msapplication-TileColor" content="#1877F2" />
-    <meta name="msapplication-TileImage" content="%PUBLIC_URL%/favicon.png?v=3" />
+    <meta name="msapplication-TileImage" content="%PUBLIC_URL%/mstile-144x144.png" />
     <meta name="msapplication-config" content="%PUBLIC_URL%/browserconfig.xml" />
     
     <!-- PWA Manifest -->
@@ -245,17 +285,76 @@
     
     <div id="root"></div>
     
-    <!-- Schema.org Breadcrumb for better navigation understanding -->
+    <!-- Schema.org Breadcrumb and Navigation for Sitelinks -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "BreadcrumbList",
-      "itemListElement": [{
-        "@type": "ListItem",
-        "position": 1,
-        "name": "Home",
-        "item": "https://fixiechat.ai"
-      }]
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://fixiechat.ai"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Features",
+          "item": "https://fixiechat.ai/features"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Pricing",
+          "item": "https://fixiechat.ai/pricing"
+        },
+        {
+          "@type": "ListItem",
+          "position": 4,
+          "name": "Contact",
+          "item": "https://fixiechat.ai/contact"
+        },
+        {
+          "@type": "ListItem",
+          "position": 5,
+          "name": "Demo",
+          "item": "https://fixiechat.ai/demo"
+        }
+      ]
+    }
+    </script>
+    
+    <!-- Additional structured data for Google sitelinks -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "@id": "https://fixiechat.ai/#webpage",
+      "url": "https://fixiechat.ai",
+      "name": "Fixie Chat AI - AI-Powered IT Support Platform",
+      "isPartOf": {
+        "@type": "WebSite",
+        "@id": "https://fixiechat.ai/#website",
+        "name": "Fixie Chat AI",
+        "url": "https://fixiechat.ai"
+      },
+      "about": {
+        "@type": "Thing",
+        "name": "AI IT Support Platform"
+      },
+      "description": "Fixie is your AI-powered IT sidekick that fixes ITSM problems automatically and integrates with all your IT tools",
+      "breadcrumb": {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://fixiechat.ai"
+          }
+        ]
+      }
     }
     </script>
   </body>

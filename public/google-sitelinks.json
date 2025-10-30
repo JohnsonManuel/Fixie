@@ -1,0 +1,41 @@
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "Fixie Chat AI",
+  "url": "https://fixiechat.ai",
+  "description": "AI-Powered IT Support Platform",
+  "mainEntity": {
+    "@type": "ItemList",
+    "name": "Main Navigation",
+    "itemListElement": [
+      {
+        "@type": "SiteNavigationElement",
+        "position": 1,
+        "name": "Features",
+        "description": "AI-powered features for intelligent IT support",
+        "url": "https://fixiechat.ai/features"
+      },
+      {
+        "@type": "SiteNavigationElement", 
+        "position": 2,
+        "name": "Pricing",
+        "description": "Simple, transparent pricing plans",
+        "url": "https://fixiechat.ai/pricing"
+      },
+      {
+        "@type": "SiteNavigationElement",
+        "position": 3, 
+        "name": "Contact",
+        "description": "Get in touch with our team",
+        "url": "https://fixiechat.ai/contact"
+      },
+      {
+        "@type": "SiteNavigationElement",
+        "position": 4,
+        "name": "Demo", 
+        "description": "Schedule a personalized demo",
+        "url": "https://fixiechat.ai/demo"
+      }
+    ]
+  }
+}
