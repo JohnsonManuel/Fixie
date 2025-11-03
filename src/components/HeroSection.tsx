@@ -69,8 +69,8 @@ const testimonials = [
     <>
       <BackgroundBeamsWithCollision>
         <div className="text-center">
-          <h2 className="relative z-20 text-2xl md:text-4xl lg:text-7xl font-bold font-sans tracking-tight text-center">
-            <div className="relative mx-auto inline-block w-max [filter:drop-shadow(0px_1px_3px_rgba(27,_37,_80,_0.14))]">
+          <h2 className="relative z-20 text-xl sm:text-2xl md:text-3xl lg:text-5xl xl:text-6xl 2xl:text-7xl font-bold font-sans tracking-tight text-center px-4">
+            <div className="relative mx-auto inline-block max-w-full [filter:drop-shadow(0px_1px_3px_rgba(27,_37,_80,_0.14))] break-words">
               {chars.map((char, i) => (
                 <motion.span
                   key={i}
