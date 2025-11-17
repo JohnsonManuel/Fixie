@@ -88,6 +88,11 @@ export const useAuth = () => {
       const result = await signInWithPopup(auth, googleProvider);
       return result;
     } catch (err: any) {
+      // Don't set error for user-cancelled actions
+      if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') {
+        throw err; // Re-throw without setting error state
+      }
+      
       const authError: AuthError = {
         code: err.code,
         message: err.message
@@ -104,6 +109,11 @@ export const useAuth = () => {
       const result = await signInWithPopup(auth, githubProvider);
       return result;
     } catch (err: any) {
+      // Don't set error for user-cancelled actions
+      if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') {
+        throw err; // Re-throw without setting error state
+      }
+      
       const authError: AuthError = {
         code: err.code,
         message: err.message

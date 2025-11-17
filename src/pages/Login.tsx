@@ -153,6 +153,10 @@ function Login({ onBackToHome }: LoginProps) {
       
       navigate("/dashboard");
     } catch (err: any) {
+      if (err.code === 'auth/popup-closed-by-user') {
+        // User closed the popup, don't show error
+        return;
+      }
       setFormError(err.message);
     } finally {
       setIsLoading(false);
@@ -195,6 +199,10 @@ function Login({ onBackToHome }: LoginProps) {
       
       navigate("/dashboard");
     } catch (err: any) {
+      if (err.code === 'auth/popup-closed-by-user') {
+        // User closed the popup, don't show error
+        return;
+      }
       setFormError(err.message);
     } finally {
       setIsLoading(false);
