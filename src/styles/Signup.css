@@ -430,3 +430,37 @@
     font-size: 24px;
   }
 } 
+
+.role-toggle {
+  display: flex;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.role-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--border, #e3e3e3);
+  border-radius: 999px;
+  padding: 6px 12px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 0.95rem;
+}
+
+.role-chip input {
+  display: none;
+}
+
+.role-chip.active {
+  border-color: var(--brand, #4f46e5);
+  background-color: rgba(79, 70, 229, 0.05);
+  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.15);
+}
+
+.helper {
+  display: block;
+  color: #6b7280;
+  margin-top: 6px;
+}
