@@ -120,8 +120,38 @@ function Login({ onBackToHome }: LoginProps) {
   const handleGoogleLogin = async () => {
     setIsLoading(true);
     try {
-      await signInWithGoogle();
-      console.log("Google login successful!");
+      const result = await signInWithGoogle();
+      const user = result.user;
+      
+      // Handle organization membership for Google users
+      const domain = user.email?.split("@")[1].toLowerCase();
+      if (domain) {
+        const orgQuery = query(
+          collection(db, "organizations"),
+          where("domain", "==", domain)
+        );
+        const orgSnap = await getDocs(orgQuery);
+        
+        if (!orgSnap.empty) {
+          const orgDoc = orgSnap.docs[0];
+          const orgId = orgDoc.id;
+          const orgData = orgDoc.data();
+          const orgRef = doc(db, "organizations", orgId);
+          
+          const alreadyMember = orgData.members && orgData.members[user.uid];
+          if (!alreadyMember) {
+            await updateDoc(orgRef, {
+              [`members.${user.uid}`]: {
+                email: user.email,
+                role: "user",
+                status: "active",
+              }
+            });
+          }
+        }
+      }
+      
+      navigate("/dashboard");
     } catch (err: any) {
       setFormError(err.message);
     } finally {
@@ -132,8 +162,38 @@ function Login({ onBackToHome }: LoginProps) {
   const handleGithubLogin = async () => {
     setIsLoading(true);
     try {
-      await signInWithGithub();
-      console.log("GitHub login successful!");
+      const result = await signInWithGithub();
+      const user = result.user;
+      
+      // Handle organization membership for GitHub users
+      const domain = user.email?.split("@")[1].toLowerCase();
+      if (domain) {
+        const orgQuery = query(
+          collection(db, "organizations"),
+          where("domain", "==", domain)
+        );
+        const orgSnap = await getDocs(orgQuery);
+        
+        if (!orgSnap.empty) {
+          const orgDoc = orgSnap.docs[0];
+          const orgId = orgDoc.id;
+          const orgData = orgDoc.data();
+          const orgRef = doc(db, "organizations", orgId);
+          
+          const alreadyMember = orgData.members && orgData.members[user.uid];
+          if (!alreadyMember) {
+            await updateDoc(orgRef, {
+              [`members.${user.uid}`]: {
+                email: user.email,
+                role: "user",
+                status: "active",
+              }
+            });
+          }
+        }
+      }
+      
+      navigate("/dashboard");
     } catch (err: any) {
       setFormError(err.message);
     } finally {
