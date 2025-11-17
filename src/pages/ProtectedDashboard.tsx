@@ -42,16 +42,24 @@ export default function ProtectedDashboard() {
   // ⏳ Show loading state while fetching
   if (loading || loadingRole) {
     return (
-      <div className="dashboard-loading">
-        <h2>Loading your account...</h2>
+      <div className="loading-container">
+        <div className="loading-spinner"></div>
+        <p>Loading your account...</p>
       </div>
     );
   }
 
-  // 🚪 If no user, redirect to login
+  // 🚪 If no user after loading is complete, show auth error
   if (!user) {
-    navigate("/login");
-    return null;
+    return (
+      <div className="auth-error">
+        <h2>Authentication Error</h2>
+        <p>You must be logged in to access the dashboard.</p>
+        <button onClick={() => navigate("/login")} className="login-btn">
+          Go to Login
+        </button>
+      </div>
+    );
   }
 
   // 🔐 Optionally route based on role
