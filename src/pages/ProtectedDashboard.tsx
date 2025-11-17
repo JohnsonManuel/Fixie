@@ -1,0 +1,66 @@
+import React, { useEffect, useState } from "react";
+import { useAuth } from "../hooks/useAuth";
+import { db } from "../services/firebase";
+import { doc, getDoc } from "firebase/firestore";
+import Dashboard from "./Dashboard"; // your existing dashboard component
+import { useNavigate } from "react-router-dom";
+
+export default function ProtectedDashboard() {
+  const { user, loading } = useAuth();
+  const [role, setRole] = useState<string | null>(null);
+  const [loadingRole, setLoadingRole] = useState(true);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const loadRole = async () => {
+      if (!user) {
+        setLoadingRole(false);
+        return;
+      }
+
+      try {
+        const userRef = doc(db, "users", user.uid);
+        const snap = await getDoc(userRef);
+        if (snap.exists()) {
+          const data = snap.data();
+          setRole(data.role || "user");
+          console.log("Loaded user role before dashboard:", data.role);
+        } else {
+          setRole("user");
+        }
+      } catch (err) {
+        console.error("Failed to load user role:", err);
+        setRole("user");
+      } finally {
+        setLoadingRole(false);
+      }
+    };
+
+    if (!loading) loadRole();
+  }, [user, loading]);
+
+  // ⏳ Show loading state while fetching
+  if (loading || loadingRole) {
+    return (
+      <div className="dashboard-loading">
+        <h2>Loading your account...</h2>
+      </div>
+    );
+  }
+
+  // 🚪 If no user, redirect to login
+  if (!user) {
+    navigate("/login");
+    return null;
+  }
+
+  // 🔐 Optionally route based on role
+  if (role === "admin") {
+    // You can also redirect here if desired
+    // navigate("/organization-setup");
+    console.log("Admin logged in");
+  }
+
+  // ✅ Render dashboard once role is ready
+  return <Dashboard userRole={role} />;
+}

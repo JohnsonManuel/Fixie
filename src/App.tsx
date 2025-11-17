@@ -16,6 +16,7 @@ import SignupAdmin from "./pages/SignupAdmin";
 import PricingPage from "./pages/PricingPage";
 import FeaturesPage from "./pages/FeaturesPage";
 import ContactPage from "./pages/ContactPage";
+import ProtectedDashboard from "./pages/ProtectedDashboard";
 
 // 🔒 Protect routes that need authentication
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
@@ -75,14 +76,7 @@ function App() {
           }
         />
 
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/dashboard" element={<ProtectedDashboard />} />
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
