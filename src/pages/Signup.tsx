@@ -3,11 +3,22 @@ import "../styles/Signup.css";
 import { useAuth } from "../hooks/useAuth";
 import fixieLogo from "../images/image.png";
 import { useNavigate } from "react-router-dom";
-import { getFirestore, doc, setDoc } from "firebase/firestore";
+import {
+  getFirestore,
+  doc,
+  setDoc,
+  updateDoc,
+  arrayUnion,
+  getDocs,
+  query,
+  collection,
+  where,
+} from "firebase/firestore";
 import { sendEmailVerification } from "firebase/auth";
 
 const SignupAdmin: React.FC = () => {
-  const { signUp } = useAuth(); // use the standard signUp; we’ll add admin logic here
+
+  const { signUp } = useAuth();
   const navigate = useNavigate();
   const db = getFirestore();
 
@@ -18,6 +29,7 @@ const SignupAdmin: React.FC = () => {
     confirmPassword: "",
   });
 
+  const [role, setRole] = useState<"admin" | "user">("admin"); // 🔹 New: role toggle
   const [isLoading, setIsLoading] = useState(false);
   const [formError, setFormError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
@@ -27,7 +39,8 @@ const SignupAdmin: React.FC = () => {
       ...formData,
       [e.target.name]: e.target.value,
     });
-    if (formError) setFormError("");
+    if (formError)
+      setFormError("");
   };
 
   const validateForm = () => {
@@ -55,25 +68,38 @@ const SignupAdmin: React.FC = () => {
       const result = await signUp(formData.email, formData.password);
       const user = result.user;
 
+      // 🔄 Refresh token to ensure Firestore sees authentication context
+      await user.getIdToken(true);
+      await new Promise((r) => setTimeout(r, 200));
+
+      // Extract domain part (for future org mapping)
+      const domain = formData.email.split("@")[1].toLowerCase();
+
       // 2️⃣ Send verification email
       await sendEmailVerification(user);
 
-      // 3️⃣ Store admin metadata in Firestore
+      // 3️⃣ Create user document in Firestore
       await setDoc(doc(db, "users", user.uid), {
         email: user.email,
         username: formData.username,
-        role: "admin",
+        role, // likely "user" or "admin"
         verified: false,
         profileComplete: false,
+        orgDomain: domain,
         createdAt: new Date().toISOString(),
       });
 
       // 4️⃣ Show success message
       setSuccessMessage(
-        `A verification email has been sent to ${user.email}. Please verify before continuing.`
+        `A verification email has been sent to ${user.email}. Please verify your email before logging in.`
       );
     } catch (err: any) {
-      setFormError(err.message);
+      console.error("Signup error:", err);
+      setFormError(
+        err.code === "permission-denied"
+          ? "You don’t have permission to perform this action."
+          : err.message
+      );
     } finally {
       setIsLoading(false);
     }
@@ -101,8 +127,8 @@ const SignupAdmin: React.FC = () => {
       <div className="signup-container">
         <div className="signup-content">
           <div className="signup-header">
-            <h1>Tech Admin Sign-Up</h1>
-            <p>Register your organization’s admin account</p>
+            <h1>Create Your Account</h1>
+            <p>Register as an Admin or a Standard User</p>
           </div>
 
           {/* Error / Success Messages */}
@@ -112,71 +138,105 @@ const SignupAdmin: React.FC = () => {
           )}
 
           {/* Signup Form */}
-          {successMessage === '' &&
-            (
-              <form className="signup-form" onSubmit={handleSubmit}>
-            <div className="form-group">
-              <label htmlFor="email">Email</label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                placeholder="Enter your email"
-                required
-                disabled={isLoading}
-              />
-            </div>
+          {successMessage === "" && (
+            <form className="signup-form" onSubmit={handleSubmit}>
+              <div className="form-group">
+                <label htmlFor="email">Email</label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  placeholder="Enter your email"
+                  required
+                  disabled={isLoading}
+                />
+              </div>
 
-            <div className="form-group">
-              <label htmlFor="username">Username</label>
-              <input
-                type="text"
-                id="username"
-                name="username"
-                value={formData.username}
-                onChange={handleInputChange}
-                placeholder="Choose a username"
-                required
-                disabled={isLoading}
-              />
-            </div>
+              <div className="form-group">
+                <label htmlFor="username">Username</label>
+                <input
+                  type="text"
+                  id="username"
+                  name="username"
+                  value={formData.username}
+                  onChange={handleInputChange}
+                  placeholder="Choose a username"
+                  required
+                  disabled={isLoading}
+                />
+              </div>
 
-            <div className="form-group">
-              <label htmlFor="password">Password</label>
-              <input
-                type="password"
-                id="password"
-                name="password"
-                value={formData.password}
-                onChange={handleInputChange}
-                placeholder="Create a password"
-                required
-                disabled={isLoading}
-              />
-            </div>
+              <div className="form-group">
+                <label htmlFor="password">Password</label>
+                <input
+                  type="password"
+                  id="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  placeholder="Create a password"
+                  required
+                  disabled={isLoading}
+                />
+              </div>
 
-            <div className="form-group">
-              <label htmlFor="confirmPassword">Confirm Password</label>
-              <input
-                type="password"
-                id="confirmPassword"
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleInputChange}
-                placeholder="Confirm your password"
-                required
-                disabled={isLoading}
-              />
-            </div>
+              <div className="form-group">
+                <label htmlFor="confirmPassword">Confirm Password</label>
+                <input
+                  type="password"
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleInputChange}
+                  placeholder="Confirm your password"
+                  required
+                  disabled={isLoading}
+                />
+              </div>
 
-            <button type="submit" className="signup-btn" disabled={isLoading}>
-              {isLoading ? "Creating Account..." : "Create Admin Account"}
-            </button>
-          </form>
-            )
-          }
+              {/* 🔹 Role Toggle */}
+              <div className="form-group">
+                <label>Account Type</label>
+                <div className="role-toggle">
+                  <label
+                    className={`role-chip ${role === "user" ? "active" : ""}`}
+                  >
+                    <input
+                      type="radio"
+                      name="role"
+                      value="user"
+                      checked={role === "user"}
+                      onChange={() => setRole("user")}
+                      disabled={isLoading}
+                    />
+                    Standard User
+                  </label>
+                  <label
+                    className={`role-chip ${role === "admin" ? "active" : ""}`}
+                  >
+                    <input
+                      type="radio"
+                      name="role"
+                      value="admin"
+                      checked={role === "admin"}
+                      onChange={() => setRole("admin")}
+                      disabled={isLoading}
+                    />
+                    Admin
+                  </label>
+                </div>
+                <small className="helper">
+                  Your chosen role will determine your permissions in Fixie.
+                </small>
+              </div>
+
+              <button type="submit" className="signup-btn" disabled={isLoading}>
+                {isLoading ? "Creating Account..." : "Create Account"}
+              </button>
+            </form>
+          )}
 
           {/* Login Link */}
           <div className="signup-footer">
