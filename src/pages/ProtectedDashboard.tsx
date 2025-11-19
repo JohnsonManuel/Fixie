@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 export default function ProtectedDashboard() {
   const { user, loading } = useAuth();
   const [role, setRole] = useState<string | null>(null);
+  const [ organizationKey, setOrganizationKey ] = useState<string | null>(null);
   const [loadingRole, setLoadingRole] = useState(true);
   const navigate = useNavigate();
 
@@ -24,6 +25,7 @@ export default function ProtectedDashboard() {
         if (snap.exists()) {
           const data = snap.data();
           setRole(data.role || "user");
+          setOrganizationKey(data.organizationKey)
           console.log("Loaded user role before dashboard:", data.role);
         } else {
           setRole("user");
@@ -70,5 +72,5 @@ export default function ProtectedDashboard() {
   }
 
   // ✅ Render dashboard once role is ready
-  return <Dashboard userRole={role} />;
+  return <Dashboard userRole={role} organizationKey={organizationKey} />;
 }
