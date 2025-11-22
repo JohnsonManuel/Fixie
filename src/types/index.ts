@@ -14,6 +14,7 @@ export type Conversation = {
   title?: string;
   updatedAt?: any;
   lastMessage?: string;
+  createdAt?: any;
   model?: string;
 };
 

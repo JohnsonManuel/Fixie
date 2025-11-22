@@ -16,6 +16,6 @@ export const config = {
 
   // Firebase Functions endpoints
   functions: {
-    chat: process.env.REACT_APP_CHAT_ENDPOINT || 'https://europe-west3-jj-ai-platform.cloudfunctions.net/chat'
+    chat: process.env.REACT_APP_CHAT_ENDPOINT || 'https://chat-proxy-308405783967.europe-west1.run.app'
   }
 }; 
