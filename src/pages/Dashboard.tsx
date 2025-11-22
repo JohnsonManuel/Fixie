@@ -5,7 +5,8 @@ import ChatMessage from "../components/chat/ChatMessage";
 import ThemeToggle from "../components/ThemeToggle";
 import { ThemeProvider } from "../contexts/ThemeContext";
 import { config } from "../services/config";
-import { Message, Conversation } from "../types";
+// IMPORT FROM TYPES (Single Source of Truth)
+import { Message, Conversation } from "../types"; 
 import { formatTimestamp, formatConversationTitle } from "../utils";
 import { db } from "../services/firebase"; 
 import {
@@ -14,16 +15,16 @@ import {
     getDocs,
     onSnapshot,
     query,
-    where
+    where,
+    deleteDoc,
+    doc // Added doc for deletion
 } from "firebase/firestore";
 
 // =============================================================================
 // CONFIG & ICONS
 // =============================================================================
 
-// 1. Get the URL from config
 const RAW_API_URL = config.functions.main_endpoint || "";
-// 2. Remove trailing slash if present (prevents double slashes in requests)
 const API_BASE_URL = RAW_API_URL.endsWith("/") 
     ? RAW_API_URL.slice(0, -1) 
     : RAW_API_URL;
@@ -52,15 +53,14 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
-    // Chat State (Driven by Python API)
+    // Chat State
     const [conversations, setConversations] = useState<Conversation[]>([]);
     const [activeConvoId, setActiveConvoId] = useState<string | null>(null);
     const [messages, setMessages] = useState<Message[]>([]);
     const [inputMessage, setInputMessage] = useState("");
     const [isLoading, setIsLoading] = useState(false);
-    // REMOVED: const [isStreaming, setIsStreaming] = useState(false);
 
-    // Organization State (Driven by Firestore)
+    // Organization State
     const [organizations, setOrganizations] = useState<any[]>([]);
     const [activeOrgId, setActiveOrgId] = useState<string | null>(null);
     const [creatingOrg, setCreatingOrg] = useState(false);
@@ -79,15 +79,12 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
             ...(options.headers || {}),
         };
 
-        // Constructs: https://your-url.run.app/threads
-        // Changed conditional error check: the non-streaming chat endpoint returns JSON, not a stream
         const res = await fetch(`${API_BASE_URL}${endpoint}`, {
             ...options,
             headers,
         });
 
         if (!res.ok) { 
-            // Attempt to read JSON error first, fall back to text
             let err = res.statusText;
             try {
                 const jsonError = await res.json();
@@ -101,7 +98,6 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
     }, [user]);
 
     // Scroll to bottom
-    // Removed isStreaming from dependency array
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages]); 
@@ -115,16 +111,13 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
             const res = await fetchWithAuth("/threads");
             const data = await res.json();
             
-            // Map Python ThreadInfo to UI Conversation
             const mapped: Conversation[] = data.threads.map((t: any) => ({
                 id: t.thread_id,
                 title: t.metadata?.title || "New Chat",
                 updatedAt: t.updated_at ? new Date(t.updated_at) : new Date(),
-                // Ensure your types.ts interface supports createdAt, or remove this line
                 createdAt: t.created_at ? new Date(t.created_at) : new Date(),
             }));
 
-            // Sort by newest first
             mapped.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
 
             setConversations(mapped);
@@ -157,7 +150,14 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
                     id: m.id || `msg-${index}`,
                     role: m.type === "human" ? "user" : "assistant",
                     content: m.content,
-                    createdAt: new Date(), 
+                    createdAt: new Date(), // History usually doesn't have per-message timestamps in standard LangGraph
+                    
+                    // Map persisted fields if available
+                    status: m.status,
+                    toolName: m.toolName,
+                    toolArgs: m.toolArgs,
+                    toolCallId: m.toolCallId,
+                    runId: m.runId
                 }));
                 
                 setMessages(uiMessages);
@@ -215,13 +215,67 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
     };
 
     // ===========================================================================
-    // 5. SEND CHAT (POST /chat) - Replaced /chat/stream logic
+    // 5. HANDLE APPROVAL (NEW LOGIC)
+    // ===========================================================================
+    const handleApprovalAction = async (action: "approve" | "reject", message: Message) => {
+        if (!user || !activeConvoId || !message.runId || !message.toolCallId) return;
+
+        // 1. Optimistic Update
+        setMessages(prev => prev.map(m => 
+            m.id === message.id ? { ...m, status: "action_taken" } : m
+        ));
+        
+        // 2. Add processing placeholder
+        const tempId = "proc-" + Date.now();
+        setMessages(prev => [...prev, {
+            id: tempId,
+            role: "assistant",
+            content: action === "approve" ? "Processing approval..." : "Cancelling request...",
+            createdAt: new Date()
+        }]);
+
+        try {
+            const res = await fetchWithAuth("/chat/approval", {
+                method: "POST",
+                body: JSON.stringify({
+                    thread_id: activeConvoId,
+                    run_id: message.runId,
+                    tool_call_id: message.toolCallId,
+                    action: action
+                })
+            });
+
+            const data = await res.json();
+            
+            // 3. Replace processing with result
+            setMessages(prev => prev.map(m => 
+                m.id === tempId ? {
+                    ...m,
+                    content: data.content,
+                    status: data.status,
+                    id: `resp-${Date.now()}`
+                } : m
+            ));
+
+        } catch (error) {
+            console.error("Approval Error", error);
+            setMessages(prev => prev.map(m => 
+                m.id === tempId ? { ...m, content: "Error processing action." } : m
+            ));
+        }
+    };
+
+    // ===========================================================================
+    // 6. SEND CHAT (POST /chat)
     // ===========================================================================
     const handleSendMessage = async (text: string): Promise<void> => {
+        const currentConvo = conversations.find(c => c.id === activeConvoId);
+        const isFirstMessage = currentConvo?.title === "New Chat";
+        
         if (!user || !activeConvoId || !text.trim() || isLoading) return;
-
+    
         setIsLoading(true);
-
+    
         // 1. Optimistic Update (User Message)
         const tempUserMsg: Message = {
             id: Date.now().toString(),
@@ -230,19 +284,17 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
             createdAt: new Date(),
         };
         setMessages((prev) => [...prev, tempUserMsg]);
-
+    
         // 2. AI Placeholder
         const tempAiMsgId = "temp-ai-" + Date.now();
-        const tempAiMsg: Message = {
+        setMessages((prev) => [...prev, {
             id: tempAiMsgId,
             role: "assistant",
-            content: "...", // Placeholder content for immediate display
+            content: "Fixie is thinking...", 
             createdAt: new Date(),
-        };
-        setMessages((prev) => [...prev, tempAiMsg]);
-
+        }]);
+    
         try {
-            // 3. Call non-streaming API
             const res = await fetchWithAuth("/chat", {
                 method: "POST",
                 body: JSON.stringify({
@@ -250,27 +302,39 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
                     input: { messages: [{ role: "user", content: text }] } 
                 }),
             });
-
+    
             const data = await res.json();
-            const aiContent = data.content;
-
-            // 4. Update placeholder with final AI content
+    
+            // 3. Update placeholder with final AI content (or Interrupt request)
             setMessages((prev) => 
-                prev.map((msg) => 
-                    msg.id === tempAiMsgId ? { 
-                        ...msg, 
-                        content: aiContent,
-                        id: data.message_id || tempAiMsgId // Assuming the non-streaming response might have a message_id 
-                    } : msg
-                )
+                prev.map((msg) => {
+                    if (msg.id === tempAiMsgId) {
+                        const updatedMsg: Message = {
+                            ...msg,
+                            content: data.content,
+                            id: data.message_id || tempAiMsgId,
+                            status: data.status // 'completed' or 'requires_action'
+                        };
+
+                        // Map Interrupt fields if present
+                        if (data.status === "requires_action") {
+                            updatedMsg.toolName = data.tool_name;
+                            updatedMsg.toolArgs = data.tool_args;
+                            updatedMsg.toolCallId = data.tool_call_id;
+                            updatedMsg.runId = data.run_id;
+                        }
+                        return updatedMsg;
+                    }
+                    return msg;
+                })
             );
-
-            // Reload threads to update the conversation title/timestamp
-            loadThreads();
-
+    
+            if (isFirstMessage) {
+                await loadThreads();
+            }
+    
         } catch (error) {
             console.error("Chat error", error);
-            // Update placeholder with error message
             setMessages((prev) => 
                 prev.map((msg) => 
                     msg.id === tempAiMsgId ? { ...msg, content: "Error: Could not get response." } : msg
@@ -301,8 +365,15 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
         return () => unsubscribe();
     }, [user]);
 
-    const deleteOrganization = (orgId: string) => {
-        console.log("Delete org", orgId);
+    const deleteOrganization = async (orgId: string) => {
+        if (!window.confirm("Are you sure...")) return;
+        try {
+            await deleteDoc(doc(db, "organizations", orgId));
+            if (activeOrgId === orgId) setActiveOrgId(null);
+        } catch (e) {
+            console.error("Error deleting org", e);
+            alert("Failed to delete organization");
+        }
     };
 
     const createOrganization = async () => {
@@ -478,7 +549,7 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
                                                 </div>
                                             </div>
                                             <button
-                                                className="text-gray-400 hover:text-red-400 text-sm"
+                                                className="text-gray-400 hover:text-red-400 text-sm ml-2"
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     deleteConversation(convo.id);
@@ -513,7 +584,11 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
                                     {/* Messages */}
                                     <div className="flex-1 overflow-y-auto p-4 space-y-3">
                                         {messages.map((msg) => (
-                                            <ChatMessage key={msg.id} message={msg} />
+                                            <ChatMessage 
+                                                key={msg.id} 
+                                                message={msg} 
+                                                onApprovalAction={handleApprovalAction} 
+                                            />
                                         ))}
 
                                         {isLoading && (
@@ -541,7 +616,7 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
                                                 }
                                             }}
                                             placeholder="Type your message..."
-                                            className="flex-1 bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                            className="flex-1 bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                             disabled={isLoading}
                                         />
                                         <button

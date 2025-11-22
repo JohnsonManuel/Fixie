@@ -695,3 +695,94 @@ body {
 .message.assistant .message-avatar .fixie-avatar {
   border-color: var(--accent-secondary);
 }
+
+/* Add to Dashboard.css or Chat.css */
+
+.tool-approval-card {
+  margin-top: 12px;
+  background-color: rgba(31, 41, 55, 0.95); /* dark gray */
+  border: 1px solid #374151;
+  border-radius: 8px;
+  padding: 16px;
+  max-width: 100%;
+}
+
+.tool-approval-card .header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+  color: #e5e7eb;
+  font-weight: 600;
+}
+
+.tool-approval-card .details {
+  background-color: #111827;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  border: 1px solid #374151;
+}
+
+.tool-arg-row {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 4px;
+}
+
+.tool-arg-key {
+  font-size: 0.75em;
+  text-transform: uppercase;
+  color: #9ca3af;
+  letter-spacing: 0.05em;
+}
+
+.tool-arg-value {
+  color: #fff;
+  font-family: monospace;
+  font-size: 0.9em;
+}
+
+.approval-btn-group {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-approve {
+  flex: 1;
+  background-color: #059669;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: background-color 0.2s;
+}
+
+.btn-approve:hover {
+  background-color: #047857;
+}
+
+.btn-reject {
+  flex: 1;
+  background-color: transparent;
+  color: #ef4444;
+  border: 1px solid #ef4444;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: background-color 0.2s;
+}
+
+.btn-reject:hover {
+  background-color: rgba(239, 68, 68, 0.1);
+}
