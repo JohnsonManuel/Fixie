@@ -55,55 +55,82 @@ const SignupAdmin: React.FC = () => {
     return true;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!validateForm()) return;
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  if (!validateForm()) return;
 
-    setIsLoading(true);
-    setFormError("");
-    setSuccessMessage("");
+  setIsLoading(true);
+  setFormError("");
+  setSuccessMessage("");
 
-    try {
-      // 1️⃣ Create user in Firebase Auth
-      const result = await signUp(formData.email, formData.password);
-      const user = result.user;
+  try {
+    // 1️⃣ Create user in Firebase Auth
+    const result = await signUp(formData.email, formData.password);
+    const user = result.user;
 
-      // 🔄 Refresh token to ensure Firestore sees authentication context
-      await user.getIdToken(true);
-      await new Promise((r) => setTimeout(r, 200));
+    // 🔄 Refresh token to ensure Firestore sees authentication context
+    await user.getIdToken(true);
+    await new Promise((r) => setTimeout(r, 200));
 
-      // Extract domain part (for future org mapping)
-      const domain = formData.email.split("@")[1].toLowerCase();
+    // Extract domain part (for org mapping)
+    const domain = formData.email.split("@")[1].toLowerCase();
 
-      // 2️⃣ Send verification email
-      await sendEmailVerification(user);
+    // 2️⃣ If signing up as admin, ensure this org doesn't already have an admin
+    if (role === "admin") {
+      const orgRef = collection(db, "organizations");
+      const q = query(orgRef, where("domain", "==", domain));
+      const snapshot = await getDocs(q);
 
-      // 3️⃣ Create user document in Firestore
-      await setDoc(doc(db, "users", user.uid), {
-        email: user.email,
-        username: formData.username,
-        role, // likely "user" or "admin"
-        verified: false,
-        profileComplete: false,
-        orgDomain: domain,
-        createdAt: new Date().toISOString(),
-      });
+      if (!snapshot.empty) {
+        const orgData = snapshot.docs[0].data();
 
-      // 4️⃣ Show success message
-      setSuccessMessage(
-        `A verification email has been sent to ${user.email}. Please verify your email before logging in.`
-      );
-    } catch (err: any) {
-      console.error("Signup error:", err);
-      setFormError(
-        err.code === "permission-denied"
-          ? "You don’t have permission to perform this action."
-          : err.message
-      );
-    } finally {
-      setIsLoading(false);
+        const hasAdmin =
+          orgData.adminUid ||
+          (Array.isArray(orgData.members) &&
+            orgData.members.some((m: any) => m.role === "admin"));
+
+        if (hasAdmin) {
+          // Optional: clean up the just-created auth user
+          await user.delete();
+
+          throw new Error(
+            "This organization already has an admin. Please sign up as a standard user."
+          );
+        }
+      }
     }
-  };
+
+    // 3️⃣ Send verification email
+    await sendEmailVerification(user);
+
+    // 4️⃣ Create user document in Firestore
+    await setDoc(doc(db, "users", user.uid), {
+      email: user.email,
+      username: formData.username,
+      role, // "user" or "admin"
+      verified: false,
+      profileComplete: false,
+      orgDomain: domain,
+      organizationKey: domain.split('.')[0],
+      createdAt: new Date().toISOString(),
+    });
+
+    // 5️⃣ Show success message
+    setSuccessMessage(
+      `A verification email has been sent to ${user.email}. Please verify your email before logging in.`
+    );
+  } catch (err: any) {
+    console.error("Signup error:", err);
+    setFormError(
+      err.code === "permission-denied"
+        ? "You don’t have permission to perform this action."
+        : err.message
+    );
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 
   return (
     <div className="signup-page">

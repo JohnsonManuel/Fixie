@@ -13,6 +13,8 @@ import {
   where,
   getDocs,
   arrayUnion,
+  serverTimestamp,
+  setDoc
 } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 
@@ -53,8 +55,10 @@ function Login({ onBackToHome }: LoginProps) {
     setFormError("");
 
     try {
+      const { email, password } = formData;
+
       // 1. Sign in
-      const result = await signIn(formData.email, formData.password);
+      const result = await signIn(email, password);
       const user = result.user;
 
       // 2. Enforce email verification
@@ -65,37 +69,7 @@ function Login({ onBackToHome }: LoginProps) {
         return;
       }
 
-      // 3. Check if the user's domain maps to an existing organization
-      const domain = formData.email.split("@")[1].toLowerCase();
-      const orgQuery = query(
-        collection(db, "organizations"),
-        where("domain", "==", domain)
-      );
-
-      const orgSnap = await getDocs(orgQuery);
-
-      if (!orgSnap.empty) {
-        const orgDoc = orgSnap.docs[0];
-        const orgId = orgDoc.id;
-        const orgData = orgDoc.data();
-        const orgRef = doc(db, "organizations", orgId);
-
-        // 🔥 Check if user already a member
-        const alreadyMember = orgData.members && orgData.members[user.uid];
-
-        if (!alreadyMember) {
-          // Only add if the user is NOT already in the org
-          await updateDoc(orgRef, {
-            [`members.${user.uid}`]: {
-              email: user.email,
-              role: "user",
-              status: "active",
-            }
-          });
-        }
-      }
-
-      // 4. Fetch user's Firestore record
+      // 3. Fetch user's Firestore record (role, organizationKey, etc.)
       const userRef = doc(db, "users", user.uid);
       const userSnap = await getDoc(userRef);
 
@@ -106,12 +80,84 @@ function Login({ onBackToHome }: LoginProps) {
         return;
       }
 
+      const userData = userSnap.data() as any;
+      const userRole = userData.role || "user";
+      const organizationKey = userData.organizationKey || null; // e.g. "acme" from "@acme"
+
+      // 4. Look up org by domain
+      const domain = email.split("@")[1].toLowerCase();
+      const orgQuery = query(
+        collection(db, "organizations"),
+        where("domain", "==", domain)
+      );
+
+      const orgSnap = await getDocs(orgQuery);
+
+      if (!orgSnap.empty) {
+        // ----- ORG EXISTS -----
+        const orgDoc = orgSnap.docs[0];
+        const orgId = orgDoc.id;
+        const orgData = orgDoc.data() as any;
+        const orgRef = doc(db, "organizations", orgId);
+
+        const members = orgData.members || {};
+        const alreadyMember = !!members[user.uid];
+
+        if (!alreadyMember) {
+          // If domain exists and login user is standard user → add them
+          if (userRole === "user") {
+            await updateDoc(orgRef, {
+              [`members.${user.uid}`]: {
+                email: user.email,
+                role: "user",
+                status: "active",
+              },
+            });
+          } else if (userRole === "admin") {
+            // Optional: ensure admin is recorded as admin member
+            await updateDoc(orgRef, {
+              [`members.${user.uid}`]: {
+                email: user.email,
+                role: "admin",
+                status: "active",
+              },
+            });
+          }
+        }
+      } else {
+        // ----- ORG DOES NOT EXIST -----
+        if (userRole === "admin") {
+          // Admin is the first user from this domain → create org
+          const orgRef = doc(collection(db, "organizations"));
+          await setDoc(orgRef, {
+            domain,
+            organizationKey, // e.g. "acme" derived from "@acme" at signup
+            createdAt: serverTimestamp(),
+            createdBy: user.email,
+            members: {
+              [user.uid]: {
+                email: user.email,
+                role: "admin",
+                status: "active",
+              },
+            },
+          });
+        } else {
+          // Standard user, but no org for their domain
+          setFormError(
+            "No organization is registered for this email domain. Please contact your administrator."
+          );
+          await logout();
+          setIsLoading(false);
+          return;
+        }
+      }
+
       // 5. Redirect user
       navigate("/dashboard");
-
     } catch (err: any) {
       console.error(err);
-      setFormError(err.message);
+      setFormError(err.message || "Something went wrong while logging in.");
     } finally {
       setIsLoading(false);
     }

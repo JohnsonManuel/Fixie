@@ -37,7 +37,12 @@ const ChatIcon = () => <span>💬</span>;
 // COMPONENT
 // =============================================================================
 
-function DashboardContent({ userRole }: { userRole: string | null }) {
+type DashboardContentProps = {
+  userRole: string | null;
+  organizationKey: string | null;
+};
+
+function DashboardContent({ userRole, organizationKey }: DashboardContentProps) {
   const { user, logout } = useAuth();
   
   // UI State
@@ -330,10 +335,46 @@ function DashboardContent({ userRole }: { userRole: string | null }) {
 
   const createOrganization = async () => {
     if (!user) return;
-    if (!orgDomain.trim()) return alert("Enter a valid domain name");
 
-    const domain = orgDomain.trim().toLowerCase();
+    if (!organizationKey) {
+      alert("No organization key found for this admin.");
+      return;
+    }
 
+    let raw = orgDomain.trim().toLowerCase();
+    if (!raw) {
+      alert("Enter a valid domain name");
+      return;
+    }
+
+    // allow "@fixie.com" -> "fixie.com"
+    raw = raw.replace(/^@/, "");
+
+    // basic domain syntax check
+    const DOMAIN_PATTERN = /^[a-z0-9-]+(\.[a-z0-9-]+)+$/i;
+    if (!DOMAIN_PATTERN.test(raw)) {
+      alert("Domain must be in the format organizationKey.tld (e.g. fixie.com)");
+      return;
+    }
+
+    const domain = raw;
+
+    // 1) prefix must match organizationKey
+    const [prefix, ...rest] = domain.split(".");
+    if (prefix !== organizationKey.toLowerCase()) {
+      alert(`Domain must start with "${organizationKey}." (e.g. ${organizationKey}.com)`);
+      return;
+    }
+
+    // 2) optionally restrict TLDs to .co / .com / .org
+    const tld = rest.join("."); // "com", "co", "org", "co.uk", etc.
+    const ALLOWED_TLDS = ["com", "co", "org"];
+    if (!ALLOWED_TLDS.includes(tld)) {
+      alert(`Only .co, .com or .org are allowed for ${organizationKey} (e.g. ${organizationKey}.com).`);
+      return;
+    }
+
+    // Check if org exists
     const q = query(collection(db, "organizations"), where("domain", "==", domain));
     const existing = await getDocs(q);
 
@@ -344,6 +385,7 @@ function DashboardContent({ userRole }: { userRole: string | null }) {
 
     const orgData = {
       domain,
+      organizationKey,
       createdBy: user.email,
       createdAt: new Date(),
       members: {
@@ -351,13 +393,15 @@ function DashboardContent({ userRole }: { userRole: string | null }) {
           email: user.email,
           role: "admin",
           status: "active",
-        }
-      }
+        },
+      },
     };
 
     await addDoc(collection(db, "organizations"), orgData);
     setOrgDomain("");
     setCreatingOrg(false);
+
+    console.log(`✅ Created new organization domain: ${domain}`);
   };
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
@@ -748,10 +792,15 @@ function DashboardContent({ userRole }: { userRole: string | null }) {
   );
 }
 
-export default function Dashboard({ userRole }: { userRole: string | null }) {
+type DashboardProps = {
+  userRole: string | null;
+  organizationKey: string | null;
+};
+
+export default function Dashboard({ userRole, organizationKey }: DashboardProps) {
   return (
     <ThemeProvider>
-      <DashboardContent userRole={userRole} />
+      <DashboardContent userRole={userRole} organizationKey={organizationKey} />
     </ThemeProvider>
   );
 }
