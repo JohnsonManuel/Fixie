@@ -7,15 +7,13 @@ import { ThemeProvider } from "../contexts/ThemeContext";
 import { config } from "../services/config";
 import { Message, Conversation } from "../types";
 import { formatTimestamp, formatConversationTitle } from "../utils";
-import { db } from "../services/firebase"; // Kept for Organization logic
+import { db } from "../services/firebase"; 
 import {
   addDoc,
   collection,
-  doc,
   getDocs,
   onSnapshot,
   query,
-  writeBatch,
   where
 } from "firebase/firestore";
 
@@ -23,8 +21,12 @@ import {
 // CONFIG & ICONS
 // =============================================================================
 
-// Adjust this to match your Cloud Run URL (without trailing slash)
-const API_BASE_URL = config.functions.chat.replace('/chat', '') ;
+// 1. Get the URL from config
+const RAW_API_URL = config.functions.main_endpoint || "";
+// 2. Remove trailing slash if present (prevents double slashes in requests)
+const API_BASE_URL = RAW_API_URL.endsWith("/") 
+  ? RAW_API_URL.slice(0, -1) 
+  : RAW_API_URL;
 
 const DeleteIcon = () => <span>🗑️</span>;
 const AddIcon = () => <span>➕</span>;
@@ -50,7 +52,7 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Chat State (Now driven by Python API)
+  // Chat State (Driven by Python API)
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeConvoId, setActiveConvoId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -58,7 +60,7 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
   const [isLoading, setIsLoading] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
 
-  // Organization State (Driven by Firestore - Unchanged)
+  // Organization State (Driven by Firestore)
   const [organizations, setOrganizations] = useState<any[]>([]);
   const [activeOrgId, setActiveOrgId] = useState<string | null>(null);
   const [creatingOrg, setCreatingOrg] = useState(false);
@@ -77,12 +79,13 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
       ...(options.headers || {}),
     };
 
+    // Constructs: https://your-url.run.app/threads
     const res = await fetch(`${API_BASE_URL}${endpoint}`, {
       ...options,
       headers,
     });
 
-    if (!res.ok && endpoint !== "/chat/stream") { // Stream handles errors differently
+    if (!res.ok && endpoint !== "/chat/stream") { 
        const err = await res.text();
        throw new Error(err || res.statusText);
     }
@@ -107,14 +110,16 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
       const mapped: Conversation[] = data.threads.map((t: any) => ({
         id: t.thread_id,
         title: t.metadata?.title || "New Chat",
-        // Handle generic date string to JS Date object for utils
         updatedAt: t.updated_at ? new Date(t.updated_at) : new Date(),
+        // Ensure your types.ts interface supports createdAt, or remove this line
         createdAt: t.created_at ? new Date(t.created_at) : new Date(),
       }));
 
+      // Sort by newest first
+      mapped.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
+
       setConversations(mapped);
       
-      // If we have threads but none selected, select the first one
       if (mapped.length > 0 && !activeConvoId) {
         setActiveConvoId(mapped[0].id);
       }
@@ -139,12 +144,11 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
         const res = await fetchWithAuth(`/threads/${activeConvoId}/history`);
         const data = await res.json();
 
-        // Map LangGraph messages to UI Messages
         const uiMessages: Message[] = (data.messages || []).map((m: any, index: number) => ({
-          id: m.id || `msg-${index}`, // Fallback ID
+          id: m.id || `msg-${index}`,
           role: m.type === "human" ? "user" : "assistant",
           content: m.content,
-          createdAt: new Date(), // History doesn't always have exact timestamp per msg
+          createdAt: new Date(), 
         }));
         
         setMessages(uiMessages);
@@ -164,7 +168,7 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
   const createNewConversation = async () => {
     try {
       const res = await fetchWithAuth("/threads", { method: "POST" });
-      const data = await res.json(); // returns { thread_id: "..." }
+      const data = await res.json();
       
       const newConvo: Conversation = {
         id: data.thread_id,
@@ -210,7 +214,7 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
     setIsLoading(true);
     setIsStreaming(true);
 
-    // 1. Optimistic Update (Show user message immediately)
+    // 1. Optimistic Update
     const tempUserMsg: Message = {
       id: Date.now().toString(),
       role: "user",
@@ -219,12 +223,12 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
     };
     setMessages((prev) => [...prev, tempUserMsg]);
 
-    // 2. Prepare AI Message Placeholder
+    // 2. AI Placeholder
     const tempAiMsgId = "temp-ai-" + Date.now();
     const tempAiMsg: Message = {
       id: tempAiMsgId,
       role: "assistant",
-      content: "", // Starts empty
+      content: "",
       createdAt: new Date(),
     };
     setMessages((prev) => [...prev, tempAiMsg]);
@@ -259,20 +263,13 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
             const data = JSON.parse(line);
             if (data.type === "done") break;
 
-            // Logic to extract content from LangGraph event
             let token = "";
             
-            // Case A: Standard content field
+            // Parsing logic matching your Python stream format
             if (data.content) token = data.content;
-            // Case B: Deeply nested message update (LangGraph specific)
             else if (data.messages && Array.isArray(data.messages)) {
                 const lastMsg = data.messages[data.messages.length - 1];
                 if (lastMsg.type === 'ai') {
-                   // If the backend sends the FULL message every time, replace it.
-                   // If it sends deltas, append it. 
-                   // Based on your Python code returning chunk.data, 
-                   // let's assume it might be returning full state updates or deltas.
-                   // For safety in this UI, let's assume we need to grab content length diff or just update:
                    if (lastMsg.content.length >= aiContent.length) {
                        token = lastMsg.content.substring(aiContent.length); 
                    }
@@ -281,8 +278,6 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
 
             if (token) {
               aiContent += token;
-              
-              // Update the specific message in state
               setMessages((prev) => 
                 prev.map((msg) => 
                   msg.id === tempAiMsgId ? { ...msg, content: aiContent } : msg
@@ -308,12 +303,11 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
   };
 
   // ===========================================================================
-  // ORGANIZATION LOGIC (Kept exactly as is, using Firestore)
+  // ORGANIZATION LOGIC
   // ===========================================================================
   
   useEffect(() => {
     if (!user) return;
-    // Keeping original Firestore listener for Organizations
     const orgsRef = collection(db, "organizations");
     const q = query(orgsRef, where("createdBy", "==", user.email));
 
@@ -329,7 +323,6 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
   }, [user]);
 
   const deleteOrganization = (orgId: string) => {
-     // Implementation for deleting org (if needed per original code)
      console.log("Delete org", orgId);
   };
 
@@ -347,10 +340,7 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
       return;
     }
 
-    // allow "@fixie.com" -> "fixie.com"
     raw = raw.replace(/^@/, "");
-
-    // basic domain syntax check
     const DOMAIN_PATTERN = /^[a-z0-9-]+(\.[a-z0-9-]+)+$/i;
     if (!DOMAIN_PATTERN.test(raw)) {
       alert("Domain must be in the format organizationKey.tld (e.g. fixie.com)");
@@ -358,23 +348,19 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
     }
 
     const domain = raw;
-
-    // 1) prefix must match organizationKey
     const [prefix, ...rest] = domain.split(".");
     if (prefix !== organizationKey.toLowerCase()) {
       alert(`Domain must start with "${organizationKey}." (e.g. ${organizationKey}.com)`);
       return;
     }
 
-    // 2) optionally restrict TLDs to .co / .com / .org
-    const tld = rest.join("."); // "com", "co", "org", "co.uk", etc.
+    const tld = rest.join(".");
     const ALLOWED_TLDS = ["com", "co", "org"];
     if (!ALLOWED_TLDS.includes(tld)) {
-      alert(`Only .co, .com or .org are allowed for ${organizationKey} (e.g. ${organizationKey}.com).`);
+      alert(`Only .co, .com or .org are allowed.`);
       return;
     }
 
-    // Check if org exists
     const q = query(collection(db, "organizations"), where("domain", "==", domain));
     const existing = await getDocs(q);
 
@@ -400,8 +386,6 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
     await addDoc(collection(db, "organizations"), orgData);
     setOrgDomain("");
     setCreatingOrg(false);
-
-    console.log(`✅ Created new organization domain: ${domain}`);
   };
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
@@ -472,7 +456,7 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
       <main className="dashboard-content">
         {activeTab === "chat" && (
           <div className="chat-tab flex h-full w-full bg-gray-900 text-gray-100">
-            {/* LEFT: Sidebar (1/4 width) */}
+            {/* LEFT: Sidebar */}
             <aside className={`w-1/4 min-w-[16rem] border-r border-gray-800 bg-gray-800 flex flex-col ${isSidebarOpen ? 'block' : 'hidden md:flex'}`}>
               <div className="flex items-center justify-between px-4 py-3 border-b border-gray-700">
                 <h2 className="text-sm font-semibold">Conversations</h2>
@@ -529,7 +513,7 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
               </div>
             </aside>
 
-            {/* RIGHT: Main chat area (3/4 width) */}
+            {/* RIGHT: Main chat area */}
             <section className="flex-1 flex flex-col">
               {!activeConvoId ? (
                 <div className="flex flex-col items-center justify-center flex-1 text-center space-y-4">
@@ -553,7 +537,6 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
                       <ChatMessage key={msg.id} message={msg} />
                     ))}
 
-                    {/* Loading indicator (only if logic is processing but stream hasn't started painting yet) */}
                     {isLoading && !isStreaming && (
                       <div className="italic text-gray-400 text-sm">
                         Fixie is typing...
@@ -601,10 +584,9 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
           </div>
         )}
 
-        {/* 🔹 Organization tab (Logic kept exactly as provided) */}
+        {/* Organization tab */}
         {activeTab === "organization" && (
           <div className="organization-tab flex h-full bg-gray-900 text-gray-100">
-            {/* LEFT SIDEBAR */}
             <aside className="w-1/4 min-w-[16rem] border-r border-gray-800 bg-gray-800 flex flex-col">
               <div className="flex items-center justify-between px-4 py-3 border-b border-gray-700">
                 <h2 className="text-sm font-semibold tracking-wide uppercase text-gray-300">
@@ -677,7 +659,6 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
               </div>
             </aside>
 
-            {/* RIGHT CONTENT AREA */}
             <section className="w-3/4 flex flex-col px-10 py-8 overflow-y-auto">
               {(creatingOrg || organizations.length === 0) && userRole === "admin" ? (
                 <div className="max-w-2xl mx-auto space-y-8">
