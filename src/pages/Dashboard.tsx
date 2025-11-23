@@ -3,9 +3,8 @@ import { useAuth } from "../hooks/useAuth";
 import "../styles/Dashboard.css";
 import ChatMessage from "../components/chat/ChatMessage";
 import ThemeToggle from "../components/ThemeToggle";
-import { ThemeProvider } from "../contexts/ThemeContext";
+import { ThemeProvider, useTheme } from "../contexts/ThemeContext";
 import { config } from "../services/config";
-// IMPORT FROM TYPES (Single Source of Truth)
 import { Message, Conversation } from "../types"; 
 import { formatTimestamp, formatConversationTitle } from "../utils";
 import { db } from "../services/firebase"; 
@@ -17,24 +16,27 @@ import {
     query,
     where,
     deleteDoc,
-    doc // Added doc for deletion
+    doc
 } from "firebase/firestore";
 
 // =============================================================================
-// CONFIG & ICONS
+// ICONS (Material UI)
+// =============================================================================
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import AddIcon from '@mui/icons-material/Add';
+import SendIcon from '@mui/icons-material/Send';
+import MenuIcon from '@mui/icons-material/Menu';
+import LogoutIcon from '@mui/icons-material/Logout';
+import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
+
+// =============================================================================
+// CONFIG
 // =============================================================================
 
 const RAW_API_URL = config.functions.main_endpoint || "";
 const API_BASE_URL = RAW_API_URL.endsWith("/") 
     ? RAW_API_URL.slice(0, -1) 
     : RAW_API_URL;
-
-const DeleteIcon = () => <span>🗑️</span>;
-const AddIcon = () => <span>➕</span>;
-const SendIcon = () => <span>📤</span>;
-const MenuIcon = () => <span>☰</span>;
-const LogoutIcon = () => <span>🚪</span>;
-const ChatIcon = () => <span>💬</span>;
 
 // =============================================================================
 // COMPONENT
@@ -47,6 +49,7 @@ type DashboardContentProps = {
 
 function DashboardContent({ userRole, organizationKey }: DashboardContentProps) {
     const { user, logout } = useAuth();
+    const { theme } = useTheme();
     
     // UI State
     const [activeTab, setActiveTab] = useState<"chat" | "organization">("chat");
@@ -65,6 +68,12 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
     const [activeOrgId, setActiveOrgId] = useState<string | null>(null);
     const [creatingOrg, setCreatingOrg] = useState(false);
     const [orgDomain, setOrgDomain] = useState("");
+
+    // REF: Track active conversation ID for async safety
+    const activeConvoIdRef = useRef(activeConvoId);
+    useEffect(() => {
+        activeConvoIdRef.current = activeConvoId;
+    }, [activeConvoId]);
 
     // ===========================================================================
     // HELPER: API FETCH WITH AUTH
@@ -138,21 +147,26 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
     // 2. LOAD HISTORY (GET /threads/{id}/history)
     // ===========================================================================
     useEffect(() => {
+        setMessages([]); 
+        
         if (!user || !activeConvoId) return;
+
+        const abortController = new AbortController();
+        let isMounted = true; 
 
         const loadHistory = async () => {
             setIsLoading(true);
             try {
-                const res = await fetchWithAuth(`/threads/${activeConvoId}/history`);
+                const res = await fetchWithAuth(`/threads/${activeConvoId}/history`, {
+                    signal: abortController.signal
+                });
                 const data = await res.json();
 
                 const uiMessages: Message[] = (data.messages || []).map((m: any, index: number) => ({
                     id: m.id || `msg-${index}`,
                     role: m.type === "human" ? "user" : "assistant",
                     content: m.content,
-                    createdAt: new Date(), // History usually doesn't have per-message timestamps in standard LangGraph
-                    
-                    // Map persisted fields if available
+                    createdAt: new Date(),
                     status: m.status,
                     toolName: m.toolName,
                     toolArgs: m.toolArgs,
@@ -160,16 +174,31 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
                     runId: m.runId
                 }));
                 
-                setMessages(uiMessages);
-            } catch (error) {
-                console.error("Failed to load history", error);
+                if (isMounted) {
+                    setMessages(uiMessages);
+                }
+            } catch (error: any) {
+                if (error.name !== 'AbortError') {
+                    console.error("Failed to load history", error);
+                }
             } finally {
-                setIsLoading(false);
+                if (isMounted) {
+                    setIsLoading(false);
+                }
             }
         };
 
         loadHistory();
+
+        return () => {
+            isMounted = false;
+            abortController.abort();
+        };
     }, [user, activeConvoId, fetchWithAuth]);
+
+    useEffect(() => {
+        setInputMessage("");
+    }, [activeConvoId]);
 
     // ===========================================================================
     // 3. CREATE THREAD (POST /threads)
@@ -188,7 +217,6 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
 
             setConversations([newConvo, ...conversations]);
             setActiveConvoId(data.thread_id);
-            setMessages([]);
             setIsSidebarOpen(false);
         } catch (error) {
             console.error("Error creating thread", error);
@@ -207,7 +235,6 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
             
             if (activeConvoId === convoId) {
                 setActiveConvoId(remaining[0]?.id || null);
-                if (!remaining.length) setMessages([]);
             }
         } catch (error) {
             console.error("Error deleting thread", error);
@@ -215,17 +242,15 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
     };
 
     // ===========================================================================
-    // 5. HANDLE APPROVAL (NEW LOGIC)
+    // 5. HANDLE APPROVAL
     // ===========================================================================
     const handleApprovalAction = async (action: "approve" | "reject", message: Message) => {
         if (!user || !activeConvoId || !message.runId || !message.toolCallId) return;
 
-        // 1. Optimistic Update
         setMessages(prev => prev.map(m => 
             m.id === message.id ? { ...m, status: "action_taken" } : m
         ));
         
-        // 2. Add processing placeholder
         const tempId = "proc-" + Date.now();
         setMessages(prev => [...prev, {
             id: tempId,
@@ -247,7 +272,8 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
 
             const data = await res.json();
             
-            // 3. Replace processing with result
+            if (activeConvoIdRef.current !== activeConvoId) return;
+
             setMessages(prev => prev.map(m => 
                 m.id === tempId ? {
                     ...m,
@@ -259,9 +285,11 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
 
         } catch (error) {
             console.error("Approval Error", error);
-            setMessages(prev => prev.map(m => 
-                m.id === tempId ? { ...m, content: "Error processing action." } : m
-            ));
+            if (activeConvoIdRef.current === activeConvoId) {
+                setMessages(prev => prev.map(m => 
+                    m.id === tempId ? { ...m, content: "Error processing action." } : m
+                ));
+            }
         }
     };
 
@@ -276,7 +304,6 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
     
         setIsLoading(true);
     
-        // 1. Optimistic Update (User Message)
         const tempUserMsg: Message = {
             id: Date.now().toString(),
             role: "user",
@@ -285,7 +312,6 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
         };
         setMessages((prev) => [...prev, tempUserMsg]);
     
-        // 2. AI Placeholder
         const tempAiMsgId = "temp-ai-" + Date.now();
         setMessages((prev) => [...prev, {
             id: tempAiMsgId,
@@ -305,7 +331,8 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
     
             const data = await res.json();
     
-            // 3. Update placeholder with final AI content (or Interrupt request)
+            if (activeConvoIdRef.current !== activeConvoId) return;
+
             setMessages((prev) => 
                 prev.map((msg) => {
                     if (msg.id === tempAiMsgId) {
@@ -313,10 +340,9 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
                             ...msg,
                             content: data.content,
                             id: data.message_id || tempAiMsgId,
-                            status: data.status // 'completed' or 'requires_action'
+                            status: data.status
                         };
 
-                        // Map Interrupt fields if present
                         if (data.status === "requires_action") {
                             updatedMsg.toolName = data.tool_name;
                             updatedMsg.toolArgs = data.tool_args;
@@ -335,13 +361,17 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
     
         } catch (error) {
             console.error("Chat error", error);
-            setMessages((prev) => 
-                prev.map((msg) => 
-                    msg.id === tempAiMsgId ? { ...msg, content: "Error: Could not get response." } : msg
-                )
-            );
+            if (activeConvoIdRef.current === activeConvoId) {
+                setMessages((prev) => 
+                    prev.map((msg) => 
+                        msg.id === tempAiMsgId ? { ...msg, content: "Error: Could not get response." } : msg
+                    )
+                );
+            }
         } finally {
-            setIsLoading(false);
+            if (activeConvoIdRef.current === activeConvoId) {
+                setIsLoading(false);
+            }
         }
     };
 
@@ -457,12 +487,13 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
     }
 
     return (
-        <div className="dashboard">
+        // Applied 'data-theme' to trigger CSS variables
+        <div className="dashboard" data-theme={theme}>
             {/* HEADER */}
             <header className="dashboard-header">
                 <div className="header-left">
                     <button className="menu-btn" onClick={toggleSidebar}>
-                        <MenuIcon />
+                        <MenuIcon fontSize="small" />
                     </button>
                     <h1>Fixie AI Support</h1>
                     <div className="flex items-center gap-3">
@@ -496,8 +527,12 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
 
                 <div className="header-right">
                     <ThemeToggle />
-                    <button className="logout-btn" onClick={logout}>
-                        <LogoutIcon /> Logout
+                    <button 
+                        className="logout-btn" 
+                        onClick={logout}
+                        title="Sign out"
+                    >
+                        <LogoutIcon fontSize="small" /> <span>Logout</span>
                     </button>
                 </div>
             </header>
@@ -505,20 +540,20 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
             {/* MAIN CONTENT */}
             <main className="dashboard-content">
                 {activeTab === "chat" && (
-                    <div className="chat-tab flex h-full w-full bg-gray-900 text-gray-100">
+                    <div className="chat-tab flex h-full w-full">
                         {/* LEFT: Sidebar */}
-                        <aside className={`w-1/4 min-w-[16rem] border-r border-gray-800 bg-gray-800 flex flex-col ${isSidebarOpen ? 'block' : 'hidden md:flex'}`}>
-                            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-700">
+                        <aside className={`sidebar w-1/4 min-w-[16rem] flex flex-col ${isSidebarOpen ? 'block' : 'hidden md:flex'}`}>
+                            <div className="sidebar-header flex items-center justify-between px-4 py-3">
                                 <h2 className="text-sm font-semibold">Conversations</h2>
                                 <button
                                     onClick={createNewConversation}
                                     className="flex items-center gap-1 px-2 py-1 bg-indigo-600 hover:bg-indigo-700 text-white text-xs rounded-md"
                                 >
-                                    <AddIcon /> New
+                                    <AddIcon fontSize="small" /> New
                                 </button>
                             </div>
 
-                            <div className="flex-1 overflow-y-auto">
+                            <div className="conversations-list flex-1 overflow-y-auto">
                                 {conversations.length === 0 ? (
                                     <p className="text-gray-400 text-sm px-4 py-6 text-center">
                                         No conversations yet
@@ -527,35 +562,36 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
                                     conversations.map((convo) => (
                                         <div
                                             key={convo.id}
-                                            className={`flex items-center justify-between px-4 py-2 cursor-pointer transition ${
+                                            // Replaced conditional Tailwind classes with 'active' class logic
+                                            className={`conversation-item flex items-center justify-between px-4 py-2 cursor-pointer transition ${
                                                 activeConvoId === convo.id
-                                                    ? "bg-indigo-700 text-white"
-                                                    : "hover:bg-gray-700"
+                                                    ? "active"
+                                                    : ""
                                             }`}
                                             onClick={() => {
                                                 setActiveConvoId(convo.id);
                                                 setIsSidebarOpen(false);
                                             }}
                                         >
-                                            <div className="flex-1 min-w-0">
-                                                <div className="text-sm font-medium truncate">
+                                            <div className="conversation-content flex-1 min-w-0">
+                                                <div className="conversation-title text-sm font-medium truncate">
                                                     {formatConversationTitle(
                                                         convo.title || "New Chat",
                                                         activeConvoId === convo.id
                                                     )}
                                                 </div>
-                                                <div className="text-xs text-gray-400">
+                                                <div className="conversation-meta text-xs">
                                                     {formatTimestamp(convo.updatedAt)}
                                                 </div>
                                             </div>
                                             <button
-                                                className="text-gray-400 hover:text-red-400 text-sm ml-2"
+                                                className="delete-conversation-btn text-gray-400 hover:text-red-400 text-sm ml-2"
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     deleteConversation(convo.id);
                                                 }}
                                             >
-                                                <DeleteIcon />
+                                                <DeleteOutlineIcon fontSize="small" />
                                             </button>
                                         </div>
                                     ))
@@ -564,25 +600,28 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
                         </aside>
 
                         {/* RIGHT: Main chat area */}
-                        <section className="flex-1 flex flex-col">
+                        <section className="chat-view flex-1 flex flex-col">
                             {!activeConvoId ? (
-                                <div className="flex flex-col items-center justify-center flex-1 text-center space-y-4">
-                                    <ChatIcon />
-                                    <h2 className="text-xl font-semibold">Welcome to Fixie AI Support</h2>
-                                    <p className="text-gray-400 text-sm">
-                                        Start a new conversation to get help with your IT issues.
-                                    </p>
-                                    <button
-                                        onClick={createNewConversation}
-                                        className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-md text-white text-sm"
-                                    >
-                                        <AddIcon /> Start New Chat
-                                    </button>
+                                <div className="no-conversation flex flex-col items-center justify-center flex-1 text-center space-y-4">
+                                    <div className="no-conversation-content">
+                                        <ChatBubbleOutlineIcon style={{ fontSize: 48, color: 'var(--text-muted)' }} />
+                                        <h2 className="text-xl font-semibold">Welcome to Fixie AI Support</h2>
+                                        <p className="text-gray-400 text-sm">
+                                            Start a new conversation to get help with your IT issues.
+                                        </p>
+                                        <button
+                                            onClick={createNewConversation}
+                                            className="start-chat-btn flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-md text-white text-sm"
+                                        >
+                                            <AddIcon fontSize="small" /> Start New Chat
+                                        </button>
+                                    </div>
                                 </div>
                             ) : (
-                                <div className="flex flex-col flex-1 overflow-y-auto">
-                                    {/* Messages */}
-                                    <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                                // Kept overflow-hidden to fix layout issues
+                                <div className="chat-container flex flex-col flex-1 overflow-hidden">
+                                    
+                                    <div className="chat-messages flex-1 overflow-y-auto p-4 space-y-3 flex flex-col">
                                         {messages.map((msg) => (
                                             <ChatMessage 
                                                 key={msg.id} 
@@ -592,7 +631,10 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
                                         ))}
 
                                         {isLoading && (
-                                            <div className="italic text-gray-400 text-sm">
+                                            <div className="typing-indicator italic text-gray-400 text-sm">
+                                                <span></span>
+                                                <span></span>
+                                                <span></span>
                                                 Fixie is thinking...
                                             </div>
                                         )}
@@ -600,37 +642,40 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
                                         <div ref={messagesEndRef} />
                                     </div>
 
-                                    {/* Input area */}
-                                    <div className="flex items-center p-3 border-t border-gray-700 bg-gray-800">
-                                        <input
-                                            type="text"
-                                            value={inputMessage}
-                                            onChange={(e) => setInputMessage(e.target.value)}
-                                            onKeyDown={(e) => {
-                                                if (e.key === "Enter" && !e.shiftKey) {
-                                                    e.preventDefault();
+                                    {/* Modern Gemini-Style Input */}
+                                    <div className="chat-input-area">
+                                        <div className="modern-input-wrapper">
+                                            <input
+                                                type="text"
+                                                className="modern-input-field"
+                                                value={inputMessage}
+                                                onChange={(e) => setInputMessage(e.target.value)}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === "Enter" && !e.shiftKey) {
+                                                        e.preventDefault();
+                                                        if (inputMessage.trim() && !isLoading) {
+                                                            handleSendMessage(inputMessage);
+                                                            setInputMessage("");
+                                                        }
+                                                    }
+                                                }}
+                                                placeholder="Message Fixie..."
+                                                disabled={isLoading}
+                                            />
+                                            <button
+                                                className="modern-send-btn"
+                                                onClick={() => {
                                                     if (inputMessage.trim() && !isLoading) {
                                                         handleSendMessage(inputMessage);
                                                         setInputMessage("");
                                                     }
-                                                }
-                                            }}
-                                            placeholder="Type your message..."
-                                            className="flex-1 bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                            disabled={isLoading}
-                                        />
-                                        <button
-                                            onClick={() => {
-                                                if (inputMessage.trim() && !isLoading) {
-                                                    handleSendMessage(inputMessage);
-                                                    setInputMessage("");
-                                                }
-                                            }}
-                                            disabled={!inputMessage.trim() || isLoading}
-                                            className="ml-3 bg-indigo-600 hover:bg-indigo-700 px-3 py-2 rounded-md text-sm text-white"
-                                        >
-                                            <SendIcon />
-                                        </button>
+                                                }}
+                                                disabled={!inputMessage.trim() || isLoading}
+                                                title="Send message"
+                                            >
+                                                <SendIcon fontSize="small" />
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             )}
@@ -640,10 +685,10 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
 
                 {/* Organization tab */}
                 {activeTab === "organization" && (
-                    <div className="organization-tab flex h-full bg-gray-900 text-gray-100">
-                        <aside className="w-1/4 min-w-[16rem] border-r border-gray-800 bg-gray-800 flex flex-col">
-                            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-700">
-                                <h2 className="text-sm font-semibold tracking-wide uppercase text-gray-300">
+                    <div className="organization-tab main-content flex h-full">
+                        <aside className="sidebar w-1/4 min-w-[16rem] flex flex-col">
+                            <div className="sidebar-header flex items-center justify-between px-4 py-3">
+                                <h2 className="text-sm font-semibold tracking-wide uppercase">
                                     Domains
                                 </h2>
                                 {userRole === "admin" && (
@@ -654,12 +699,12 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
                                         }}
                                         className="flex items-center gap-1 px-2 py-1 bg-indigo-600 hover:bg-indigo-700 text-white text-xs rounded-md"
                                     >
-                                        <AddIcon /> New
+                                        <AddIcon fontSize="small" /> New
                                     </button>
                                 )}
                             </div>
 
-                            <div className="flex-1 overflow-y-auto">
+                            <div className="conversations-list flex-1 overflow-y-auto">
                                 {organizations.length === 0 ? (
                                     <p className="text-gray-400 text-sm px-4 py-6 text-center">
                                         No domains registered yet
@@ -673,22 +718,22 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
                                         return (
                                             <div
                                                 key={org.id}
-                                                className={`flex items-center justify-between px-4 py-3 cursor-pointer border-b border-gray-800 transition ${
+                                                className={`conversation-item flex items-center justify-between px-4 py-3 cursor-pointer border-b border-gray-800 transition ${
                                                     activeOrgId === org.id
-                                                        ? "bg-indigo-700/60 text-white"
-                                                        : "hover:bg-gray-700/60"
+                                                        ? "active"
+                                                        : ""
                                                 }`}
                                                 onClick={() => {
                                                     setActiveOrgId(org.id);
                                                     setCreatingOrg(false);
                                                 }}
                                             >
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="text-sm font-medium truncate text-gray-100 flex items-center gap-2">
+                                                <div className="conversation-content flex-1 min-w-0">
+                                                    <div className="text-sm font-medium truncate flex items-center gap-2">
                                                         🌐 {org.domain}
                                                     </div>
 
-                                                    <div className="text-xs text-gray-400">
+                                                    <div className="conversation-meta text-xs text-gray-400">
                                                         {memberCount > 0
                                                             ? `${memberCount} ${memberCount === 1 ? "member" : "members"}`
                                                             : "No members yet"}
@@ -697,13 +742,13 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
 
                                                 {userRole === "admin" && (
                                                     <button
-                                                        className="text-gray-400 hover:text-red-400 text-sm transition"
+                                                        className="delete-conversation-btn text-gray-400 hover:text-red-400 text-sm transition"
                                                         onClick={(e) => {
                                                             e.stopPropagation();
                                                             deleteOrganization(org.id);
                                                         }}
                                                     >
-                                                        <DeleteIcon />
+                                                        <DeleteOutlineIcon fontSize="small" />
                                                     </button>
                                                 )}
                                             </div>
@@ -717,7 +762,7 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
                             {(creatingOrg || organizations.length === 0) && userRole === "admin" ? (
                                 <div className="max-w-2xl mx-auto space-y-8">
                                     <div className="text-center space-y-2">
-                                        <h2 className="text-2xl font-semibold text-white">
+                                        <h2 className="text-2xl font-semibold">
                                             🏢 Register a New Domain
                                         </h2>
                                         <p className="text-gray-400 text-sm">
@@ -725,9 +770,9 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
                                         </p>
                                     </div>
 
-                                    <div className="bg-gray-800/60 border border-gray-700 rounded-xl p-6 shadow-lg space-y-6">
+                                    <div className="border border-gray-700 rounded-xl p-6 shadow-lg space-y-6 bg-[var(--bg-secondary)]">
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-300 mb-2">
+                                            <label className="block text-sm font-medium mb-2">
                                                 Domain Name
                                             </label>
                                             <input
@@ -735,7 +780,7 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
                                                 placeholder="e.g. gmail.com"
                                                 value={orgDomain}
                                                 onChange={(e) => setOrgDomain(e.target.value)}
-                                                className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-md text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                                className="w-full px-4 py-2 border border-gray-600 rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-[var(--bg-primary)] text-[var(--text-primary)]"
                                             />
                                         </div>
 
@@ -747,20 +792,12 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
                                             Register Domain
                                         </button>
                                     </div>
-
-                                    <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6 text-sm text-gray-400">
-                                        <p>
-                                            Once a domain is registered, any user signing up with an email
-                                            from that domain (e.g. <code>user@gmail.com</code>) will be
-                                            automatically linked to your organization.
-                                        </p>
-                                    </div>
                                 </div>
                             ) : activeOrgId ? (
                                 <div className="max-w-3xl mx-auto space-y-8">
                                     <div className="flex items-center justify-between">
                                         <div>
-                                            <h2 className="text-2xl font-semibold text-white">
+                                            <h2 className="text-2xl font-semibold">
                                                 🌐 {organizations.find((org) => org.id === activeOrgId)?.domain}
                                             </h2>
                                             <p className="text-gray-400 text-sm mt-1">
@@ -770,8 +807,8 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
                                         </div>
                                     </div>
 
-                                    <div className="bg-gray-800/60 border border-gray-700 rounded-xl p-6 shadow-md">
-                                        <h3 className="text-lg font-medium mb-4 text-white">Members</h3>
+                                    <div className="border border-gray-700 rounded-xl p-6 shadow-md bg-[var(--bg-secondary)]">
+                                        <h3 className="text-lg font-medium mb-4">Members</h3>
                                         <div className="space-y-3">
                                             {(() => {
                                                 const org = organizations.find((org) => org.id === activeOrgId);
@@ -795,10 +832,10 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
                                                 return membersArray.map((member) => (
                                                     <div
                                                         key={member.uid}
-                                                        className="flex justify-between items-center bg-gray-700/50 px-4 py-2 rounded-md"
+                                                        className="flex justify-between items-center px-4 py-2 rounded-md bg-[var(--bg-primary)]"
                                                     >
                                                         <div>
-                                                            <p className="text-sm font-medium text-gray-200">{member.email}</p>
+                                                            <p className="text-sm font-medium">{member.email}</p>
                                                             <p className={`text-xs ${member.status === "verified" ? "text-green-400" : "text-yellow-400"}`}>
                                                                 {member.status}
                                                             </p>

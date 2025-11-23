@@ -56,11 +56,36 @@ body {
   line-height: 1.6;
 }
 
+/* =========================================
+   SMOOTH THEME TRANSITIONS (ADDED)
+   This applies a 0.3s fade to background
+   and colors when the theme toggles.
+   ========================================= */
+body,
+.dashboard,
+.dashboard-header,
+.sidebar,
+.chat-input,
+.chat-input input,
+.message-text,
+.conversation-item,
+.tool-approval-card,
+.tool-approval-card .details,
+button {
+  transition: background-color 0.3s ease, 
+              color 0.3s ease, 
+              border-color 0.3s ease, 
+              background 0.3s ease,
+              box-shadow 0.3s ease;
+}
+
 .dashboard {
   display: flex;
   flex-direction: column;
   height: 100vh;
   overflow: hidden;
+  background: var(--bg-primary);
+  color: var(--text-primary);
 }
 
 /* Header */
@@ -87,22 +112,35 @@ body {
   gap: 1rem;
 }
 
+/* Header Buttons */
 .menu-btn, .logout-btn {
   background: none;
   border: none;
   cursor: pointer;
-  padding: 0.5rem;
+  padding: 0.5rem 0.75rem;
   border-radius: 0.5rem;
   color: var(--text-secondary);
-  transition: all 0.2s ease;
+  transition: all 0.2s ease; /* Kept specific transition for hover state */
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
 }
 
-.menu-btn:hover, .logout-btn:hover {
+/* Default: Hide menu button on Desktop */
+.menu-btn {
+  display: none;
+}
+
+.menu-btn:hover {
   background: var(--bg-tertiary);
   color: var(--text-primary);
+}
+
+.logout-btn:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--accent-error);
 }
 
 .dashboard-header h1 {
@@ -125,7 +163,8 @@ body {
   border-right: 1px solid var(--border-primary);
   display: flex;
   flex-direction: column;
-  transition: transform 0.3s ease;
+  /* Combined transform transition with theme transition */
+  transition: transform 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .sidebar-header {
@@ -174,7 +213,6 @@ body {
   margin-bottom: 0.5rem;
   border-radius: 0.5rem;
   cursor: pointer;
-  transition: all 0.2s ease;
   background: transparent;
 }
 
@@ -281,15 +319,18 @@ body {
   display: flex;
   gap: 0.75rem;
   max-width: 80%;
+  width: fit-content;
 }
 
 .message.user {
   align-self: flex-end;
   flex-direction: row-reverse;
+  margin-left: auto;
 }
 
 .message.assistant {
   align-self: flex-start;
+  margin-right: auto;
 }
 
 .message-avatar {
@@ -476,7 +517,6 @@ body {
   color: var(--text-primary);
   font-size: 1rem;
   outline: none;
-  transition: border-color 0.2s ease;
 }
 
 .chat-input input:focus {
@@ -624,6 +664,11 @@ body {
 
 /* Mobile Responsive */
 @media (max-width: 768px) {
+  /* Show menu button on mobile */
+  .menu-btn {
+    display: flex;
+  }
+
   .sidebar {
     position: fixed;
     top: 0;
@@ -696,8 +741,7 @@ body {
   border-color: var(--accent-secondary);
 }
 
-/* Add to Dashboard.css or Chat.css */
-
+/* Tool Approval Card */
 .tool-approval-card {
   margin-top: 12px;
   background-color: rgba(31, 41, 55, 0.95); /* dark gray */
@@ -785,4 +829,88 @@ body {
 
 .btn-reject:hover {
   background-color: rgba(239, 68, 68, 0.1);
+}
+
+
+/* =========================================
+   MODERN GEMINI-STYLE CHAT INPUT
+   ========================================= */
+
+/* The container area at the bottom */
+.chat-input-area {
+  padding: 1.5rem;
+  background: var(--bg-primary); /* Blends with the chat background */
+  transition: background-color 0.3s ease;
+}
+
+/* The floating "pill" wrapper */
+.modern-input-wrapper {
+  display: flex;
+  align-items: center;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 9999px; /* Fully rounded pill shape */
+  padding: 0.5rem 0.75rem 0.5rem 1.5rem; /* Extra left padding for text */
+  box-shadow: var(--shadow-sm);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Smooth physics-like transition */
+}
+
+/* Focus State: Glows and lifts slightly */
+.modern-input-wrapper:focus-within {
+  background: var(--bg-secondary);
+  border-color: var(--accent-primary);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Soft elevation shadow */
+  transform: translateY(-2px); /* Lifts up */
+}
+
+/* The actual text input */
+.modern-input-field {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 1rem;
+  color: var(--text-primary);
+  padding: 0.5rem 0;
+  min-height: 24px;
+}
+
+.modern-input-field::placeholder {
+  color: var(--text-muted);
+}
+
+/* The circular send button */
+.modern-send-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-left: 0.5rem;
+}
+
+/* Active State (when typing) */
+.modern-send-btn:not(:disabled) {
+  background: var(--accent-primary);
+  color: white;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Hover Animation */
+.modern-send-btn:not(:disabled):hover {
+  background: var(--accent-secondary);
+  transform: scale(1.1) rotate(-10deg); /* Playful pop and twist */
+}
+
+/* Disabled State */
+.modern-send-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+  transform: none;
 }
