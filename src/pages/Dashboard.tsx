@@ -3,9 +3,10 @@ import { useAuth } from "../hooks/useAuth";
 import "../styles/Dashboard.css";
 import ChatMessage from "../components/chat/ChatMessage";
 import ThemeToggle from "../components/ThemeToggle";
+import OrganizationTools from "../components/OrganizationTools";
 import { ThemeProvider, useTheme } from "../contexts/ThemeContext";
 import { config } from "../services/config";
-import { Message, Conversation } from "../types"; 
+import { Message, Conversation } from "../types";
 import { formatTimestamp, formatConversationTitle } from "../utils";
 import { db } from "../services/firebase"; 
 import {
@@ -52,7 +53,7 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
     const { theme } = useTheme();
     
     // UI State
-    const [activeTab, setActiveTab] = useState<"chat" | "organization">("chat");
+    const [activeTab, setActiveTab] = useState<"chat" | "organization" | "tools">("chat");
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -522,6 +523,20 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
                                 Organizations
                             </button>
                         )}
+
+                        {userRole === "admin" && (
+                            <button
+                                onClick={() => setActiveTab("tools")}
+                                className={`px-4 py-1.5 rounded-md border transition-all duration-150 text-sm font-medium
+                                    ${
+                                        activeTab === "tools"
+                                            ? "bg-indigo-600 border-indigo-600 text-white shadow-sm"
+                                            : "border-gray-600 text-gray-300 hover:border-indigo-500 hover:text-indigo-400"
+                                    }`}
+                            >
+                                Tools
+                            </button>
+                        )}
                     </div>
                 </div>
 
@@ -685,8 +700,8 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
 
                 {/* Organization tab */}
                 {activeTab === "organization" && (
-                    <div className="organization-tab main-content flex h-full">
-                        <aside className="sidebar w-1/4 min-w-[16rem] flex flex-col">
+                    <div className="organization-tab flex h-full w-full">
+                        <aside className={`sidebar w-1/4 min-w-[16rem] flex flex-col ${isSidebarOpen ? 'block' : 'hidden md:flex'}`}>
                             <div className="sidebar-header flex items-center justify-between px-4 py-3">
                                 <h2 className="text-sm font-semibold tracking-wide uppercase">
                                     Domains
@@ -854,6 +869,81 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
                                     <p className="text-gray-500 text-sm">
                                         Select a domain to view members.
                                     </p>
+                                </div>
+                            )}
+                        </section>
+                    </div>
+                )}
+
+                {/* Tools tab */}
+                {activeTab === "tools" && userRole === "admin" && (
+                    <div className="tools-tab flex h-full w-full">
+                        {/* LEFT: Organizations Sidebar */}
+                        <aside className={`sidebar w-1/4 min-w-[16rem] flex flex-col ${isSidebarOpen ? 'block' : 'hidden md:flex'}`}>
+                            <div className="sidebar-header flex items-center justify-between px-4 py-3">
+                                <h2 className="text-sm font-semibold tracking-wide uppercase">
+                                    Organizations
+                                </h2>
+                            </div>
+
+                            <div className="conversations-list flex-1 overflow-y-auto">
+                                {organizations.length === 0 ? (
+                                    <p className="text-gray-400 text-sm px-4 py-6 text-center">
+                                        No organizations yet
+                                    </p>
+                                ) : (
+                                    organizations.map((org) => {
+                                        const membersObj = org.members || {};
+                                        const memberIds = Object.keys(membersObj);
+                                        const memberCount = memberIds.length;
+
+                                        return (
+                                            <div
+                                                key={org.id}
+                                                className={`conversation-item flex items-center justify-between px-4 py-3 cursor-pointer border-b border-gray-800 transition ${
+                                                    activeOrgId === org.id
+                                                        ? "active"
+                                                        : ""
+                                                }`}
+                                                onClick={() => {
+                                                    setActiveOrgId(org.id);
+                                                }}
+                                            >
+                                                <div className="conversation-content flex-1 min-w-0">
+                                                    <div className="text-sm font-medium truncate flex items-center gap-2">
+                                                        🌐 {org.domain}
+                                                    </div>
+
+                                                    <div className="conversation-meta text-xs text-gray-400">
+                                                        {memberCount > 0
+                                                            ? `${memberCount} ${memberCount === 1 ? "member" : "members"}`
+                                                            : "No members yet"}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })
+                                )}
+                            </div>
+                        </aside>
+
+                        {/* RIGHT: Main Content Area */}
+                        <section className="w-3/4 flex flex-col px-10 py-8 overflow-y-auto">
+                            {activeOrgId && user ? (
+                                <OrganizationTools
+                                    organizationId={activeOrgId}
+                                    organizationDomain={organizations.find((org) => org.id === activeOrgId)?.domain || ""}
+                                    userEmail={user.email || ""}
+                                />
+                            ) : (
+                                <div className="flex items-center justify-center flex-1">
+                                    <div className="text-center space-y-4">
+                                        <div className="text-6xl mb-4">🛠️</div>
+                                        <h2 className="text-2xl font-semibold">Admin Tools</h2>
+                                        <p className="text-gray-400 text-sm">
+                                            Select an organization from the left to view available tools.
+                                        </p>
+                                    </div>
                                 </div>
                             )}
                         </section>
