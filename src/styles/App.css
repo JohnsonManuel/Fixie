@@ -41,8 +41,8 @@ body {
 .loading-spinner {
   width: 50px;
   height: 50px;
-  border: 4px solid #e2e8f0;
-  border-top: 4px solid #1877F2;
+  border: 4px solid var(--border-color, #e2e8f0);
+  border-top: 4px solid var(--accent-primary, #1877F2);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 20px;

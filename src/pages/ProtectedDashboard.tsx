@@ -4,8 +4,9 @@ import { db } from "../services/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import Dashboard from "./Dashboard"; // your existing dashboard component
 import { useNavigate } from "react-router-dom";
+import { ThemeProvider } from "../contexts/ThemeContext";
 
-export default function ProtectedDashboard() {
+function ProtectedDashboardContent() {
   const { user, loading } = useAuth();
   const [role, setRole] = useState<string | null>(null);
   const [ organizationKey, setOrganizationKey ] = useState<string | null>(null);
@@ -44,9 +45,9 @@ export default function ProtectedDashboard() {
   // ⏳ Show loading state while fetching
   if (loading || loadingRole) {
     return (
-      <div className="loading-container">
-        <div className="loading-spinner"></div>
-        <p>Loading your account...</p>
+      <div className="loading-container fixed inset-0 flex flex-col items-center justify-center" style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
+        <div className="loading-spinner mb-4"></div>
+        <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>Loading your account...</p>
       </div>
     );
   }
@@ -73,4 +74,12 @@ export default function ProtectedDashboard() {
 
   // ✅ Render dashboard once role is ready
   return <Dashboard userRole={role} organizationKey={organizationKey} />;
+}
+
+export default function ProtectedDashboard() {
+  return (
+    <ThemeProvider>
+      <ProtectedDashboardContent />
+    </ThemeProvider>
+  );
 }
