@@ -1,6 +1,6 @@
 
 import React from 'react';
-import fixieLogo from '../images/image.png';
+// import fixieLogo from '../images/image.png';
 
 const MoreInfo: React.FC = () => (
     <>

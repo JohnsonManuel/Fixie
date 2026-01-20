@@ -1,17 +1,17 @@
 import { cn } from "../lib/utils";
-import {
-  IconAdjustmentsBolt,
-  IconCloud,
-  IconCurrencyDollar,
-  IconEaseInOut,
-  IconHeart,
-  IconHelp,
-  IconRouteAltLeft,
-  IconTerminal2,
-} from "@tabler/icons-react";
-import {Cover} from "../components/ui/cover"
+// import {
+//   IconAdjustmentsBolt,
+//   IconCloud,
+//   IconCurrencyDollar,
+//   IconEaseInOut,
+//   IconHeart,
+//   IconHelp,
+//   IconRouteAltLeft,
+//   IconTerminal2,
+// } from "@tabler/icons-react";
+// import {Cover} from "../components/ui/cover"
 import { motion } from "framer-motion";
-import { Brain } from "lucide-react";
+// import { Brain } from "lucide-react";
 import { PointerHighlight } from './ui/pointer-highlight';
 
 export function Features() {

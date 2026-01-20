@@ -1,7 +1,7 @@
 "use client";
+import { AnimatePresence, motion } from "motion/react";
+import React, { useEffect, useRef, useState } from "react";
 import { cn } from "../../lib/utils";
-import { motion, AnimatePresence } from "motion/react";
-import React, { useRef, useState, useEffect } from "react";
 
 export const BackgroundBeamsWithCollision = ({
   children,
@@ -194,6 +194,9 @@ const CollisionMechanism = React.forwardRef<
   const [cycleCollisionDetected, setCycleCollisionDetected] = useState(false);
 
   useEffect(() => {
+    // FIX: Capture the current ref value for the cleanup function
+    const containerNode = containerRef.current;
+
     const checkCollision = () => {
       if (
         beamRef.current &&
@@ -224,8 +227,11 @@ const CollisionMechanism = React.forwardRef<
 
     const animationInterval = setInterval(checkCollision, 50);
 
-    return () => clearInterval(animationInterval);
-  }, [cycleCollisionDetected, containerRef]);
+    return () => {
+      if (animationInterval) clearInterval(animationInterval);
+    };
+    // FIX: Added parentRef and containerRef to dependencies
+  }, [cycleCollisionDetected, containerRef, parentRef]);
 
   useEffect(() => {
     if (collision.detected && collision.coordinates) {

@@ -12,7 +12,7 @@ import {
   collection,
   where,
   getDocs,
-  arrayUnion,
+  // arrayUnion,
   serverTimestamp,
   setDoc
 } from "firebase/firestore";

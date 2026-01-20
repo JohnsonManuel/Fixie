@@ -1,9 +1,9 @@
 "use client"
 
 import React, { forwardRef, useRef } from "react"
+import fixieLogo from "../images/image.png"
 import { cn } from "../lib/utils"
 import { AnimatedBeam } from "./ui/animated-beams"
-import fixieLogo from "../images/image.png"
 
 // ⭕️ Reusable Circle component
 const Circle = forwardRef<

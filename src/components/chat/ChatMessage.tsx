@@ -2,8 +2,6 @@ import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import fixieLogo from '../../images/image.png';
-
-// CHANGE 1: Import the Message type instead of defining it locally
 import { Message } from '../../types'; 
 
 interface ChatMessageProps {
@@ -20,7 +18,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
   onApprovalAction 
 }) => {
 
-  // Helper to render tool arguments cleanly
+  // Helper to render tool arguments (Original clean look)
   const renderToolArgs = (args: Record<string, any>) => {
     if (!args) return null;
     return Object.entries(args).map(([key, value]) => (
@@ -36,7 +34,6 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
   };
 
   const renderContent = () => {
-    // We render if there is content OR if an action is required (interrupt)
     if (message.content || message.status === 'requires_action' || message.status === 'action_taken') {
       return (
         <div className="message-content">
@@ -48,32 +45,23 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
               components={{
                 h1: ({children}) => <h1 style={{fontSize: '26px', margin: '20px 0 12px 0', fontWeight: 600}}>{children}</h1>,
                 h2: ({children}) => <h2 style={{fontSize: '22px', margin: '20px 0 12px 0', fontWeight: 600}}>{children}</h2>,
-                h3: ({children}) => <h3 style={{fontSize: '20px', margin: '20px 0 12px 0', fontWeight: 600}}>{children}</h3>,
-                h4: ({children}) => <h4 style={{fontSize: '18px', margin: '20px 0 12px 0', fontWeight: 600}}>{children}</h4>,
-                p: ({children}) => <p style={{margin: '16px 0', lineHeight: '1.7'}}>{children}</p>,
-                ul: ({children}) => <ul style={{margin: '16px 0', paddingLeft: '20px'}}>{children}</ul>,
-                ol: ({children}) => <ol style={{margin: '16px 0', paddingLeft: '20px'}}>{children}</ol>,
-                li: ({children}) => <li style={{margin: '8px 0', lineHeight: '1.6'}}>{children}</li>,
-                strong: ({children}) => <strong style={{fontWeight: 600}}>{children}</strong>,
-                em: ({children}) => <em style={{fontStyle: 'italic'}}>{children}</em>,
+                p: ({children}) => <p style={{margin: '8px 0', lineHeight: '1.7'}}>{children}</p>,
                 code: ({children}) => <code style={{ backgroundColor: '#f1f5f9', padding: '2px 6px', borderRadius: '4px', fontFamily: 'monospace', fontSize: '0.9em', color: '#333' }}>{children}</code>,
                 pre: ({children}) => <pre style={{ backgroundColor: '#f8fafc', padding: '16px', borderRadius: '8px', overflow: 'auto', border: '1px solid #e2e8f0', margin: '16px 0' }}>{children}</pre>,
-                blockquote: ({children}) => <blockquote style={{ borderLeft: '4px solid #1877F2', paddingLeft: '16px', margin: '16px 0', fontStyle: 'italic', color: '#4a5568' }}>{children}</blockquote>
               }}
             >
               {message.content || (message.status === 'requires_action' ? "**I need your approval to proceed with the following request:**" : "")}
             </ReactMarkdown>
           </div>
 
-          {/* 2. NEW: APPROVAL CARD (Interrupt) */}
+          {/* 2. APPROVAL CARD */}
           {message.status === 'requires_action' && message.toolArgs && (
             <div className="tool-approval-card" style={{
               marginTop: '12px',
-              backgroundColor: 'rgba(31, 41, 55, 0.95)', // Dark gray
+              backgroundColor: 'rgba(31, 41, 55, 0.95)',
               border: '1px solid #374151',
               borderRadius: '8px',
               padding: '16px',
-              maxWidth: '100%'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px', color: '#e5e7eb', fontWeight: 600 }}>
                 <span style={{ marginRight: '8px' }}>⚡</span> 
@@ -81,7 +69,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
               </div>
               
               <div style={{
-                backgroundColor: '#111827', // Black/Darker gray
+                backgroundColor: '#111827',
                 padding: '12px',
                 borderRadius: '6px',
                 marginBottom: '16px',
@@ -93,61 +81,28 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
               <div style={{ display: 'flex', gap: '12px' }}>
                 <button 
                   onClick={() => onApprovalAction?.("approve", message)}
-                  style={{
-                    flex: 1,
-                    backgroundColor: '#059669', // Green
-                    color: 'white',
-                    border: 'none',
-                    padding: '8px 16px',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    fontWeight: 500,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '6px'
-                  }}
+                  style={{ flex: 1, backgroundColor: '#059669', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '6px', cursor: 'pointer', fontWeight: 500 }}
                 >
-                  <span>✓</span> Approve
+                  ✓ Approve
                 </button>
                 <button 
                   onClick={() => onApprovalAction?.("reject", message)}
-                  style={{
-                    flex: 1,
-                    backgroundColor: 'transparent',
-                    color: '#ef4444', // Red
-                    border: '1px solid #ef4444',
-                    padding: '8px 16px',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    fontWeight: 500,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '6px'
-                  }}
+                  style={{ flex: 1, backgroundColor: 'transparent', color: '#ef4444', border: '1px solid #ef4444', padding: '8px 16px', borderRadius: '6px', cursor: 'pointer', fontWeight: 500 }}
                 >
-                  <span>✕</span> Reject
+                  ✕ Reject
                 </button>
               </div>
             </div>
           )}
 
-          {/* 3. NEW: POST-ACTION FEEDBACK */}
+          {/* 3. POST-ACTION FEEDBACK */}
           {message.status === 'action_taken' && (
-             <div style={{
-               marginTop: '10px',
-               paddingTop: '10px',
-               borderTop: '1px solid rgba(255,255,255,0.1)',
-               color: '#9ca3af',
-               fontSize: '0.85em',
-               fontStyle: 'italic'
-             }}>
-               ✓ Decision recorded. Processing...
+             <div style={{ marginTop: '10px', color: '#9ca3af', fontSize: '0.85em', fontStyle: 'italic' }}>
+                ✓ Decision recorded. Processing...
              </div>
           )}
 
-          {/* 4. EXISTING: Tool call results */}
+          {/* 4. TOOL RESULTS */}
           {message.tool_results && message.tool_results.length > 0 && (
             <div className="tool-results">
               {message.tool_results.map((result, index) => (
@@ -156,19 +111,17 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                     <span className="tool-result-icon">🔧</span>
                     <span className="tool-result-name">{result.tool_name}</span>
                   </div>
-                  <div className="tool-result-content">
-                    {result.result}
-                  </div>
+                  <div className="tool-result-content">{result.result}</div>
                 </div>
               ))}
             </div>
           )}
 
-          {/* 5. EXISTING: Interactive buttons */}
-          {message.interactive && message.interactive.buttons && (
+          {/* 5. INTERACTIVE BUTTONS */}
+          {message.interactive?.buttons && (
             <div className="interactive-buttons">
               <div className="button-group">
-                {message.interactive.buttons.map((button, index) => (
+                {message.interactive.buttons.map((button) => (
                   <button
                     key={button.id}
                     className={`interactive-btn ${button.style || 'secondary'}`}
@@ -181,7 +134,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
             </div>
           )}
 
-          {/* 6. EXISTING: Legacy action buttons */}
+          {/* 6. LEGACY ACTIONS */}
           {message.actions && message.actions.length > 0 && (
             <div className="message-actions">
               {message.actions.map((action, index) => (
@@ -198,7 +151,6 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
         </div>
       );
     }
-
     return null;
   };
 
@@ -209,7 +161,6 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
           <img 
             src={fixieLogo} 
             alt="Fixie AI" 
-            className="fixie-avatar"
             style={{ width: '100%', height: '100%', borderRadius: '50%' }}
           />
         )}
