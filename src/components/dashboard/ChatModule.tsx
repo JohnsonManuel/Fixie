@@ -169,6 +169,37 @@ const ChatModule = ({
         } catch (error) { console.error(error); }
     };
 
+    // 1. ADD THIS FUNCTION: Create New Chat
+    const createNewChat = async () => {
+        try {
+            setIsThreadsLoading(true);
+            // Call your API to create a new thread
+            const res = await fetchWithAuth("/threads", {
+                method: "POST",
+                body: JSON.stringify({ metadata: { title: "New Chat" } })
+            });
+            const data = await res.json();
+
+            const newConvo: Conversation = {
+                id: data.thread_id,
+                title: "New Chat",
+                updatedAt: new Date(),
+                createdAt: new Date(),
+            };
+
+            // Update state: Add to top of list and make active
+            setConversations(prev => [newConvo, ...prev]);
+            setActiveConvoId(newConvo.id);
+            
+            // On mobile, close sidebar to show the new empty chat
+            setIsSidebarOpen(false);
+        } catch (error) {
+            console.error("Failed to create new chat", error);
+        } finally {
+            setIsThreadsLoading(false);
+        }
+    };
+
     // Mobile UX: Close sidebar on convo selection
     const selectConversation = (id: string) => {
         setActiveConvoId(id);
@@ -180,7 +211,14 @@ const ChatModule = ({
             <aside className={`sidebar w-1/4 min-w-[18rem] flex flex-col ${isSidebarOpen ? 'open' : 'hidden md:flex'}`}>
                 <div className="sidebar-header flex items-center justify-between px-4 py-4">
                     <h2 className="text-sm font-bold tracking-tight uppercase opacity-50 text-[var(--text-primary)]">History</h2>
-                    <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => {}} className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 text-white text-xs font-bold rounded-full shadow-lg shadow-indigo-500/20">
+                    
+                    {/* 2. UPDATE ONCLICK HERE */}
+                    <motion.button 
+                        whileHover={{ scale: 1.05 }} 
+                        whileTap={{ scale: 0.95 }} 
+                        onClick={createNewChat} 
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 text-white text-xs font-bold rounded-full shadow-lg shadow-indigo-500/20"
+                    >
                         <AddIcon sx={{ fontSize: 16 }}/> New Chat
                     </motion.button>
                 </div>
