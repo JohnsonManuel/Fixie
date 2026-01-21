@@ -3,6 +3,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import fixieLogo from '../../images/image.png';
 import { Message } from '../../types'; 
+import { motion } from "framer-motion";
 
 interface ChatMessageProps {
   message: Message;
@@ -18,15 +19,16 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
   onApprovalAction 
 }) => {
 
-  // Helper to render tool arguments (Original clean look)
+  const isUser = message.role === 'user';
+
   const renderToolArgs = (args: Record<string, any>) => {
     if (!args) return null;
     return Object.entries(args).map(([key, value]) => (
-      <div key={key} className="tool-arg-row" style={{ display: 'flex', flexDirection: 'column', marginBottom: '4px' }}>
-        <span style={{ fontSize: '0.75em', textTransform: 'uppercase', color: '#9ca3af', letterSpacing: '0.05em' }}>
-          {key}:
+      <div key={key} className="tool-arg-row" style={{ display: 'flex', flexDirection: 'column', marginBottom: '6px' }}>
+        <span style={{ fontSize: '0.7em', textTransform: 'uppercase', color: '#9ca3af', letterSpacing: '0.05em', fontWeight: 600 }}>
+          {key}
         </span>
-        <span style={{ color: '#fff', fontFamily: 'monospace', fontSize: '0.9em' }}>
+        <span style={{ color: '#fff', fontFamily: 'monospace', fontSize: '0.85em', wordBreak: 'break-all' }}>
           {String(value)}
         </span>
       </div>
@@ -36,117 +38,108 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
   const renderContent = () => {
     if (message.content || message.status === 'requires_action' || message.status === 'action_taken') {
       return (
-        <div className="message-content">
+        <div className="message-content" style={{ 
+            display: 'flex', 
+            flexDirection: 'column', 
+            alignItems: isUser ? 'flex-end' : 'flex-start',
+            flex: 1, 
+            minWidth: 0 
+        }}>
           
-          {/* 1. MAIN TEXT CONTENT */}
-          <div className="message-text">
+          {/* 1. MAIN TEXT BUBBLE */}
+          <div className="message-text" style={{ 
+            maxWidth: '95%', 
+            width: 'fit-content',
+            padding: '12px 18px',
+            backgroundColor: isUser ? 'var(--accent-primary)' : 'var(--bg-secondary)',
+            color: isUser ? '#ffffff' : 'var(--text-primary)',
+            
+            /* Pointer at the Top Logic:
+               User (Right): Top-Right is 0 (square)
+               Assistant (Left): Top-Left is 0 (square) */
+            borderRadius: isUser ? '18px 0px 18px 18px' : '0px 18px 18px 18px',
+            
+            border: isUser ? 'none' : '1px solid var(--border-primary)',
+            boxShadow: 'var(--shadow-sm)',
+            position: 'relative'
+          }}>
             <ReactMarkdown 
               remarkPlugins={[remarkGfm]}
               components={{
-                h1: ({children}) => <h1 style={{fontSize: '26px', margin: '20px 0 12px 0', fontWeight: 600}}>{children}</h1>,
-                h2: ({children}) => <h2 style={{fontSize: '22px', margin: '20px 0 12px 0', fontWeight: 600}}>{children}</h2>,
-                p: ({children}) => <p style={{margin: '8px 0', lineHeight: '1.7'}}>{children}</p>,
-                code: ({children}) => <code style={{ backgroundColor: '#f1f5f9', padding: '2px 6px', borderRadius: '4px', fontFamily: 'monospace', fontSize: '0.9em', color: '#333' }}>{children}</code>,
-                pre: ({children}) => <pre style={{ backgroundColor: '#f8fafc', padding: '16px', borderRadius: '8px', overflow: 'auto', border: '1px solid #e2e8f0', margin: '16px 0' }}>{children}</pre>,
+                h1: ({children}) => <h1 style={{fontSize: '1.2rem', margin: '12px 0 8px 0', fontWeight: 700}}>{children}</h1>,
+                h2: ({children}) => <h2 style={{fontSize: '1rem', margin: '12px 0 8px 0', fontWeight: 700}}>{children}</h2>,
+                p: ({children}) => <p style={{margin: '6px 0', lineHeight: '1.6', fontSize: '0.925rem'}}>{children}</p>,
+                code: ({children}) => (
+                    <code style={{ 
+                        backgroundColor: isUser ? 'rgba(0,0,0,0.15)' : 'rgba(0,0,0,0.05)', 
+                        padding: '2px 5px', 
+                        borderRadius: '4px', 
+                        fontFamily: 'monospace', 
+                        fontSize: '0.85em' 
+                    }}>
+                        {children}
+                    </code>
+                ),
+                pre: ({children}) => (
+                    <pre style={{ 
+                        backgroundColor: isUser ? 'rgba(0,0,0,0.1)' : 'rgba(0,0,0,0.03)', 
+                        padding: '12px', 
+                        borderRadius: '10px', 
+                        overflow: 'auto', 
+                        margin: '12px 0',
+                        fontSize: '0.825em',
+                        border: isUser ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.05)'
+                    }}>
+                        {children}
+                    </pre>
+                ),
               }}
             >
               {message.content || (message.status === 'requires_action' ? "**I need your approval to proceed with the following request:**" : "")}
             </ReactMarkdown>
           </div>
 
-          {/* 2. APPROVAL CARD */}
-          {message.status === 'requires_action' && message.toolArgs && (
-            <div className="tool-approval-card" style={{
-              marginTop: '12px',
-              backgroundColor: 'rgba(31, 41, 55, 0.95)',
-              border: '1px solid #374151',
-              borderRadius: '8px',
-              padding: '16px',
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px', color: '#e5e7eb', fontWeight: 600 }}>
+          {/* 2. APPROVAL CARD (Only for Assistant) */}
+          {!isUser && message.status === 'requires_action' && message.toolArgs && (
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.98, y: 5 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              className="tool-approval-card" 
+              style={{
+                marginTop: '10px',
+                width: '100%',
+                maxWidth: '420px',
+                backgroundColor: '#1e293b',
+                border: '1px solid #334155',
+                borderRadius: '14px',
+                padding: '16px',
+                boxShadow: 'var(--shadow-md)',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px', color: '#f1f5f9', fontWeight: 600, fontSize: '0.9rem' }}>
                 <span style={{ marginRight: '8px' }}>⚡</span> 
-                Request: {message.toolName}
+                {message.toolName}
               </div>
-              
-              <div style={{
-                backgroundColor: '#111827',
-                padding: '12px',
-                borderRadius: '6px',
-                marginBottom: '16px',
-                border: '1px solid #374151'
-              }}>
+              <div style={{ backgroundColor: '#0f172a', padding: '12px', borderRadius: '10px', marginBottom: '16px', border: '1px solid #334155' }}>
                 {renderToolArgs(message.toolArgs)}
               </div>
-
-              <div style={{ display: 'flex', gap: '12px' }}>
-                <button 
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <motion.button 
+                  whileHover={{ scale: 1.02, backgroundColor: '#059669' }} whileTap={{ scale: 0.98 }}
                   onClick={() => onApprovalAction?.("approve", message)}
-                  style={{ flex: 1, backgroundColor: '#059669', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '6px', cursor: 'pointer', fontWeight: 500 }}
+                  style={{ flex: 1, backgroundColor: '#10b981', color: 'white', border: 'none', padding: '10px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem' }}
                 >
-                  ✓ Approve
-                </button>
-                <button 
+                  Approve
+                </motion.button>
+                <motion.button 
+                  whileHover={{ scale: 1.02, backgroundColor: 'rgba(239, 68, 68, 0.1)' }} whileTap={{ scale: 0.98 }}
                   onClick={() => onApprovalAction?.("reject", message)}
-                  style={{ flex: 1, backgroundColor: 'transparent', color: '#ef4444', border: '1px solid #ef4444', padding: '8px 16px', borderRadius: '6px', cursor: 'pointer', fontWeight: 500 }}
+                  style={{ flex: 1, backgroundColor: 'transparent', color: '#f87171', border: '1px solid #f87171', padding: '10px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem' }}
                 >
-                  ✕ Reject
-                </button>
+                  Reject
+                </motion.button>
               </div>
-            </div>
-          )}
-
-          {/* 3. POST-ACTION FEEDBACK */}
-          {message.status === 'action_taken' && (
-             <div style={{ marginTop: '10px', color: '#9ca3af', fontSize: '0.85em', fontStyle: 'italic' }}>
-                ✓ Decision recorded. Processing...
-             </div>
-          )}
-
-          {/* 4. TOOL RESULTS */}
-          {message.tool_results && message.tool_results.length > 0 && (
-            <div className="tool-results">
-              {message.tool_results.map((result, index) => (
-                <div key={index} className="tool-result">
-                  <div className="tool-result-header">
-                    <span className="tool-result-icon">🔧</span>
-                    <span className="tool-result-name">{result.tool_name}</span>
-                  </div>
-                  <div className="tool-result-content">{result.result}</div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* 5. INTERACTIVE BUTTONS */}
-          {message.interactive?.buttons && (
-            <div className="interactive-buttons">
-              <div className="button-group">
-                {message.interactive.buttons.map((button) => (
-                  <button
-                    key={button.id}
-                    className={`interactive-btn ${button.style || 'secondary'}`}
-                    onClick={() => onButtonClick?.(button.action, message.id)}
-                  >
-                    {button.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* 6. LEGACY ACTIONS */}
-          {message.actions && message.actions.length > 0 && (
-            <div className="message-actions">
-              {message.actions.map((action, index) => (
-                <button
-                  key={index}
-                  className={`action-btn ${action.primary ? 'primary' : 'secondary'}`}
-                  onClick={() => onAction?.(action)}
-                >
-                  {action.text}
-                </button>
-              ))}
-            </div>
+            </motion.div>
           )}
         </div>
       );
@@ -155,18 +148,43 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
   };
 
   return (
-    <div className={`message ${message.role}`}>
-      <div className="message-avatar">
-        {message.role === 'user' ? '👤' : (
-          <img 
-            src={fixieLogo} 
-            alt="Fixie AI" 
-            style={{ width: '100%', height: '100%', borderRadius: '50%' }}
-          />
+    <motion.div 
+      initial={{ opacity: 0, x: isUser ? 15 : -15 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ type: "spring", damping: 22, stiffness: 120 }}
+      style={{ 
+        display: 'flex', 
+        gap: '10px', 
+        marginBottom: '20px', 
+        width: '100%',
+        flexDirection: isUser ? 'row-reverse' : 'row',
+        alignItems: 'flex-start'
+      }}
+    >
+      {/* Circle Avatar Section */}
+      <div style={{ flexShrink: 0, marginTop: '2px' }}>
+        {isUser ? (
+          <div style={{ 
+            width: '42px', height: '42px', borderRadius: '50%', 
+            backgroundColor: 'var(--accent-primary)', color: 'white',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: '10px', fontWeight: 800, border: '1px solid rgba(255,255,255,0.1)'
+          }}>
+            ME
+          </div>
+        ) : (
+          <div style={{ 
+            width: '42px', height: '42px', borderRadius: '50%', overflow: 'hidden', 
+            border: '1px solid var(--border-primary)', background: 'var(--bg-secondary)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center'
+          }}>
+            <img src={fixieLogo} alt="Fixie AI" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          </div>
         )}
       </div>
+
       {renderContent()}
-    </div>
+    </motion.div>
   );
 };
 

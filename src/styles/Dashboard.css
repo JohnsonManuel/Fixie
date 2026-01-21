@@ -279,7 +279,7 @@
   .message {
     display: flex;
     gap: 0.75rem;
-    max-width: 80%;
+    max-width: 100%;
     margin-bottom: 1.5rem;
     flex-shrink: 0;
     align-items: flex-start; /* Keeps avatar at the top of long messages */
@@ -314,7 +314,6 @@
   }
   
   .message.assistant .message-avatar {
-    border: 2px solid var(--border-secondary);
     background: var(--bg-primary);
   }
   
@@ -386,6 +385,69 @@
     font-size: 16px;
     color: var(--text-primary);
   }
+
+  /* Skeleton Shimmering Effect */
+  .bg-gray-800\/60 {
+    background-color: rgba(30, 41, 59, 0.6); /* Matches dark theme secondary */
+  }
+
+  .bg-gray-800\/40 {
+    background-color: rgba(30, 41, 59, 0.4);
+  }
+
+  /* AI Processing Spinner (Slow Rotation) */
+  @keyframes spin-slow {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  .animate-spin-slow {
+    animation: spin-slow 3s linear infinite;
+  }
+  /* Modern Sidebar Item Updates */
+  .conversation-item {
+    position: relative;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+  }
+
+  /* Improved Active State for Dark Mode Compatibility */
+  .conversation-item.active {
+    background: rgba(24, 119, 242, 0.15) !important; /* Subtler blue tint */
+    border: 1px solid var(--accent-primary);
+  }
+
+  .conversation-item.active .conversation-title {
+    color: var(--accent-primary); /* Blue text instead of pure white for modern look */
+    font-weight: 600;
+  }
+
+  /* Ensure delete button behaves with Framer Motion */
+  .delete-conversation-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+  }
+
+  /* Fix for smooth scrolling with animations */
+  .chat-messages {
+    scroll-behavior: smooth;
+    /* Prevent scrollbar from jumping when new messages animate in */
+    overflow-y: overlay; 
+  }
+
+  /* Simple fade-in utility for non-motion elements */
+  .animate-fade-in {
+    animation: fadeIn 0.4s ease-out forwards;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
   
   @keyframes geminiRotate {
     0% { transform: rotate(0deg); }
@@ -428,9 +490,7 @@
     }
   
     .logout-text { display: none; }
-    
-    .message { max-width: 95%; }
-    
+        
     .message-avatar {
       width: 32px;
       height: 32px;
@@ -486,3 +546,5 @@
     white-space: nowrap;
   }
 }
+
+
