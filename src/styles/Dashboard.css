@@ -47,36 +47,19 @@
     background: var(--bg-primary);
     color: var(--text-primary);
     line-height: 1.6;
-    overflow-y: auto; 
+    overflow-y: auto;
   }
   
-  /* Scroll lock only for Dashboard */
   body:has(.dashboard) {
     overflow: hidden;
   }
-
-  .menu-btn {
-    display: none; /* Hidden by default on large screens */
-    background: none;
-    border: none;
-    color: var(--text-primary);
+  
+  button {
     cursor: pointer;
-    padding: 0.5rem;
-    border-radius: 0.5rem;
-    align-items: center;
-    justify-content: center;
+    transition: all 0.2s ease;
   }
   
-  .menu-btn:hover {
-    background: var(--bg-tertiary);
-  }
-  
-  .dashboard, .dashboard-header, .sidebar, .chat-input-area, 
-  .message-text, .conversation-item, .tool-approval-card, button {
-    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
-  }
-  
-  button:active, .interactive-btn:active, .modern-send-btn:active, .tab-btn:active {
+  button:active {
     transform: scale(0.97);
   }
   
@@ -109,6 +92,82 @@
     overflow: hidden;
   }
   
+  /* =========================================
+     4. HEADER & NAVIGATION
+     ========================================= */
+  .header-left, .header-right, .header-tabs {
+    display: flex;
+    align-items: center;
+  }
+  
+  .header-left { gap: 2rem; }
+  .header-tabs { gap: 0.5rem; margin-left: 1.5rem; }
+  .header-right { gap: 1rem; margin-left: auto; }
+  
+  .tab-btn {
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    border: 1px solid var(--border-secondary);
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  
+  .tab-btn.active {
+    background: var(--accent-primary);
+    border-color: var(--accent-primary);
+    color: white;
+  }
+
+  .header-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Space between logo and text */
+    margin-right: 1rem;
+    user-select: none;
+  }
+
+  .header-logo {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px; /* Slightly rounded square for a modern app look */
+      object-fit: cover;
+  }
+
+  .header-title {
+      font-size: 1.25rem;
+      font-weight: 700; /* Bold for branding */
+      letter-spacing: -0.02em;
+      color: var(--text-primary);
+  }
+
+  
+  
+  .menu-btn {
+    display: none;
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+  }
+  
+  .menu-btn:hover { background: var(--bg-tertiary); }
+  
+  .logout-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+  }
+  
+  /* =========================================
+     5. SIDEBAR & CONVERSATIONS
+     ========================================= */
   .sidebar {
     width: 300px;
     background: var(--bg-secondary);
@@ -124,137 +183,71 @@
     padding: 0.5rem;
     scrollbar-gutter: stable;
   }
-
-  /* =========================================
-   CONVERSATION ITEM STYLES
-   ========================================= */
-
-.conversation-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.75rem 1rem;
-  margin: 0.25rem 0.5rem;
-  border-radius: 0.75rem;
-  cursor: pointer;
-  background: transparent;
-  transition: all 0.2s ease;
-  border: 1px solid transparent;
-}
-
-/* Hover State */
-.conversation-item:hover {
-  background: var(--bg-tertiary);
-  border-color: var(--border-primary);
-}
-
-/* Active / Selected State */
-.conversation-item.active {
-  background: var(--accent-primary);
-  border-color: var(--accent-primary);
-  box-shadow: var(--shadow-sm);
-}
-
-/* Text Colors inside Active Item */
-.conversation-item.active .conversation-title {
-  color: #ffffff;
-}
-
-.conversation-item.active .conversation-meta {
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.conversation-item.active .delete-conversation-btn {
-  color: rgba(255, 255, 255, 0.6);
-}
-
-.conversation-item.active .delete-conversation-btn:hover {
-  color: #ffffff;
-  background: rgba(255, 255, 255, 0.2);
-}
-
-/* Content Layout */
-.conversation-content {
-  flex: 1;
-  min-width: 0; /* Critical for truncation to work */
-}
-
-.conversation-title {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--text-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis; /* Adds '...' to long titles */
-  margin-bottom: 0.125rem;
-}
-
-.conversation-meta {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-}
-
-/* Delete Button within Item */
-.delete-conversation-btn {
-  opacity: 0; /* Hidden by default */
-  padding: 0.25rem;
-  border-radius: 4px;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  color: var(--text-muted);
-  transition: all 0.2s ease;
-  margin-left: 0.5rem;
-}
-
-.conversation-item:hover .delete-conversation-btn {
-  opacity: 1; /* Show on hover */
-}
   
-  /* =========================================
-     4. HEADER & TABS
-     ========================================= */
-  .header-left, .header-right, .header-tabs {
+  .conversation-item {
     display: flex;
     align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    margin: 0.25rem 0.5rem;
+    border-radius: 0.75rem;
+    background: transparent;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
   }
   
-  .header-left { gap: 2rem; }
-  .header-tabs { gap: 0.5rem; }
-  .header-right { gap: 1rem; }
+  .conversation-item:hover {
+    background: var(--bg-tertiary);
+    border-color: var(--border-primary);
+  }
   
-  .tab-btn {
-    padding: 0.5rem 1rem;
-    border-radius: 6px;
-    margin-left: 35px;
-    border: 1px solid var(--border-secondary);
-    background: transparent;
-    color: var(--text-secondary);
+  .conversation-item.active {
+    background: rgba(24, 119, 242, 0.15) !important;
+    border: 1px solid var(--accent-primary);
+  }
+  
+  .conversation-item.active .conversation-title {
+    color: var(--accent-primary);
+    font-weight: 600;
+  }
+  
+  .conversation-title {
     font-size: 0.875rem;
     font-weight: 500;
-    cursor: pointer;
+    color: var(--text-primary);
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   
-  .tab-btn.active {
-    background: var(--accent-primary);
-    border-color: var(--accent-primary);
-    color: white;
+  .conversation-meta {
+    font-size: 0.75rem;
+    color: var(--text-muted);
   }
   
-  .logout-btn {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    white-space: nowrap;
-    background: none;
+  .delete-conversation-btn {
+    opacity: 0;
+    padding: 0.25rem;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    background: transparent;
     border: none;
-    color: var(--text-secondary);
-    cursor: pointer;
+    color: var(--text-muted);
+  }
+  
+  .conversation-item:hover .delete-conversation-btn { opacity: 1; }
+  .conversation-item.active .delete-conversation-btn { opacity: 0.6; }
+  .conversation-item.active .delete-conversation-btn:hover { opacity: 1; color: #f87171; }
+  
+  .sidebar-footer {
+    background: rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(10px);
+    padding: 1rem;
   }
   
   /* =========================================
-     5. CHAT MESSAGES & AVATAR FIX
+     6. CHAT INTERFACE
      ========================================= */
   .chat-view {
     flex: 1;
@@ -267,13 +260,9 @@
     display: flex;
     flex-direction: column;
     flex: 1;
-    overflow-y: auto;
+    overflow-y: overlay; 
     padding: 1.5rem;
-    overflow-anchor: auto; 
-  }
-  
-  .chat-spacer {
-    flex: 1 1 auto;
+    scroll-behavior: smooth;
   }
   
   .message {
@@ -282,7 +271,7 @@
     max-width: 100%;
     margin-bottom: 1.5rem;
     flex-shrink: 0;
-    align-items: flex-start; /* Keeps avatar at the top of long messages */
+    align-items: flex-start;
   }
   
   .message.user {
@@ -290,39 +279,20 @@
     flex-direction: row-reverse;
   }
   
-  /* FIXED AVATAR SIZE */
   .message-avatar {
     width: 36px;
     height: 36px;
-    min-width: 36px; /* Prevents squashing */
-    min-height: 36px;
-    max-width: 36px;
-    max-height: 36px;
+    min-width: 36px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     background: var(--bg-tertiary);
-    flex-shrink: 0; /* Ensures it never grows or shrinks */
+    flex-shrink: 0;
     overflow: hidden;
-    font-size: 0.9rem;
   }
   
-  .message.user .message-avatar {
-    background: var(--accent-primary);
-    color: white;
-  }
-  
-  .message.assistant .message-avatar {
-    background: var(--bg-primary);
-  }
-  
-  .message.assistant .message-avatar img,
-  .message.assistant .message-avatar .fixie-avatar {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
+  .message.user .message-avatar { background: var(--accent-primary); color: white; }
   
   .message-text {
     background: var(--bg-secondary);
@@ -340,7 +310,80 @@
   }
   
   /* =========================================
-     6. TOOL APPROVALS & RESULTS
+   7. INPUT AREA
+   ========================================= */
+.chat-input-area {
+  padding: 1.5rem;
+  background: var(--bg-primary); /* Swaps with theme */
+  flex-shrink: 0;
+  transition: background-color 0.3s ease;
+}
+
+.modern-input-wrapper {
+  display: flex;
+  align-items: center;
+  /* Fixed: Removed hardcoded dark color, using theme variable */
+  background: var(--bg-secondary) !important; 
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border-primary);
+  border-radius: 9999px !important;
+  padding: 4px 6px 4px 1.5rem;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.3s ease;
+}
+
+/* Adds a glow when typing */
+.modern-input-wrapper:focus-within {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px rgba(24, 119, 242, 0.1);
+}
+
+.modern-input-field {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 16px;
+  /* Fixed: Using theme variable so text is dark in light mode */
+  color: var(--text-primary); 
+  padding: 0.5rem 0;
+}
+
+.modern-input-field::placeholder {
+  /* Fixed: Using variable for placeholder visibility */
+  color: var(--text-muted);
+  opacity: 0.7;
+  font-size: 0.85rem;
+}
+
+.modern-send-btn {
+  border-radius: 50% !important; 
+  min-width: 36px;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-primary);
+  color: #ffffff; /* Icon stays white for contrast */
+  border: none;
+  transition: all 0.2s ease;
+  /* Subtle shadow that works in both themes */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); 
+}
+
+.modern-send-btn:disabled {
+  background: var(--bg-tertiary);
+  color: var(--text-muted);
+  box-shadow: none;
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.modern-send-btn svg { 
+  margin-left: 2px; 
+}
+  /* =========================================
+     8. TOOLS & FEEDBACK
      ========================================= */
   .tool-approval-card {
     margin-top: 1rem;
@@ -357,96 +400,12 @@
     border: 1px solid var(--border-secondary);
   }
   
-  .tool-arg-value { font-family: monospace; font-size: 0.85rem; }
-  
   /* =========================================
-     7. INPUT & ANIMATIONS
+     9. ANIMATIONS & LOADERS
      ========================================= */
-  .chat-input-area {
-    padding: 1.5rem;
-    background: var(--bg-primary);
-    flex-shrink: 0;
-  }
-  
-  .modern-input-wrapper {
-    display: flex;
-    align-items: center;
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-primary);
-    border-radius: 28px;
-    padding: 4px 6px 4px 1.5rem;
-  }
-  
-  .modern-input-field {
-    flex: 1;
-    background: transparent;
-    border: none;
-    outline: none;
-    font-size: 16px;
-    color: var(--text-primary);
-  }
-
-  /* Skeleton Shimmering Effect */
-  .bg-gray-800\/60 {
-    background-color: rgba(30, 41, 59, 0.6); /* Matches dark theme secondary */
-  }
-
-  .bg-gray-800\/40 {
-    background-color: rgba(30, 41, 59, 0.4);
-  }
-
-  /* AI Processing Spinner (Slow Rotation) */
   @keyframes spin-slow {
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
-  }
-
-  .animate-spin-slow {
-    animation: spin-slow 3s linear infinite;
-  }
-  /* Modern Sidebar Item Updates */
-  .conversation-item {
-    position: relative;
-    border: 1px solid transparent;
-    transition: all 0.2s ease;
-  }
-
-  /* Improved Active State for Dark Mode Compatibility */
-  .conversation-item.active {
-    background: rgba(24, 119, 242, 0.15) !important; /* Subtler blue tint */
-    border: 1px solid var(--accent-primary);
-  }
-
-  .conversation-item.active .conversation-title {
-    color: var(--accent-primary); /* Blue text instead of pure white for modern look */
-    font-weight: 600;
-  }
-
-  /* Ensure delete button behaves with Framer Motion */
-  .delete-conversation-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    width: 28px;
-    height: 28px;
-  }
-
-  /* Fix for smooth scrolling with animations */
-  .chat-messages {
-    scroll-behavior: smooth;
-    /* Prevent scrollbar from jumping when new messages animate in */
-    overflow-y: overlay; 
-  }
-
-  /* Simple fade-in utility for non-motion elements */
-  .animate-fade-in {
-    animation: fadeIn 0.4s ease-out forwards;
-  }
-
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(5px); }
-    to { opacity: 1; transform: translateY(0); }
   }
   
   @keyframes geminiRotate {
@@ -454,97 +413,72 @@
     100% { transform: rotate(360deg); }
   }
   
-  .gemini-loader { animation: geminiRotate 2s linear infinite; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
   
+  .animate-spin-slow { animation: spin-slow 3s linear infinite; }
+  .gemini-loader { animation: geminiRotate 2s linear infinite; }
+  .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+  
+  .bg-gray-800\/60 { background-color: rgba(30, 41, 59, 0.6); }
+  .bg-gray-800\/40 { background-color: rgba(30, 41, 59, 0.4); }
+  
+  /* =========================================
+     10. MOBILE RESPONSIVENESS
+     ========================================= */
   @media (max-width: 768px) {
+    .menu-btn { display: flex; }
+    .hidden-mobile { display: none !important; }
+    .logout-text { display: none; }
+  
+    .dashboard-header { height: 64px; padding: 0.75rem 1rem; }
+    .header-title { font-size: 1rem; white-space: nowrap; }
+  
     .sidebar {
       position: fixed;
-      /* This pushes the sidebar down so it starts UNDER the header */
-      top: 72px; 
+      top: 64px;
       left: 0;
-      /* Subtract header height from the total height to prevent overflow */
-      height: calc(100vh - 72px); 
+      height: calc(100vh - 64px);
       z-index: 999;
       width: 280px;
-      background: var(--bg-secondary);
-      border-right: 1px solid var(--border-primary);
-      
-      /* Start hidden to the left */
-      transform: translateX(-100%); 
+      transform: translateX(-100%);
       transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: none;
-      display: flex !important; /* Ensure it's not 'display: none' when using transform */
+      display: flex !important;
     }
   
-    /* When the "open" class is added */
     .sidebar.open {
-      /* ONLY use translateX(0) here. 
-         We handle the vertical position using 'top' above. */
-      transform: translateX(0); 
+      transform: translateX(0);
       box-shadow: 10px 0 30px rgba(0, 0, 0, 0.15);
     }
   
-    /* Adjust the chat view so it doesn't get squashed when sidebar is fixed */
-    .chat-view {
-      width: 100%;
+    .sidebar-overlay {
+      position: fixed;
+      top: 64px;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(2px);
+      z-index: 998;
     }
   
-    .logout-text { display: none; }
-        
-    .message-avatar {
-      width: 32px;
-      height: 32px;
-      min-width: 32px;
-      min-height: 32px;
-    }
+    .chat-view { width: 100%; }
+    .message-avatar { width: 32px; height: 32px; min-width: 32px; }
   }
   
-  /* Sidebar Backdrop (Recommended) 
-     Add this to prevent users from clicking things behind the sidebar */
-  .sidebar-overlay {
-    position: fixed;
-    top: 72px; /* Starts below header */
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.3);
-    backdrop-filter: blur(2px);
-    z-index: 998; /* Just below sidebar */
+  @media (min-width: 769px) {
+    .mobile-only-nav { display: none; }
   }
 
-  /* =========================================
-   MOBILE RESPONSIVENESS (Fixes Display)
-   ========================================= */
-
-@media (max-width: 768px) {
-  /* Show the hamburger menu ONLY on mobile */
-  .menu-btn {
-    display: flex; 
-  }
-
-  .sidebar {
-    position: fixed;
-    top: 72px; 
-    left: 0;
-    height: calc(100vh - 72px); 
-    z-index: 999;
-    width: 280px;
-    transform: translateX(-100%);
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    /* Ensure sidebar is 'flex' when it exists, even if transformed */
-    display: flex !important; 
-  }
-
-  .sidebar.open {
-    transform: translateX(0);
-    box-shadow: 10px 0 30px rgba(0, 0, 0, 0.15);
-  }
-
-  /* Hide the h1 title on very small screens to make room for tabs */
-  .dashboard-header h1 {
-    font-size: 1.1rem;
-    white-space: nowrap;
-  }
+  @media (max-width: 768px) {
+    .header-logo {
+        width: 28px;
+        height: 28px;
+    }
+    
+    .header-title {
+        font-size: 1.1rem;
+    }
 }
-
-

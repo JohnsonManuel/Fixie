@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { ThemeProvider, useTheme } from "../contexts/ThemeContext";
 import "../styles/Dashboard.css";
+
 // Component Imports
 import DashboardHeader from "../components/dashboard/DashboardHeader";
 import ChatModule from "../components/dashboard/ChatModule";
@@ -25,13 +26,11 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
     // AUTHENTICATION GUARD
     // ===========================================================================
 
-    // 1. If Firebase is still initializing, show nothing (prevents flicker)
     if (loading) return null; 
 
-    // 2. If no user is found, show the Error Card. 
-    // The "Return to Login" button calls logout(), which triggers the navigate("/") we added to the hook.
     if (!user) {
        logout();
+       return null; 
     }
 
     // ===========================================================================
@@ -45,18 +44,21 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
                 activeTab={activeTab}
                 setActiveTab={setActiveTab}
                 userRole={userRole}
-                logout={logout} 
                 toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
             />
 
             {/* 2. MAIN CONTENT SECTION */}
             <main className="dashboard-content">
                 
-                {/* CHAT TAB - Default view */}
+                {/* CHAT TAB */}
                 {activeTab === "chat" && (
                     <ChatModule 
                         isSidebarOpen={isSidebarOpen} 
-                        setIsSidebarOpen={setIsSidebarOpen} 
+                        setIsSidebarOpen={setIsSidebarOpen}
+                        activeTab={activeTab}
+                        setActiveTab={setActiveTab}
+                        userRole={userRole}
+                        logout={logout}
                     />
                 )}
 
@@ -66,6 +68,10 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
                         userRole={userRole}
                         organizationKey={organizationKey}
                         isSidebarOpen={isSidebarOpen}
+                        setIsSidebarOpen={setIsSidebarOpen} /* ADDED THIS PROP */
+                        activeTab={activeTab}
+                        setActiveTab={setActiveTab}
+                        logout={logout}
                     />
                 )}
 
@@ -73,13 +79,25 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
                 {activeTab === "tools" && userRole === "admin" && (
                     <ToolsModule 
                         isSidebarOpen={isSidebarOpen}
+                        setIsSidebarOpen={setIsSidebarOpen} /* ADDED THIS PROP */
+                        activeTab={activeTab}
+                        setActiveTab={setActiveTab}
+                        logout={logout}
                     />
                 )}
                 
-                {/* FALLBACK FOR NON-ADMINS TRYING TO ACCESS ADMIN TABS */}
+                {/* FALLBACK FOR NON-ADMINS */}
                 {activeTab !== "chat" && userRole !== "admin" && (
-                    <div className="no-permission-container">
-                        <p>You do not have permission to view this tab.</p>
+                    <div className="no-permission-container flex flex-1 items-center justify-center">
+                        <div className="text-center">
+                            <p className="text-gray-500 font-medium">You do not have permission to view this tab.</p>
+                            <button 
+                                onClick={() => setActiveTab("chat")}
+                                className="mt-4 text-indigo-500 text-sm font-bold hover:underline"
+                            >
+                                Back to Chat
+                            </button>
+                        </div>
                     </div>
                 )}
             </main>
@@ -88,7 +106,7 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
 }
 
 // ===========================================================================
-// ROOT COMPONENT (Wraps with Theme)
+// ROOT COMPONENT
 // ===========================================================================
 
 type DashboardProps = {
@@ -97,7 +115,7 @@ type DashboardProps = {
 };
 
 export default function Dashboard({ userRole, organizationKey }: DashboardProps) {
-        return (
+    return (
         <ThemeProvider>
             <DashboardContent userRole={userRole} organizationKey={organizationKey} />
         </ThemeProvider>

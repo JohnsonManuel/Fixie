@@ -1,18 +1,17 @@
 import React from "react";
 import MenuIcon from '@mui/icons-material/Menu';
-import LogoutIcon from '@mui/icons-material/Logout';
 import ThemeToggle from "../ThemeToggle";
+import fixieLogo from "../../images/image.png"; // Reusing the logo from ChatMessage
 import "../../styles/Dashboard.css";
 
 type DashboardHeaderProps = {
     activeTab: "chat" | "organization" | "tools";
     setActiveTab: (tab: "chat" | "organization" | "tools") => void;
     userRole: string | null;
-    logout: () => void;
     toggleSidebar: () => void;
 };
 
-const DashboardHeader = ({ activeTab, setActiveTab, userRole, logout, toggleSidebar }: DashboardHeaderProps) => {
+const DashboardHeader = ({ activeTab, setActiveTab, userRole, toggleSidebar }: DashboardHeaderProps) => {
     return (
         <header className="dashboard-header">
             <div className="header-left">
@@ -20,10 +19,13 @@ const DashboardHeader = ({ activeTab, setActiveTab, userRole, logout, toggleSide
                     <MenuIcon fontSize="small" />
                 </button>
                 
-                <h1>Fixie AI Support</h1>
+                {/* BRAND LOGO & NAME SECTION */}
+                <div className="header-brand">
+                    <img src={fixieLogo} alt="Fixie Logo" className="header-logo" />
+                    <span className="header-title">Fixie</span>
+                </div>
 
-                {/* Fixed: Replaced complex Tailwind divs with a clean nav container */}
-                <nav className="header-tabs">
+                <nav className="header-tabs hidden-mobile">
                     <button
                         onClick={() => setActiveTab("chat")}
                         className={`tab-btn ${activeTab === "chat" ? "active" : ""}`}
@@ -53,10 +55,6 @@ const DashboardHeader = ({ activeTab, setActiveTab, userRole, logout, toggleSide
 
             <div className="header-right">
                 <ThemeToggle />
-                <button className="logout-btn" onClick={logout} title="Sign out">
-                    <LogoutIcon fontSize="small" /> 
-                    <span className="logout-text">Logout</span>
-                </button>
             </div>
         </header>
     );
