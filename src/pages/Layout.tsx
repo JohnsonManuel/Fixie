@@ -52,8 +52,8 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         (!("theme" in localStorage) &&
           window.matchMedia("(prefers-color-scheme: dark)").matches)
       ) {
-        document.documentElement.classList.add("dark");
-        setIsDark(true);
+        document.documentElement.classList.add("light");
+        setIsDark(false);
       }
     }, []);
   
@@ -137,9 +137,6 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               </button>
             </div>
             <div className="flex w-full flex-col gap-4">
-              <NavbarButton onClick={toggleTheme} variant="secondary">
-                {isDark ? <Moon /> : <SunDim />}
-              </NavbarButton>
               <NavbarButton
                 onClick={() => {
                   setIsMobileMenuOpen(false);
