@@ -9,7 +9,7 @@ export interface Message {
   createdAt: Date;
   
   // New fields for Interrupts (Human-in-the-loop)
-  status?: "completed" | "requires_action" | "action_taken"; 
+  status?: "completed" | "requires_action" | "processing" | "action_taken" | "error";
   toolName?: string;
   toolArgs?: Record<string, any>;
   toolCallId?: string;
