@@ -105,7 +105,7 @@ button:active {
   align-items: center;
 }
 
-.header-left { gap: 2rem; }
+.header-left { gap: 1rem; }
 .header-tabs { gap: 0.5rem; margin-left: 1.5rem; }
 .header-right { gap: 1rem; margin-left: auto; }
 
@@ -135,8 +135,8 @@ button:active {
 }
 
 .header-logo {
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
   border-radius: 8px;
   object-fit: cover;
 }
@@ -232,8 +232,8 @@ button:active {
   opacity: 0;
   padding: 0.25rem;
   border-radius: 50%;
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 34px;
   background: transparent;
   border: none;
   color: var(--text-muted);

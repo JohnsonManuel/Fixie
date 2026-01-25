@@ -45,6 +45,7 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
                 setActiveTab={setActiveTab}
                 userRole={userRole}
                 toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+                isSidebarOpen={isSidebarOpen} 
             />
 
             {/* 2. MAIN CONTENT SECTION */}

@@ -7,6 +7,8 @@ import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import { useApi } from "../../hooks/useApi";
 import "../../styles/Dashboard.css";
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import SettingsSuggestIcon from '@mui/icons-material/SettingsSuggest';
+import BusinessIcon from '@mui/icons-material/Business';
 import { motion, AnimatePresence } from "framer-motion";
 
 // ICONS
@@ -153,6 +155,8 @@ const ChatModule = ({
         setMessages((prev) => [...prev, tempUserMsg]);
         setInputMessage(""); 
 
+        const isFirstMessage = messages.length === 0;
+
         try {
             const res = await fetchWithAuth("/chat", {
                 method: "POST",
@@ -176,7 +180,9 @@ const ChatModule = ({
                 runId: data.run_id, 
                 createdAt: new Date() 
             }]);
-
+            if (isFirstMessage) {
+                loadThreads();
+            }
         } catch (error) { console.error(error); } finally { setIsLoading(false); }
     };
 
@@ -296,7 +302,7 @@ const ChatModule = ({
                                             className="delete-conversation-btn p-1 ml-2 text-[var(--text-muted)]"
                                             onClick={(e) => { e.stopPropagation(); deleteConversation(convo.id); }}
                                         >
-                                            <DeleteOutlineIcon sx={{ fontSize: 18 }} />
+                                            <DeleteOutlineIcon sx={{ fontSize: 20 }} />
                                         </motion.button>
                                     </motion.div>
                                 ))}
@@ -305,7 +311,19 @@ const ChatModule = ({
                     </AnimatePresence>
                 </div>
 
-                <div className="sidebar-footer border-t border-[var(--border-primary)] p-4 bg-[var(--bg-secondary)] mt-auto">
+                <div className="sidebar-footer border-t border-[var(--border-primary)] p-4 bg-[var(--bg-secondary)]">
+                    <div className="md:hidden space-y-1 mb-4">
+                        {userRole === "admin" && (
+                            <>
+                                <button onClick={() => { setActiveTab("organization");  }} className={`flex items-center gap-3 w-full px-3 py-2 text-sm rounded-lg transition-colors ${activeTab === 'organization' ? 'bg-indigo-600/10 text-indigo-500' : 'text-[var(--text-secondary)]'}`}>
+                                    <BusinessIcon fontSize="small" /> Organization
+                                </button>
+                                <button onClick={() => { setActiveTab("tools");  }} className={`flex items-center gap-3 w-full px-3 py-2 text-sm rounded-lg transition-colors ${activeTab === 'tools' ? 'bg-indigo-600/10 text-indigo-500' : 'text-[var(--text-secondary)]'}`}>
+                                    <SettingsSuggestIcon fontSize="small" /> Tool Manager
+                                </button>
+                            </>
+                        )}
+                    </div>
                     <button onClick={logout} className="flex items-center gap-3 w-full px-3 py-2 text-sm font-bold text-red-500 hover:bg-red-500/10 rounded-lg transition-all">
                         <LogoutIcon fontSize="small" /> Sign Out
                     </button>

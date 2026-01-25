@@ -114,13 +114,13 @@ const ToolsModule = ({ isSidebarOpen, setIsSidebarOpen, activeTab, setActiveTab,
                 <div className="sidebar-footer border-t border-[var(--border-primary)] p-4 bg-[var(--bg-secondary)]">
                     <div className="md:hidden space-y-1 mb-4">
                         <button 
-                            onClick={() => { setActiveTab("chat"); setIsSidebarOpen(false); }} 
+                            onClick={() => { setActiveTab("chat");  }} 
                             className={`flex items-center gap-3 w-full px-3 py-2 text-sm rounded-lg transition-colors ${activeTab === 'chat' ? 'bg-indigo-600/10 text-indigo-500' : 'text-[var(--text-secondary)]'}`}
                         >
                             <ChatBubbleOutlineIcon fontSize="small" /> Support Chat
                         </button>
                         <button 
-                            onClick={() => { setActiveTab("organization"); setIsSidebarOpen(false); }} 
+                            onClick={() => { setActiveTab("organization"); }} 
                             className={`flex items-center gap-3 w-full px-3 py-2 text-sm rounded-lg transition-colors ${activeTab === 'organization' ? 'bg-indigo-600/10 text-indigo-400' : 'text-[var(--text-secondary)]'}`}
                         >
                             <BusinessIcon fontSize="small" /> Organization

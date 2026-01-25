@@ -1,22 +1,29 @@
 import React from "react";
 import MenuIcon from '@mui/icons-material/Menu';
+import CloseIcon from "@mui/icons-material/Close";
 import ThemeToggle from "../ThemeToggle";
 import fixieLogo from "../../images/image.png"; // Reusing the logo from ChatMessage
 import "../../styles/Dashboard.css";
 
 type DashboardHeaderProps = {
+    isSidebarOpen: boolean;
     activeTab: "chat" | "organization" | "tools";
     setActiveTab: (tab: "chat" | "organization" | "tools") => void;
     userRole: string | null;
     toggleSidebar: () => void;
 };
 
-const DashboardHeader = ({ activeTab, setActiveTab, userRole, toggleSidebar }: DashboardHeaderProps) => {
+const DashboardHeader = ({ activeTab, setActiveTab, userRole, toggleSidebar ,isSidebarOpen }: DashboardHeaderProps) => {
     return (
         <header className="dashboard-header">
             <div className="header-left">
                 <button className="menu-btn" onClick={toggleSidebar}>
+                {isSidebarOpen ? (
+                    <CloseIcon fontSize="small" />
+                ) : (
                     <MenuIcon fontSize="small" />
+                )}
+                    
                 </button>
                 
                 {/* BRAND LOGO & NAME SECTION */}
