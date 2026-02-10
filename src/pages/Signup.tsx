@@ -84,13 +84,22 @@ const handleSubmit = async (e: React.FormEvent) => {
       if (!snapshot.empty) {
         const orgData = snapshot.docs[0].data();
 
-        const hasAdmin =
-          orgData.adminUid ||
-          (Array.isArray(orgData.members) &&
-            orgData.members.some((m: any) => m.role === "admin"));
+        // Check if admin exists - members is an object (map), not an array
+        let hasAdmin = false;
+
+        if (orgData.adminUid) {
+          hasAdmin = true;
+        } else if (orgData.members && typeof orgData.members === "object") {
+          // members is an object like { [uid]: { role, email, status } }
+          hasAdmin = Object.values(orgData.members).some(
+            (m: any) => m.role === "admin"
+          );
+        }
+
+        console.log("Signup check - hasAdmin:", hasAdmin, "members:", orgData.members);
 
         if (hasAdmin) {
-          // Optional: clean up the just-created auth user
+          // Clean up the just-created auth user
           await user.delete();
 
           throw new Error(
