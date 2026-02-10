@@ -822,47 +822,89 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
                                         </div>
                                     </div>
 
-                                    <div className="border border-gray-700 rounded-xl p-6 shadow-md bg-[var(--bg-secondary)]">
-                                        <h3 className="text-lg font-medium mb-4">Members</h3>
-                                        <div className="space-y-3">
-                                            {(() => {
-                                                const org = organizations.find((org) => org.id === activeOrgId);
-                                                if (!org || !org.members) {
-                                                    return (
-                                                        <div className="text-gray-500 text-sm text-center py-6 border border-dashed border-gray-600 rounded-lg">
-                                                            No users have signed up yet.
-                                                        </div>
-                                                    );
-                                                }
-                                                const membersArray = Object.entries(org.members).map(
-                                                    ([uid, data]: [string, any]) => ({ uid, ...data })
-                                                );
-                                                if (membersArray.length === 0) {
-                                                    return (
-                                                        <div className="text-gray-500 text-sm text-center py-6 border border-dashed border-gray-600 rounded-lg">
-                                                            No users have signed up yet.
-                                                        </div>
-                                                    );
-                                                }
-                                                return membersArray.map((member) => (
-                                                    <div
-                                                        key={member.uid}
-                                                        className="flex justify-between items-center px-4 py-2 rounded-md bg-[var(--bg-primary)]"
-                                                    >
-                                                        <div>
-                                                            <p className="text-sm font-medium">{member.email}</p>
-                                                            <p className={`text-xs ${member.status === "verified" ? "text-green-400" : "text-yellow-400"}`}>
-                                                                {member.status}
-                                                            </p>
-                                                        </div>
-                                                        <p className="text-xs text-gray-400">
-                                                            {member.role || "user"}
-                                                        </p>
+                                    {/* Members Section - Two Columns */}
+                                    {(() => {
+                                        const org = organizations.find((org) => org.id === activeOrgId);
+                                        if (!org || !org.members) {
+                                            return (
+                                                <div className="border border-gray-700 rounded-xl p-6 shadow-md bg-[var(--bg-secondary)]">
+                                                    <h3 className="text-lg font-medium mb-4">Members</h3>
+                                                    <div className="text-gray-500 text-sm text-center py-6 border border-dashed border-gray-600 rounded-lg">
+                                                        No users have signed up yet.
                                                     </div>
-                                                ));
-                                            })()}
-                                        </div>
-                                    </div>
+                                                </div>
+                                            );
+                                        }
+
+                                        const membersArray = Object.entries(org.members).map(
+                                            ([uid, data]: [string, any]) => ({ uid, ...data })
+                                        );
+
+                                        const admins = membersArray.filter((m) => m.role === "admin");
+                                        const users = membersArray.filter((m) => m.role !== "admin");
+
+                                        const ContactCard = ({ member }: { member: any }) => (
+                                            <div className="flex items-center gap-3 p-3 rounded-lg bg-[var(--bg-primary)] border border-gray-700 hover:border-gray-600 transition">
+                                                <div className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white font-semibold text-sm">
+                                                    {member.email?.charAt(0).toUpperCase() || "?"}
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="text-sm font-medium truncate">{member.email}</p>
+                                                    <p className={`text-xs ${member.status === "active" || member.status === "verified" ? "text-green-400" : "text-yellow-400"}`}>
+                                                        {member.status}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        );
+
+                                        return (
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                {/* Admins Column */}
+                                                <div className="border border-gray-700 rounded-xl p-5 shadow-md bg-[var(--bg-secondary)]">
+                                                    <div className="flex items-center gap-2 mb-4">
+                                                        <span className="text-lg">👑</span>
+                                                        <h3 className="text-lg font-medium">Admins</h3>
+                                                        <span className="ml-auto text-xs bg-indigo-600 text-white px-2 py-0.5 rounded-full">
+                                                            {admins.length}
+                                                        </span>
+                                                    </div>
+                                                    {admins.length === 0 ? (
+                                                        <div className="text-gray-500 text-sm text-center py-4 border border-dashed border-gray-600 rounded-lg">
+                                                            No admins
+                                                        </div>
+                                                    ) : (
+                                                        <div className="space-y-2">
+                                                            {admins.map((member) => (
+                                                                <ContactCard key={member.uid} member={member} />
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                {/* Users Column */}
+                                                <div className="border border-gray-700 rounded-xl p-5 shadow-md bg-[var(--bg-secondary)]">
+                                                    <div className="flex items-center gap-2 mb-4">
+                                                        <span className="text-lg">👤</span>
+                                                        <h3 className="text-lg font-medium">Users</h3>
+                                                        <span className="ml-auto text-xs bg-gray-600 text-white px-2 py-0.5 rounded-full">
+                                                            {users.length}
+                                                        </span>
+                                                    </div>
+                                                    {users.length === 0 ? (
+                                                        <div className="text-gray-500 text-sm text-center py-4 border border-dashed border-gray-600 rounded-lg">
+                                                            No users
+                                                        </div>
+                                                    ) : (
+                                                        <div className="space-y-2">
+                                                            {users.map((member) => (
+                                                                <ContactCard key={member.uid} member={member} />
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        );
+                                    })()}
                                 </div>
                             ) : (
                                 <div className="flex items-center justify-center flex-1">
