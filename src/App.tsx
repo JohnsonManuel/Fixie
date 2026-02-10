@@ -1,15 +1,15 @@
 import React from "react";
-import { BrowserRouter, Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "./hooks/useAuth";
 
 import LandingPage from "./pages/LandingPage";
 import Signup from "./pages/Signup";
 import Login from "./pages/Login";
-import Dashboard from "./pages/Dashboard";
-import ServiceNowAlternative from "./pages/ServiceNowAlternative";
-import EnterpriseITSM from "./pages/EnterpriseITSM";
-import ServiceNowMigration from "./pages/ServiceNowMigration";
-import Fortune500ITSM from "./pages/Fortune500ITSM";
+// import Dashboard from "./pages/Dashboard";
+// import ServiceNowAlternative from "./pages/ServiceNowAlternative";
+// import EnterpriseITSM from "./pages/EnterpriseITSM";
+// import ServiceNowMigration from "./pages/ServiceNowMigration";
+// import Fortune500ITSM from "./pages/Fortune500ITSM";
 import DemoForm from "./components/DemoForm";
 import OrganizationSetup from "./pages/OrganizationSetup"; // you'll build this next
 import SignupAdmin from "./pages/SignupAdmin";

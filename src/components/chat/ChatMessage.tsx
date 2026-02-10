@@ -2,220 +2,206 @@ import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import fixieLogo from '../../images/image.png';
-
-// CHANGE 1: Import the Message type instead of defining it locally
 import { Message } from '../../types'; 
+import { motion, AnimatePresence } from "framer-motion";
+import { useAuth } from "../../hooks/useAuth";
 
 interface ChatMessageProps {
   message: Message;
-  onAction?: (action: any) => void;
-  onButtonClick?: (buttonAction: string, messageId: string) => void;
   onApprovalAction?: (action: "approve" | "reject", message: Message) => void;
 }
 
-const ChatMessage: React.FC<ChatMessageProps> = ({ 
-  message, 
-  onAction, 
-  onButtonClick, 
-  onApprovalAction 
-}) => {
+const ChatMessage: React.FC<ChatMessageProps> = ({ message, onApprovalAction }) => {
+  const { user } = useAuth();
+  const isUser = message.role === 'user';
+  
+  // Bridge potential snake_case from Python backend
+  const toolName = message.toolName || (message as any).tool_name;
+  const toolArgs = message.toolArgs || (message as any).tool_args;
 
-  // Helper to render tool arguments cleanly
-  const renderToolArgs = (args: Record<string, any>) => {
-    if (!args) return null;
-    return Object.entries(args).map(([key, value]) => (
-      <div key={key} className="tool-arg-row" style={{ display: 'flex', flexDirection: 'column', marginBottom: '4px' }}>
-        <span style={{ fontSize: '0.75em', textTransform: 'uppercase', color: '#9ca3af', letterSpacing: '0.05em' }}>
-          {key}:
-        </span>
-        <span style={{ color: '#fff', fontFamily: 'monospace', fontSize: '0.9em' }}>
-          {String(value)}
-        </span>
-      </div>
-    ));
+  // --- REFINED LOGIC ---
+  const isAwaitingAction = !isUser && message.status === 'requires_action';
+  const isProcessing = message.status === 'processing' || message.status === 'action_taken';
+  const isCompleted = message.status === 'completed';
+  
+  // The card stays visible during 'pending' and 'processing' phases
+  const shouldShowApprovalCard = (isAwaitingAction || isProcessing) && !isCompleted;
+
+  const formatToolName = (name?: string) => {
+    if (!name) return "System Action";
+    return name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   };
 
-  const renderContent = () => {
-    // We render if there is content OR if an action is required (interrupt)
-    if (message.content || message.status === 'requires_action' || message.status === 'action_taken') {
-      return (
-        <div className="message-content">
-          
-          {/* 1. MAIN TEXT CONTENT */}
-          <div className="message-text">
-            <ReactMarkdown 
-              remarkPlugins={[remarkGfm]}
-              components={{
-                h1: ({children}) => <h1 style={{fontSize: '26px', margin: '20px 0 12px 0', fontWeight: 600}}>{children}</h1>,
-                h2: ({children}) => <h2 style={{fontSize: '22px', margin: '20px 0 12px 0', fontWeight: 600}}>{children}</h2>,
-                h3: ({children}) => <h3 style={{fontSize: '20px', margin: '20px 0 12px 0', fontWeight: 600}}>{children}</h3>,
-                h4: ({children}) => <h4 style={{fontSize: '18px', margin: '20px 0 12px 0', fontWeight: 600}}>{children}</h4>,
-                p: ({children}) => <p style={{margin: '16px 0', lineHeight: '1.7'}}>{children}</p>,
-                ul: ({children}) => <ul style={{margin: '16px 0', paddingLeft: '20px'}}>{children}</ul>,
-                ol: ({children}) => <ol style={{margin: '16px 0', paddingLeft: '20px'}}>{children}</ol>,
-                li: ({children}) => <li style={{margin: '8px 0', lineHeight: '1.6'}}>{children}</li>,
-                strong: ({children}) => <strong style={{fontWeight: 600}}>{children}</strong>,
-                em: ({children}) => <em style={{fontStyle: 'italic'}}>{children}</em>,
-                code: ({children}) => <code style={{ backgroundColor: '#f1f5f9', padding: '2px 6px', borderRadius: '4px', fontFamily: 'monospace', fontSize: '0.9em', color: '#333' }}>{children}</code>,
-                pre: ({children}) => <pre style={{ backgroundColor: '#f8fafc', padding: '16px', borderRadius: '8px', overflow: 'auto', border: '1px solid #e2e8f0', margin: '16px 0' }}>{children}</pre>,
-                blockquote: ({children}) => <blockquote style={{ borderLeft: '4px solid #1877F2', paddingLeft: '16px', margin: '16px 0', fontStyle: 'italic', color: '#4a5568' }}>{children}</blockquote>
-              }}
-            >
-              {message.content || (message.status === 'requires_action' ? "**I need your approval to proceed with the following request:**" : "")}
-            </ReactMarkdown>
-          </div>
-
-          {/* 2. NEW: APPROVAL CARD (Interrupt) */}
-          {message.status === 'requires_action' && message.toolArgs && (
-            <div className="tool-approval-card" style={{
-              marginTop: '12px',
-              backgroundColor: 'rgba(31, 41, 55, 0.95)', // Dark gray
-              border: '1px solid #374151',
-              borderRadius: '8px',
-              padding: '16px',
-              maxWidth: '100%'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px', color: '#e5e7eb', fontWeight: 600 }}>
-                <span style={{ marginRight: '8px' }}>⚡</span> 
-                Request: {message.toolName}
-              </div>
-              
-              <div style={{
-                backgroundColor: '#111827', // Black/Darker gray
-                padding: '12px',
-                borderRadius: '6px',
-                marginBottom: '16px',
-                border: '1px solid #374151'
-              }}>
-                {renderToolArgs(message.toolArgs)}
-              </div>
-
-              <div style={{ display: 'flex', gap: '12px' }}>
-                <button 
-                  onClick={() => onApprovalAction?.("approve", message)}
-                  style={{
-                    flex: 1,
-                    backgroundColor: '#059669', // Green
-                    color: 'white',
-                    border: 'none',
-                    padding: '8px 16px',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    fontWeight: 500,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '6px'
-                  }}
-                >
-                  <span>✓</span> Approve
-                </button>
-                <button 
-                  onClick={() => onApprovalAction?.("reject", message)}
-                  style={{
-                    flex: 1,
-                    backgroundColor: 'transparent',
-                    color: '#ef4444', // Red
-                    border: '1px solid #ef4444',
-                    padding: '8px 16px',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    fontWeight: 500,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '6px'
-                  }}
-                >
-                  <span>✕</span> Reject
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* 3. NEW: POST-ACTION FEEDBACK */}
-          {message.status === 'action_taken' && (
-             <div style={{
-               marginTop: '10px',
-               paddingTop: '10px',
-               borderTop: '1px solid rgba(255,255,255,0.1)',
-               color: '#9ca3af',
-               fontSize: '0.85em',
-               fontStyle: 'italic'
-             }}>
-               ✓ Decision recorded. Processing...
+  /**
+   * Refined to handle both raw tool args (object) and 
+   * informative pending actions (list of objects).
+   */
+  const renderToolArgs = (args: any) => {
+    // Case 1: Informative list from our new 'approval_node'
+    if (Array.isArray(args)) {
+      return args.map((action, idx) => (
+        <div key={idx} className="flex flex-col mb-2 last:mb-0">
+          <span className="text-[9px] uppercase text-indigo-400 font-black tracking-widest">
+            {action.tool ? formatToolName(action.tool) : "Task Description"}
+          </span>
+          <span className="text-xs text-gray-200 leading-tight">
+            {action.description || "Executing requested process..."}
+          </span>
+          {action.parameters && Object.keys(action.parameters).length > 0 && (
+             <div className="mt-1 pl-2 border-l border-white/10">
+                {Object.entries(action.parameters).map(([k, v]) => (
+                  <div key={k} className="text-[10px] text-gray-400 truncate">
+                    <span className="opacity-60">{k}:</span> {String(v)}
+                  </div>
+                ))}
              </div>
           )}
-
-          {/* 4. EXISTING: Tool call results */}
-          {message.tool_results && message.tool_results.length > 0 && (
-            <div className="tool-results">
-              {message.tool_results.map((result, index) => (
-                <div key={index} className="tool-result">
-                  <div className="tool-result-header">
-                    <span className="tool-result-icon">🔧</span>
-                    <span className="tool-result-name">{result.tool_name}</span>
-                  </div>
-                  <div className="tool-result-content">
-                    {result.result}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* 5. EXISTING: Interactive buttons */}
-          {message.interactive && message.interactive.buttons && (
-            <div className="interactive-buttons">
-              <div className="button-group">
-                {message.interactive.buttons.map((button, index) => (
-                  <button
-                    key={button.id}
-                    className={`interactive-btn ${button.style || 'secondary'}`}
-                    onClick={() => onButtonClick?.(button.action, message.id)}
-                  >
-                    {button.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* 6. EXISTING: Legacy action buttons */}
-          {message.actions && message.actions.length > 0 && (
-            <div className="message-actions">
-              {message.actions.map((action, index) => (
-                <button
-                  key={index}
-                  className={`action-btn ${action.primary ? 'primary' : 'secondary'}`}
-                  onClick={() => onAction?.(action)}
-                >
-                  {action.text}
-                </button>
-              ))}
-            </div>
-          )}
         </div>
+      ));
+    }
+
+    // If we have an object (which is the 'details' dict from your @tool interrupt)
+    if (typeof args === 'object' && args !== null && !Array.isArray(args)) {
+      return (
+          <div className="space-y-2">
+              {Object.entries(args).map(([key, value]) => (
+                  <div key={key} className="flex flex-col border-b border-white/5 pb-1 last:border-0">
+                      <span className="text-[9px] uppercase text-indigo-400 font-black tracking-widest opacity-70">
+                          {key.replace(/_/g, ' ')}
+                      </span>
+                      <span className="text-xs text-gray-200 font-medium">
+                          {typeof value === 'string' ? value : JSON.stringify(value)}
+                      </span>
+                  </div>
+              ))}
+          </div>
       );
     }
 
-    return null;
+    if (Array.isArray(args)) {
+      return args.map((item, i) => (
+          <div key={i} className="text-xs text-gray-300 mb-1">
+              {JSON.stringify(item)}
+          </div>
+      ));
+    }
+
+    return <span className="text-xs text-gray-400 italic">No parameters provided.</span>;
   };
 
   return (
-    <div className={`message ${message.role}`}>
-      <div className="message-avatar">
-        {message.role === 'user' ? '👤' : (
-          <img 
-            src={fixieLogo} 
-            alt="Fixie AI" 
-            className="fixie-avatar"
-            style={{ width: '100%', height: '100%', borderRadius: '50%' }}
-          />
-        )}
+    <motion.div 
+      initial={{ opacity: 0, x: isUser ? 10 : -10 }} 
+      animate={{ opacity: 1, x: 0 }}
+      className="w-full flex gap-3 items-start mb-4 px-2"
+      style={{ flexDirection: isUser ? 'row-reverse' : 'row' }}
+    >
+      {/* Avatar Circle */}
+      <div className="flex-shrink-0 mt-1">
+        <div style={{ 
+            width: '32px', height: '32px', borderRadius: '50%', 
+            backgroundColor: isUser ? 'var(--accent-primary)' : 'var(--bg-secondary)', 
+            display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
+            border: isUser ? 'none' : '1px solid var(--border-primary)'
+        }}>
+          {isUser ? (
+            <span className="text-[10px] font-bold text-white uppercase">
+              {user?.displayName ? user.displayName.split(' ').map(n => n[0]).join('').substring(0, 2) : 'ME'}
+            </span>
+          ) : (
+            <img src={fixieLogo} alt="Fixie Assistant" className="w-full h-full object-cover" />
+          )}
+        </div>
       </div>
-      {renderContent()}
-    </div>
+
+      <div className={`flex flex-col ${isUser ? 'items-end' : 'items-start'} flex-1 min-w-0`}>
+        {/* Content Bubble */}
+        {message.content && (
+            <div style={{ 
+            maxWidth: '90%', width: 'fit-content', padding: '12px 16px',
+            backgroundColor: isUser ? 'var(--accent-primary)' : 'var(--bg-secondary)',
+            color: isUser ? '#fff' : 'var(--text-primary)',
+            borderRadius: isUser ? '18px 2px 18px 18px' : '2px 18px 18px 18px',
+            boxShadow: 'var(--shadow-sm)',
+            border: isUser ? 'none' : '1px solid var(--border-primary)',
+            marginBottom: shouldShowApprovalCard ? '12px' : '0'
+            }}>
+                <div className="markdown-container prose prose-sm max-w-none text-inherit leading-relaxed">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                        {message.content}
+                    </ReactMarkdown>
+                </div>
+            </div>
+        )}
+
+        {/* Approval UI Card */}
+        <AnimatePresence mode="wait">
+            {shouldShowApprovalCard && (
+              <motion.div 
+                key="approval-card"
+                initial={{ opacity: 0, height: 0, scale: 0.95 }} 
+                animate={{ opacity: 1, height: 'auto', scale: 1 }} 
+                exit={{ opacity: 0, height: 0, scale: 0.95 }}
+                transition={{ duration: 0.25, ease: "easeInOut" }}
+                className="w-full max-w-sm bg-[#1a1b1e] border border-indigo-500/30 p-4 rounded-2xl shadow-2xl relative overflow-hidden"
+              >
+                 <div className="absolute -top-10 -right-10 w-32 h-32 bg-indigo-500/10 blur-3xl rounded-full" />
+                 
+                 <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                        <span className={`flex h-2 w-2 rounded-full ${isProcessing ? 'bg-indigo-500 animate-spin' : 'bg-amber-500 animate-pulse'}`} />
+                        <span className="text-[11px] font-black uppercase tracking-tighter text-gray-300">
+                            {formatToolName(toolName)}
+                        </span>
+                    </div>
+                    <span className="text-[9px] font-bold text-indigo-400/60 uppercase tracking-tighter">
+                        {isProcessing ? 'Executing Action...' : 'Approval Required'}
+                    </span>
+                 </div>
+
+                 <div className="bg-black/30 backdrop-blur-sm p-3 rounded-xl mb-4 border border-white/5 shadow-inner">
+                    {renderToolArgs(toolArgs)}
+                 </div>
+
+                 <div className="flex gap-2">
+                    <AnimatePresence mode="wait">
+                        {isProcessing ? (
+                            <motion.div 
+                                key="processing"
+                                initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                                className="w-full py-2.5 bg-indigo-500/10 text-indigo-400 text-xs font-bold rounded-xl text-center flex items-center justify-center gap-2 border border-indigo-500/20"
+                            >
+                                <div className="w-3 h-3 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+                                Processing...
+                            </motion.div>
+                        ) : (
+                            <motion.div key="buttons" className="flex w-full gap-2" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                                <button 
+                                      onClick={() => onApprovalAction?.("approve", message)} 
+                                      className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold py-2.5 rounded-xl transition-all"
+                                  >
+                                      Approve
+                                  </button>
+                                  <button 
+                                      onClick={() => onApprovalAction?.("reject", message)} 
+                                      className="flex-1 border border-red-500/50 text-red-400 text-xs font-bold py-2.5 rounded-xl hover:bg-red-500/10 transition-all"
+                                  >
+                                      Reject
+                                  </button>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                 </div>
+              </motion.div>
+            )}
+        </AnimatePresence>
+        
+        {/* Timestamp */}
+        <span className="text-[9px] opacity-30 mt-1 font-bold tracking-widest uppercase px-1">
+            {isUser ? 'You' : 'Fixie AI'} • {message.createdAt ? new Date(message.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Just now'}
+        </span>
+      </div>
+    </motion.div>
   );
 };
 

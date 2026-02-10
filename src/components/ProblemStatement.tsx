@@ -1,7 +1,6 @@
-import React from 'react';
 import { motion } from "framer-motion";
-import { Highlight } from '../components/ui/hero-highlight'
-import { Cover } from '../components/ui/cover';
+import React from 'react';
+import { Highlight } from '../components/ui/hero-highlight';
 
 const ProblemStatement: React.FC = () => (
     <div className='w-full bg-white dark:bg-neutral-900'>

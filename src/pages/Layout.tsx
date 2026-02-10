@@ -11,7 +11,7 @@ import {
   MobileNavMenu,
 } from "../components/ui/resizable-navbar";
 import { Moon, SunDim } from "lucide-react";
-import { DarkModeToggle } from "../components/ui-utils/toggleButton";
+// import { DarkModeToggle } from "../components/ui-utils/toggleButton";
 import { useNavigate } from "react-router-dom";
 
 const navItems = [
@@ -20,30 +20,30 @@ const navItems = [
   { name: "Contact", link: "/contact" },
 ];
 
-type PageName =
-  | 'home'
-  | 'signup'
-  | 'login'
-  | 'dashboard'
-  | 'servicenow-alternative'
-  | 'enterprise-itsm'
-  | 'servicenow-migration'
-  | 'fortune500-itsm'
-  | 'demo';
+// type PageName =
+//   | 'home'
+//   | 'signup'
+//   | 'login'
+//   | 'dashboard'
+//   | 'servicenow-alternative'
+//   | 'enterprise-itsm'
+//   | 'servicenow-migration'
+//   | 'fortune500-itsm'
+//   | 'demo';
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDark, setIsDark] = useState(false);
    const navigate = useNavigate();
 
-  const handleNavClick = (link: string) => {
-    if (link.startsWith('#')) {
-      const element = document.querySelector(link);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
-      }
-    }
-  };
+  // const handleNavClick = (link: string) => {
+  //   if (link.startsWith('#')) {
+  //     const element = document.querySelector(link);
+  //     if (element) {
+  //       element.scrollIntoView({ behavior: 'smooth' });
+  //     }
+  //   }
+  // };
   
     useEffect(() => {
       // on mount, check saved theme or system preference
@@ -52,8 +52,8 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         (!("theme" in localStorage) &&
           window.matchMedia("(prefers-color-scheme: dark)").matches)
       ) {
-        document.documentElement.classList.add("dark");
-        setIsDark(true);
+        document.documentElement.classList.add("light");
+        setIsDark(false);
       }
     }, []);
   
@@ -137,9 +137,6 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               </button>
             </div>
             <div className="flex w-full flex-col gap-4">
-              <NavbarButton onClick={toggleTheme} variant="secondary">
-                {isDark ? <Moon /> : <SunDim />}
-              </NavbarButton>
               <NavbarButton
                 onClick={() => {
                   setIsMobileMenuOpen(false);

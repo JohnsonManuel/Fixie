@@ -7,9 +7,10 @@ import {
   signOut,
   onAuthStateChanged,
   sendEmailVerification,
-
 } from 'firebase/auth';
+
 import { getFirestore, doc, setDoc, collection, query, where, getDocs } from "firebase/firestore";
+import { useNavigate } from "react-router-dom"; // Keep this import
 import { auth, googleProvider, githubProvider } from '../services/firebase';
 import { AuthError } from '../types';
 
@@ -20,7 +21,9 @@ export const useAuth = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<AuthError | null>(null);
 
-  // Listen for auth state changes
+  // FIX: Moved inside the Hook function to comply with ESLint rules
+  const navigate = useNavigate();
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
@@ -199,11 +202,12 @@ export const useAuth = () => {
     }
   };
 
-  // Sign out
+  // Sign out logic
   const logout = async () => {
     try {
       setError(null);
       await signOut(auth);
+      navigate("/"); 
     } catch (err: any) {
       const authError: AuthError = {
         code: err.code,
@@ -214,7 +218,6 @@ export const useAuth = () => {
     }
   };
 
-  // Clear error
   const clearError = () => {
     setError(null);
   };
@@ -231,4 +234,4 @@ export const useAuth = () => {
     clearError,
     signUpAdmin
   };
-}; 
+};

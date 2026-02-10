@@ -1,12 +1,11 @@
 import React from 'react';
-import fixieLogo from '../images/image.png';
-import { BackgroundLines } from "./ui/background-lines";
-import { BackgroundBeams } from "./ui/background-beams";
-import { BackgroundBeamsWithCollision } from "./ui/background-beams-with-collision";
+// import fixieLogo from '../images/image.png';
+// import { BackgroundLines } from "./ui/background-lines";
+// import { BackgroundBeams } from "./ui/background-beams";
 import { motion } from "framer-motion";
-import productFlowImage from '../images/FixieProductFlow.png'
-import { Code, Feather, DollarSign, Cloud } from "lucide-react";
-import { MacbookScroll } from './ui/macbook-scroll'
+import productFlowImage from '../images/FixieProductFlow.png';
+import { BackgroundBeamsWithCollision } from "./ui/background-beams-with-collision";
+// import { MacbookScroll } from './ui/macbook-scroll'
 
 interface HeroSectionProps {
   onDemoClick: () => void;
@@ -16,54 +15,54 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onDemoClick }) => {
   const text = "Mask your IT Complexity!";
   const chars = [ ...text.split("")];
 
-const features = [
-  {
-    icon: <Code className="w-6 h-6" />,
-    title: "Built for developers",
-    description:
-      "Built for engineers, developers, dreamers, thinkers and doers.",
-  },
-  {
-    icon: <Feather className="w-6 h-6" />,
-    title: "Ease of use",
-    description:
-      "It's as easy as using an Apple, and as expensive as buying one.",
-  },
-  {
-    icon: <DollarSign className="w-6 h-6" />,
-    title: "Pricing like no other",
-    description:
-      "Our prices are best in the market. No cap, no lock, no credit card required.",
-  },
-  {
-    icon: <Cloud className="w-6 h-6" />,
-    title: "100% Uptime guarantee",
-    description: "We just cannot be taken down by anyone.",
-  },
-];
+// const features = [
+//   {
+//     icon: <Code className="w-6 h-6" />,
+//     title: "Built for developers",
+//     description:
+//       "Built for engineers, developers, dreamers, thinkers and doers.",
+//   },
+//   {
+//     icon: <Feather className="w-6 h-6" />,
+//     title: "Ease of use",
+//     description:
+//       "It's as easy as using an Apple, and as expensive as buying one.",
+//   },
+//   {
+//     icon: <DollarSign className="w-6 h-6" />,
+//     title: "Pricing like no other",
+//     description:
+//       "Our prices are best in the market. No cap, no lock, no credit card required.",
+//   },
+//   {
+//     icon: <Cloud className="w-6 h-6" />,
+//     title: "100% Uptime guarantee",
+//     description: "We just cannot be taken down by anyone.",
+//   },
+// ];
 
-const testimonials = [
-  {
-    text: "AI-Powered Servicedesk Management — Intelligent automation for modern IT support workflows.",
-    name: "🏢",
-    title: "AI-Powered",
-  },
-  {
-    text: "Minimal Downtime — Proactive monitoring and instant issue resolution.",
-    name: "⏱️",
-    title: "Reliability",
-  },
-  {
-    text: "Seamless Integrations — Connect with all your existing IT tools and platforms.",
-    name: "⚡",
-    title: "Integrations",
-  },
-  {
-    text: "Enterprise Security — Robust security protocols and compliance standards.",
-    name: "🔒",
-    title: "Security",
-  },
-];
+// const testimonials = [
+//   {
+//     text: "AI-Powered Servicedesk Management — Intelligent automation for modern IT support workflows.",
+//     name: "🏢",
+//     title: "AI-Powered",
+//   },
+//   {
+//     text: "Minimal Downtime — Proactive monitoring and instant issue resolution.",
+//     name: "⏱️",
+//     title: "Reliability",
+//   },
+//   {
+//     text: "Seamless Integrations — Connect with all your existing IT tools and platforms.",
+//     name: "⚡",
+//     title: "Integrations",
+//   },
+//   {
+//     text: "Enterprise Security — Robust security protocols and compliance standards.",
+//     name: "🔒",
+//     title: "Security",
+//   },
+// ];
 
   return (
     <>
