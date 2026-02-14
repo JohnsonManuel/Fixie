@@ -2,21 +2,21 @@ import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "./hooks/useAuth";
 
-import LandingPage from "./pages/LandingPage";
-import Signup from "./pages/Signup";
-import Login from "./pages/Login";
-// import Dashboard from "./pages/Dashboard";
-// import ServiceNowAlternative from "./pages/ServiceNowAlternative";
-// import EnterpriseITSM from "./pages/EnterpriseITSM";
-// import ServiceNowMigration from "./pages/ServiceNowMigration";
-// import Fortune500ITSM from "./pages/Fortune500ITSM";
-import DemoForm from "./components/DemoForm";
-import OrganizationSetup from "./pages/OrganizationSetup"; // you'll build this next
-import SignupAdmin from "./pages/SignupAdmin";
-import PricingPage from "./pages/PricingPage";
-import FeaturesPage from "./pages/FeaturesPage";
-import ContactPage from "./pages/ContactPage";
-import ProtectedDashboard from "./pages/ProtectedDashboard";
+import LandingPage from "./pages/home/LandingPage";
+import Signup from "./pages/auth/Signup";
+import Login from "./pages/auth/Login";
+// import Dashboard from "./pages/dashboard/Dashboard";
+// import ServiceNowAlternative from "./pages/product/ServiceNowAlternative";
+// import EnterpriseITSM from "./pages/product/EnterpriseITSM";
+// import ServiceNowMigration from "./pages/product/ServiceNowMigration";
+// import Fortune500ITSM from "./pages/product/Fortune500ITSM";
+import DemoForm from "./components/forms/DemoForm";
+import OrganizationSetup from "./pages/organization/OrganizationSetup"; // you'll build this next
+import SignupAdmin from "./pages/auth/SignupAdmin";
+import PricingPage from "./pages/pricing/PricingPage";
+import FeaturesPage from "./pages/features/FeaturesPage";
+import ContactPage from "./pages/contact/ContactPage";
+import ProtectedDashboard from "./pages/dashboard/ProtectedDashboard";
 
 // 🔒 Protect routes that need authentication
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {

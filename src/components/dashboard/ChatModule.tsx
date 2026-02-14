@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useAuth } from "../../hooks/useAuth";
-import ChatMessage from "../chat/ChatMessage";
+import ChatMessage from "./ChatMessage";
 import { Message, Conversation } from "../../types";
 import { formatTimestamp, formatConversationTitle } from "../../utils";
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
@@ -114,22 +114,27 @@ const ChatModule = ({
                     const isAi = m.type === "ai";
                     const hasToolCalls = isAi && m.tool_calls?.length > 0;
                     
-                    // A message only shows approval buttons if the engine is literally waiting on it right now
-                    const activeInt = isAi && currentInterrupts.find((int: any) => 
-                        int.value?.tool === m.tool_calls?.[0]?.name
-                    );
-
+                    // Find if there is an active interrupt for this specific message
+                    // We match by checking if the interrupt exists in the state
+                    const activeInt = isAi && currentInterrupts.length > 0 ? currentInterrupts[0] : null;
+                
                     return {
                         id: m.id || `msg-${index}`,
                         role: m.type === "human" ? "user" : "assistant",
-                        content: m.content || (hasToolCalls ? "FIXIE: I need your approval to proceed:" : ""),
-                        createdAt: new Date(),
-                        status: (activeInt ? "requires_action" : "completed") as Message['status'],
-                        toolName: hasToolCalls ? m.tool_calls[0].name : undefined,
-                        // If active, show the rich details from the interrupt; else show raw args
-                        toolArgs: activeInt ? activeInt.value.details : (hasToolCalls ? m.tool_calls[0].args : undefined), 
+                        content: m.content || "",
+                        createdAt: new Date(m.created_at || Date.now()),
+                        // If an interrupt exists, mark this message as requiring action
+                        status: (activeInt && index === raw.filter((msg: any) => msg.type !== "tool").length - 1 
+                                 ? "requires_action" 
+                                 : "completed") as Message['status'],
+                        
+                        // Use the streamlined 'type' as toolName
+                        toolName: activeInt ? activeInt.value?.type : (hasToolCalls ? m.tool_calls[0].name : undefined),
+                        
+                        // Pass the entire value (including message, options, type)
+                        toolArgs: activeInt ? activeInt.value : (hasToolCalls ? m.tool_calls[0].args : undefined),
+                        
                         toolCallId: hasToolCalls ? m.tool_calls[0].id : undefined,
-                        runId: data.run_id 
                     };
                 });
 
@@ -174,9 +179,8 @@ const ChatModule = ({
                 role: "assistant", 
                 content: data.content, 
                 status: data.status as Message['status'], 
-                toolName: data.tool_name, 
-                toolArgs: data.tool_args, 
-                toolCallId: data.tool_call_id, 
+                toolName: data.tool_name, // This will be 'selection' or 'confirmation'
+                toolArgs: data.tool_args, // This contains the 'options' list
                 runId: data.run_id, 
                 createdAt: new Date() 
             }]);
@@ -187,7 +191,9 @@ const ChatModule = ({
     };
 
     // --- APPROVAL HANDLING ---
-    const handleApprovalAction = async (action: "approve" | "reject", message: Message) => {
+    // Inside ChatModule.tsx
+
+    const handleApprovalAction = async (value: string, message: Message) => {
         if (!user || !activeConvoId || isLoading) return;
         
         // Optimistically set to processing
@@ -195,20 +201,20 @@ const ChatModule = ({
         setIsLoading(true);
 
         try {
-            const res = await fetchWithAuth("/chat/approval", {
+            const res = await fetchWithAuth("/chat/action", { // Renamed endpoint
                 method: "POST",
                 body: JSON.stringify({ 
                     thread_id: activeConvoId, 
-                    action: action 
+                    value: value // Changed key from 'action' to 'value'
                 })
             });
             const data = await res.json();
             
+            if (activeConvoIdRef.current !== activeConvoId) return;
+
             setMessages(prev => {
-                // Set the tool call message to completed
                 const updated = prev.map(m => m.id === message.id ? { ...m, status: "completed" as Message['status'] } : m);
                 
-                // Add the result message (e.g. "Email sent" or "Fixie@gmail.com")
                 return [...updated, { 
                     id: `res-${Date.now()}`, 
                     role: "assistant", 
@@ -220,7 +226,6 @@ const ChatModule = ({
 
         } catch (error) { 
             console.error(error); 
-            // Reset state on error so user can retry
             setMessages(prev => prev.map(m => m.id === message.id ? { ...m, status: "requires_action" as Message['status'] } : m));
         } finally {
             setIsLoading(false);

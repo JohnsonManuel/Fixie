@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { db } from "../../services/firebase"; 
 import { useAuth } from "../../hooks/useAuth";
 import { collection, onSnapshot, query, where } from "firebase/firestore";
-import OrganizationTools from "../OrganizationTools";
+import OrganizationTools from "./OrganizationTools";
 import { motion, AnimatePresence } from "framer-motion";
 
 // ICONS

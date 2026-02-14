@@ -1,7 +1,7 @@
 import React from "react";
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from "@mui/icons-material/Close";
-import ThemeToggle from "../ThemeToggle";
+import ThemeToggle from "../layout/ThemeToggle";
 import fixieLogo from "../../images/image.png"; // Reusing the logo from ChatMessage
 import "../../styles/Dashboard.css";
 
