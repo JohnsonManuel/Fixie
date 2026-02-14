@@ -18,6 +18,7 @@ import {
   setDoc
 } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
+import ThemeToggle from "../../components/layout/ThemeToggle";
 
 function Login({ onBackToHome }: LoginProps) {
   const navigate = useNavigate();
@@ -268,9 +269,9 @@ function Login({ onBackToHome }: LoginProps) {
     <Layout showNavbar={false}>
       <div className="login-page-v2 min-h-screen flex items-center justify-center relative overflow-hidden bg-[#f8fafc] dark:bg-neutral-950">
         {/* Background Gradients - Centered cluster */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-purple-500/20 rounded-full blur-[120px] animate-pulse"></div>
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-indigo-500/20 rounded-full blur-[100px] animate-pulse delay-700"></div>
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-pink-500/20 rounded-full blur-[80px] animate-pulse delay-1000"></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-purple-500/30 rounded-full blur-[120px] animate-pulse"></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-indigo-500/30 rounded-full blur-[100px] animate-pulse delay-700"></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-pink-500/30 rounded-full blur-[80px] animate-pulse delay-1000"></div>
 
         {/* Back to Home Button */}
         <div className="absolute top-8 left-8">
@@ -286,6 +287,11 @@ function Login({ onBackToHome }: LoginProps) {
             </svg>
             Back to Home
           </button>
+        </div>
+
+        {/* Theme Toggle Button */}
+        <div className="absolute top-8 right-8 z-50">
+          <ThemeToggle />
         </div>
 
         {/* Login Container (Centered) */}

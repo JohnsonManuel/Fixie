@@ -1,4 +1,4 @@
-/* Theme Toggle Switch */
+/* Theme Toggle Icon Button Styles */
 .theme-toggle {
   background: none;
   border: none;
@@ -7,85 +7,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .theme-toggle:hover {
-  transform: scale(1.05);
+  transform: translateY(-1px);
 }
 
 .theme-toggle:active {
   transform: scale(0.95);
-}
-
-.toggle-track {
-  position: relative;
-  width: 48px;
-  height: 24px;
-  background: var(--toggle-bg);
-  border-radius: 12px;
-  padding: 2px;
-  transition: background-color 0.3s ease;
-  border: 2px solid var(--toggle-border);
-}
-
-.toggle-thumb {
-  position: absolute;
-  top: 0px;
-  left: 2px;
-  width: 20px;
-  height: 20px;
-  background: var(--toggle-thumb-bg);
-  border-radius: 50%;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-/* Light mode styles */
-[data-theme="light"] .toggle-track {
-  --toggle-bg: #e5e7eb;
-  --toggle-border: #d1d5db;
-  --toggle-thumb-bg: #ffffff;
-}
-
-[data-theme="light"] .toggle-thumb {
-  left: 0;
-  transform: translateX(0);
-}
-
-[data-theme="light"] .sun-icon {
-  color: #f59e0b;
-  width: 12px;
-  height: 12px;
-}
-
-[data-theme="light"] .moon-icon {
-  display: none;
-}
-
-/* Dark mode styles */
-[data-theme="dark"] .toggle-track {
-  --toggle-bg: #374151;
-  --toggle-border: #4b5563;
-  --toggle-thumb-bg: #1f2937;
-}
-
-[data-theme="dark"] .toggle-thumb {
-  left: calc(100% - 22px);
-  transform: translateX(2px);
-}
-
-[data-theme="dark"] .sun-icon {
-  display: none;
-}
-
-[data-theme="dark"] .moon-icon {
-  color: #60a5fa;
-  width: 12px;
-  height: 12px;
 }
 
 /* Smooth transition for theme changes */

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useAuth } from "../../hooks/useAuth";
-import { ThemeProvider, useTheme } from "../../contexts/ThemeContext";
+import { useTheme } from "../../contexts/ThemeContext";
 import "../../styles/Dashboard.css";
 
 // Component Imports
@@ -17,7 +17,7 @@ type DashboardContentProps = {
 function DashboardContent({ userRole, organizationKey }: DashboardContentProps) {
     const { user, logout, loading } = useAuth();
     const { theme } = useTheme();
-    
+
     // UI State
     const [activeTab, setActiveTab] = useState<"chat" | "organization" | "tools">("chat");
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -26,11 +26,11 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
     // AUTHENTICATION GUARD
     // ===========================================================================
 
-    if (loading) return null; 
+    if (loading) return null;
 
     if (!user) {
-       logout();
-       return null; 
+        logout();
+        return null;
     }
 
     // ===========================================================================
@@ -40,21 +40,21 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
     return (
         <div className="dashboard" data-theme={theme}>
             {/* 1. HEADER SECTION */}
-            <DashboardHeader 
+            <DashboardHeader
                 activeTab={activeTab}
                 setActiveTab={setActiveTab}
                 userRole={userRole}
                 toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
-                isSidebarOpen={isSidebarOpen} 
+                isSidebarOpen={isSidebarOpen}
             />
 
             {/* 2. MAIN CONTENT SECTION */}
             <main className="dashboard-content">
-                
+
                 {/* CHAT TAB */}
                 {activeTab === "chat" && (
-                    <ChatModule 
-                        isSidebarOpen={isSidebarOpen} 
+                    <ChatModule
+                        isSidebarOpen={isSidebarOpen}
                         setIsSidebarOpen={setIsSidebarOpen}
                         activeTab={activeTab}
                         setActiveTab={setActiveTab}
@@ -65,7 +65,7 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
 
                 {/* ORGANIZATION TAB (Admin Only) */}
                 {activeTab === "organization" && userRole === "admin" && (
-                    <OrganizationModule 
+                    <OrganizationModule
                         userRole={userRole}
                         organizationKey={organizationKey}
                         isSidebarOpen={isSidebarOpen}
@@ -78,7 +78,7 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
 
                 {/* TOOLS TAB (Admin Only) */}
                 {activeTab === "tools" && userRole === "admin" && (
-                    <ToolsModule 
+                    <ToolsModule
                         isSidebarOpen={isSidebarOpen}
                         setIsSidebarOpen={setIsSidebarOpen} /* ADDED THIS PROP */
                         activeTab={activeTab}
@@ -86,13 +86,13 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
                         logout={logout}
                     />
                 )}
-                
+
                 {/* FALLBACK FOR NON-ADMINS */}
                 {activeTab !== "chat" && userRole !== "admin" && (
                     <div className="no-permission-container flex flex-1 items-center justify-center">
                         <div className="text-center">
                             <p className="text-gray-500 font-medium">You do not have permission to view this tab.</p>
-                            <button 
+                            <button
                                 onClick={() => setActiveTab("chat")}
                                 className="mt-4 text-indigo-500 text-sm font-bold hover:underline"
                             >
@@ -116,9 +116,5 @@ type DashboardProps = {
 };
 
 export default function Dashboard({ userRole, organizationKey }: DashboardProps) {
-    return (
-        <ThemeProvider>
-            <DashboardContent userRole={userRole} organizationKey={organizationKey} />
-        </ThemeProvider>
-    );
+    return <DashboardContent userRole={userRole} organizationKey={organizationKey} />;
 }

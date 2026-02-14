@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import Layout from "../Layout";
 import "../../styles/Signup.css";
 import { useAuth } from "../../hooks/useAuth";
 import fixieLogo from "../../images/image.png";
@@ -7,8 +8,6 @@ import {
   getFirestore,
   doc,
   setDoc,
-  // updateDoc,
-  // arrayUnion,
   getDocs,
   query,
   collection,
@@ -16,8 +15,9 @@ import {
 } from "firebase/firestore";
 import { sendEmailVerification } from "firebase/auth";
 
-const SignupAdmin: React.FC = () => {
+import ThemeToggle from "../../components/layout/ThemeToggle";
 
+const Signup: React.FC = () => {
   const { signUp } = useAuth();
   const navigate = useNavigate();
   const db = getFirestore();
@@ -29,301 +29,351 @@ const SignupAdmin: React.FC = () => {
     confirmPassword: "",
   });
 
-  const [role, setRole] = useState<"admin" | "user">("admin"); // 🔹 New: role toggle
+  const [role, setRole] = useState<"admin" | "user">("admin");
   const [isLoading, setIsLoading] = useState(false);
   const [formError, setFormError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [errorFields, setErrorFields] = useState<string[]>([]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
-    if (formError)
-      setFormError("");
+    if (formError) setFormError("");
+    if (errorFields.includes(e.target.name)) {
+      setErrorFields(errorFields.filter((f) => f !== e.target.name));
+    }
+    // Specific check for confirmPassword when password changes
+    if (e.target.name === "password" || e.target.name === "confirmPassword") {
+      if (errorFields.includes("confirmPassword")) {
+        setErrorFields(errorFields.filter((f) => f !== "confirmPassword"));
+      }
+    }
   };
 
   const validateForm = () => {
+    const newErrorFields: string[] = [];
     if (formData.password !== formData.confirmPassword) {
       setFormError("Passwords do not match");
+      newErrorFields.push("confirmPassword");
+      setErrorFields(newErrorFields);
       return false;
     }
     if (formData.password.length < 6) {
       setFormError("Password must be at least 6 characters");
+      newErrorFields.push("password");
+      setErrorFields(newErrorFields);
       return false;
     }
+    setErrorFields([]);
     return true;
   };
 
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  if (!validateForm()) return;
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validateForm()) return;
 
-  setIsLoading(true);
-  setFormError("");
-  setSuccessMessage("");
+    setIsLoading(true);
+    setFormError("");
+    setSuccessMessage("");
+    setErrorFields([]);
 
-  try {
-    // 1️⃣ Create user in Firebase Auth
-    const result = await signUp(formData.email, formData.password);
-    const user = result.user;
+    try {
+      const result = await signUp(formData.email, formData.password);
+      const user = result.user;
+      await user.getIdToken(true);
+      await new Promise((r) => setTimeout(r, 200));
 
-    // 🔄 Refresh token to ensure Firestore sees authentication context
-    await user.getIdToken(true);
-    await new Promise((r) => setTimeout(r, 200));
+      const domain = formData.email.split("@")[1].toLowerCase();
 
-    // Extract domain part (for org mapping)
-    const domain = formData.email.split("@")[1].toLowerCase();
+      if (role === "admin") {
+        const orgRef = collection(db, "organizations");
+        const q = query(orgRef, where("domain", "==", domain));
+        const snapshot = await getDocs(q);
 
-    // 2️⃣ If signing up as admin, ensure this org doesn't already have an admin
-    if (role === "admin") {
-      const orgRef = collection(db, "organizations");
-      const q = query(orgRef, where("domain", "==", domain));
-      const snapshot = await getDocs(q);
+        if (!snapshot.empty) {
+          const orgData = snapshot.docs[0].data();
+          let hasAdmin = false;
+          if (orgData.adminUid) {
+            hasAdmin = true;
+          } else if (orgData.members && typeof orgData.members === "object") {
+            hasAdmin = Object.values(orgData.members).some(
+              (m: any) => m.role === "admin"
+            );
+          }
 
-      if (!snapshot.empty) {
-        const orgData = snapshot.docs[0].data();
-
-        // Check if admin exists - members is an object (map), not an array
-        let hasAdmin = false;
-
-        if (orgData.adminUid) {
-          hasAdmin = true;
-        } else if (orgData.members && typeof orgData.members === "object") {
-          // members is an object like { [uid]: { role, email, status } }
-          hasAdmin = Object.values(orgData.members).some(
-            (m: any) => m.role === "admin"
-          );
-        }
-
-        console.log("Signup check - hasAdmin:", hasAdmin, "members:", orgData.members);
-
-        if (hasAdmin) {
-          // Clean up the just-created auth user
-          await user.delete();
-
-          throw new Error(
-            "This organization already has an admin. Please sign up as a standard user."
-          );
+          if (hasAdmin) {
+            await user.delete();
+            throw new Error(
+              "This organization already has an admin. Please sign up as a standard user."
+            );
+          }
         }
       }
+
+      await sendEmailVerification(user);
+
+      await setDoc(doc(db, "users", user.uid), {
+        email: user.email,
+        username: formData.username,
+        role,
+        verified: false,
+        profileComplete: false,
+        orgDomain: domain,
+        organizationKey: domain.split(".")[0],
+        createdAt: new Date().toISOString(),
+      });
+
+      setSuccessMessage(
+        `A verification email has been sent to ${user.email}. Please verify your email before logging in.`
+      );
+    } catch (err: any) {
+      console.error("Signup error:", err);
+      setFormError(
+        err.code === "permission-denied"
+          ? "You don’t have permission to perform this action."
+          : err.message
+      );
+    } finally {
+      setIsLoading(false);
     }
+  };
 
-    // 3️⃣ Send verification email
-    await sendEmailVerification(user);
-
-    // 4️⃣ Create user document in Firestore
-    await setDoc(doc(db, "users", user.uid), {
-      email: user.email,
-      username: formData.username,
-      role, // "user" or "admin"
-      verified: false,
-      profileComplete: false,
-      orgDomain: domain,
-      organizationKey: domain.split('.')[0],
-      createdAt: new Date().toISOString(),
-    });
-
-    // 5️⃣ Show success message
-    setSuccessMessage(
-      `A verification email has been sent to ${user.email}. Please verify your email before logging in.`
-    );
-  } catch (err: any) {
-    console.error("Signup error:", err);
-    setFormError(
-      err.code === "permission-denied"
-        ? "You don’t have permission to perform this action."
-        : err.message
-    );
-  } finally {
-    setIsLoading(false);
-  }
-};
-
+  const handleBackClick = () => {
+    navigate("/");
+  };
 
   return (
-    <div className="signup-page">
-      {/* Navigation */}
-      <nav className="navbar">
-        <div className="nav-container">
-          <div className="nav-left">
-            <div className="logo">
-              <img src={fixieLogo} alt="Fixie Logo" className="logo-image" />
-            </div>
-          </div>
-          <div className="nav-right">
-            <button onClick={() => navigate("/")} className="back-link">
-              ← Back to Home
-            </button>
-          </div>
-        </div>
-      </nav>
+    <Layout showNavbar={false}>
+      <div className="signup-page-v2 min-h-screen flex items-center justify-center relative overflow-hidden bg-[#f8fafc] dark:bg-neutral-950">
+        {/* Background Gradients - Centered cluster */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-purple-500/30 rounded-full blur-[120px] animate-pulse"></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-500/30 rounded-full blur-[100px] animate-pulse delay-700"></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-pink-500/30 rounded-full blur-[80px] animate-pulse delay-1000"></div>
 
-      {/* Main Content */}
-      <div className="signup-container">
-        <div className="signup-content">
-          <div className="signup-header">
-            <h1>Create Your Account</h1>
-            <p>Register as an Admin or a Standard User</p>
-          </div>
-
-          {/* Error / Success Messages */}
-          {formError && <div className="error-message">{formError}</div>}
-          {successMessage && (
-            <div className="success-message">{successMessage}</div>
-          )}
-
-          {/* Signup Form */}
-          {successMessage === "" && (
-            <form className="signup-form" onSubmit={handleSubmit}>
-              <div className="form-group">
-                <label htmlFor="email">Email</label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  placeholder="Enter your email"
-                  required
-                  disabled={isLoading}
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="username">Username</label>
-                <input
-                  type="text"
-                  id="username"
-                  name="username"
-                  value={formData.username}
-                  onChange={handleInputChange}
-                  placeholder="Choose a username"
-                  required
-                  disabled={isLoading}
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="password">Password</label>
-                <input
-                  type="password"
-                  id="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  placeholder="Create a password"
-                  required
-                  disabled={isLoading}
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="confirmPassword">Confirm Password</label>
-                <input
-                  type="password"
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={handleInputChange}
-                  placeholder="Confirm your password"
-                  required
-                  disabled={isLoading}
-                />
-              </div>
-
-              {/* 🔹 Role Toggle */}
-              <div className="form-group">
-                <label>Account Type</label>
-                <div className="role-toggle">
-                  <label
-                    className={`role-chip ${role === "user" ? "active" : ""}`}
-                  >
-                    <input
-                      type="radio"
-                      name="role"
-                      value="user"
-                      checked={role === "user"}
-                      onChange={() => setRole("user")}
-                      disabled={isLoading}
-                    />
-                    Standard User
-                  </label>
-                  <label
-                    className={`role-chip ${role === "admin" ? "active" : ""}`}
-                  >
-                    <input
-                      type="radio"
-                      name="role"
-                      value="admin"
-                      checked={role === "admin"}
-                      onChange={() => setRole("admin")}
-                      disabled={isLoading}
-                    />
-                    Admin
-                  </label>
-                </div>
-                <small className="helper">
-                  Your chosen role will determine your permissions in Fixie.
-                </small>
-              </div>
-
-              <button type="submit" className="signup-btn" disabled={isLoading}>
-                {isLoading ? "Creating Account..." : "Create Account"}
-              </button>
-            </form>
-          )}
-
-          {/* Login Link */}
-          <div className="signup-footer">
-            <p className="login-link">
-              Already have an account?{" "}
-              <button
-                onClick={() => navigate("/login")}
-                className="link-button"
-              >
-                Log in
-              </button>
-            </p>
-          </div>
-        </div>
-
-        {/* Right Side Visual */}
-        <div className="signup-visual">
-          <div className="visual-content">
-            <div className="visual-logo">
-              <img
-                src={fixieLogo}
-                alt="Fixie AI"
-                className="signup-main-logo"
-                style={{
-                  width: "80px",
-                  height: "80px",
-                  marginBottom: "20px",
-                }}
+        {/* Back to Home Button */}
+        <div className="absolute top-8 left-8">
+          <button
+            onClick={handleBackClick}
+            className="flex items-center gap-2 text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white transition-colors font-medium group"
+          >
+            <svg
+              className="w-4 h-4 transform group-hover:-translate-x-1 transition-transform"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 19l-7-7 7-7"
               />
+            </svg>
+            Back to Home
+          </button>
+        </div>
+
+        {/* Theme Toggle Button */}
+        <div className="absolute top-8 right-8 z-50">
+          <ThemeToggle />
+        </div>
+
+        {/* Signup Container (Centered) */}
+        <div className="relative z-10 w-full max-w-[580px] px-6 flex flex-col items-center py-12">
+          {/* Header Outside Card */}
+          <div className="flex items-center space-x-3 mb-10">
+            <img
+              src={fixieLogo}
+              alt="Fixie Logo"
+              className="w-[48px] h-[48px] object-contain"
+            />
+            <span className="font-bold text-4xl text-neutral-900 dark:text-white tracking-tight">
+              Fixie
+            </span>
+          </div>
+
+          <div className="w-full bg-white dark:bg-neutral-900 border border-neutral-200/50 dark:border-neutral-800 rounded-[32px] shadow-[0_20px_50px_rgba(0,0,0,0.05)] dark:shadow-none p-12">
+            <div className="mb-10 text-center">
+              <h2 className="text-3xl font-extrabold text-neutral-900 dark:text-white mb-2">
+                Create Account
+              </h2>
+              <p className="text-neutral-500 dark:text-neutral-400 font-medium">
+                Join our AI platform today
+              </p>
             </div>
-            <h2>Join thousands of teams</h2>
-            <p>Building the future of IT support with AI</p>
-            <div className="stats">
-              <div className="stat-item">
-                <div className="stat-number">10K+</div>
-                <div className="stat-label">Active Users</div>
+
+            {/* Error / Success Messages */}
+            {formError && (
+              <div className="error-message mb-8 animate-shake text-center p-4 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-2xl border border-red-100 dark:border-red-900/30 text-sm font-semibold">
+                {formError}
               </div>
-              <div className="stat-item">
-                <div className="stat-number">500+</div>
-                <div className="stat-label">Companies</div>
+            )}
+            {successMessage && (
+              <div className="success-message mb-8 text-center p-6 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 rounded-2xl border border-green-100 dark:border-green-900/30 font-medium">
+                {successMessage}
               </div>
-              <div className="stat-item">
-                <div className="stat-number">99.9%</div>
-                <div className="stat-label">Uptime</div>
-              </div>
+            )}
+
+            {/* Signup Form */}
+            {!successMessage && (
+              <form className="space-y-6" onSubmit={handleSubmit}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label
+                      htmlFor="username"
+                      className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 ml-1"
+                    >
+                      Username
+                    </label>
+                    <input
+                      type="text"
+                      id="username"
+                      name="username"
+                      value={formData.username}
+                      onChange={handleInputChange}
+                      placeholder="johndoe"
+                      className={`w-full px-5 py-4 rounded-2xl border ${errorFields.includes("username")
+                        ? "border-red-500 bg-red-50/30 dark:bg-red-900/10"
+                        : "border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50"
+                        } text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all`}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label
+                      htmlFor="email"
+                      className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 ml-1"
+                    >
+                      Email Address
+                    </label>
+                    <input
+                      type="email"
+                      id="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      placeholder="name@company.com"
+                      className={`w-full px-5 py-4 rounded-2xl border ${errorFields.includes("email")
+                        ? "border-red-500 bg-red-50/30 dark:bg-red-900/10"
+                        : "border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50"
+                        } text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all`}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label
+                      htmlFor="password"
+                      className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 ml-1"
+                    >
+                      Password
+                    </label>
+                    <input
+                      type="password"
+                      id="password"
+                      name="password"
+                      value={formData.password}
+                      onChange={handleInputChange}
+                      placeholder="••••••••"
+                      className={`w-full px-5 py-4 rounded-2xl border ${errorFields.includes("password")
+                        ? "border-red-500 bg-red-50/30 dark:bg-red-900/10"
+                        : "border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50"
+                        } text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all`}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label
+                      htmlFor="confirmPassword"
+                      className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 ml-1"
+                    >
+                      Confirm Password
+                    </label>
+                    <input
+                      type="password"
+                      id="confirmPassword"
+                      name="confirmPassword"
+                      value={formData.confirmPassword}
+                      onChange={handleInputChange}
+                      placeholder="••••••••"
+                      className={`w-full px-5 py-4 rounded-2xl border ${errorFields.includes("confirmPassword")
+                        ? "border-red-500 bg-red-50/30 dark:bg-red-900/10"
+                        : "border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50"
+                        } text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all`}
+                      required
+                    />
+                  </div>
+                </div>
+
+                {/* Account Type Toggle */}
+                <div className="space-y-3">
+                  <label className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 ml-1">
+                    What's your role?
+                  </label>
+                  <div className="grid grid-cols-2 gap-4">
+                    <button
+                      type="button"
+                      onClick={() => setRole("user")}
+                      className={`p-4 rounded-2xl border transition-all text-sm font-bold ${role === "user"
+                        ? "bg-indigo-50 dark:bg-indigo-900/20 border-indigo-500 text-indigo-600 dark:text-indigo-400 ring-2 ring-indigo-500/10"
+                        : "bg-neutral-50 dark:bg-neutral-800/50 border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:border-neutral-300 dark:hover:border-neutral-600"
+                        }`}
+                    >
+                      Standard User
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setRole("admin")}
+                      className={`p-4 rounded-2xl border transition-all text-sm font-bold ${role === "admin"
+                        ? "bg-indigo-50 dark:bg-indigo-900/20 border-indigo-500 text-indigo-600 dark:text-indigo-400 ring-2 ring-indigo-500/10"
+                        : "bg-neutral-50 dark:bg-neutral-800/50 border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:border-neutral-300 dark:hover:border-neutral-600"
+                        }`}
+                    >
+                      Admin
+                    </button>
+                  </div>
+                </div>
+
+                <div className="pt-4">
+                  <button
+                    type="submit"
+                    className="w-full bg-neutral-900 dark:bg-white text-white dark:text-black py-4 rounded-2xl font-bold text-lg hover:shadow-xl hover:shadow-indigo-500/10 hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? (
+                      <div className="flex items-center justify-center gap-2">
+                        <div className="w-5 h-5 border-2 border-white/30 dark:border-black/30 border-t-white dark:border-t-black rounded-full animate-spin"></div>
+                        Creating Account...
+                      </div>
+                    ) : (
+                      "Create Account"
+                    )}
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {/* Login Link */}
+            <div className="mt-10 text-center">
+              <p className="text-neutral-500 dark:text-neutral-400 font-medium">
+                Already have an account?{" "}
+                <button
+                  onClick={() => navigate("/login")}
+                  className="text-indigo-600 dark:text-indigo-400 font-bold hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors ml-1"
+                >
+                  Log in
+                </button>
+              </p>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </Layout>
   );
 };
 
-export default SignupAdmin;
+export default Signup;

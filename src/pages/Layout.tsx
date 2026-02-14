@@ -13,6 +13,7 @@ import {
 import { Moon, SunDim } from "lucide-react";
 // import { DarkModeToggle } from "../components/ui-utils/toggleButton";
 import { useNavigate } from "react-router-dom";
+import { useTheme } from "../contexts/ThemeContext";
 
 const navItems = [
   { name: "Features", link: "/features" },
@@ -38,43 +39,10 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children, showNavbar = true }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isDark, setIsDark] = useState(false);
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
+  const isDark = theme === 'dark';
 
-  // const handleNavClick = (link: string) => {
-  //   if (link.startsWith('#')) {
-  //     const element = document.querySelector(link);
-  //     if (element) {
-  //       element.scrollIntoView({ behavior: 'smooth' });
-  //     }
-  //   }
-  // };
-
-  useEffect(() => {
-    // on mount, check saved theme or system preference
-    if (
-      localStorage.theme === "dark" ||
-      (!("theme" in localStorage) &&
-        window.matchMedia("(prefers-color-scheme: dark)").matches)
-    ) {
-      document.documentElement.classList.add("light");
-      setIsDark(false);
-    }
-  }, []);
-
-  function toggleTheme() {
-    // console.log('toggle theem')
-    const newDark = !isDark;
-    setIsDark(newDark);
-
-    if (newDark) {
-      document.documentElement.classList.add("dark");
-      localStorage.theme = "dark";
-    } else {
-      document.documentElement.classList.remove("dark");
-      localStorage.theme = "light";
-    }
-  }
   return (
     <div className="App w-full flex-col items-center justify-center">
       {/* Navbar */}

@@ -4,12 +4,11 @@ import { db } from "../../services/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import Dashboard from "./Dashboard"; // your existing dashboard component
 import { useNavigate } from "react-router-dom";
-import { ThemeProvider } from "../../contexts/ThemeContext";
 
 function ProtectedDashboardContent() {
   const { user, loading } = useAuth();
   const [role, setRole] = useState<string | null>(null);
-  const [ organizationKey, setOrganizationKey ] = useState<string | null>(null);
+  const [organizationKey, setOrganizationKey] = useState<string | null>(null);
   const [loadingRole, setLoadingRole] = useState(true);
   const navigate = useNavigate();
 
@@ -77,9 +76,5 @@ function ProtectedDashboardContent() {
 }
 
 export default function ProtectedDashboard() {
-  return (
-    <ThemeProvider>
-      <ProtectedDashboardContent />
-    </ThemeProvider>
-  );
+  return <ProtectedDashboardContent />;
 }

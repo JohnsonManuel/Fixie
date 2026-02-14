@@ -17,6 +17,7 @@ import PricingPage from "./pages/pricing/PricingPage";
 import FeaturesPage from "./pages/features/FeaturesPage";
 import ContactPage from "./pages/contact/ContactPage";
 import ProtectedDashboard from "./pages/dashboard/ProtectedDashboard";
+import { ThemeProvider } from "./contexts/ThemeContext";
 
 // 🔒 Protect routes that need authentication
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
@@ -50,38 +51,36 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* Public routes */}
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signupadmin" element={<SignupAdmin />} />
-        <Route path="/demo" element={<DemoForm onBackToHome={() => window.location.href = '/'} />} />
-        <Route path="/pricing" element={<PricingPage />} />
-        <Route path="/features" element={<FeaturesPage />} />
-        <Route path="/contact" element={<ContactPage />} />
-        {/* <Route path="/servicenow-alternative" element={<ServiceNowAlternative />} />
-        <Route path="/enterprise-itsm" element={<EnterpriseITSM />} />
-        <Route path="/servicenow-migration" element={<ServiceNowMigration />} />
-        <Route path="/fortune500-itsm" element={<Fortune500ITSM />} /> */}
+    <ThemeProvider>
+      <BrowserRouter>
+        <Routes>
+          {/* Public routes */}
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signupadmin" element={<SignupAdmin />} />
+          <Route path="/demo" element={<DemoForm onBackToHome={() => window.location.href = '/'} />} />
+          <Route path="/pricing" element={<PricingPage />} />
+          <Route path="/features" element={<FeaturesPage />} />
+          <Route path="/contact" element={<ContactPage />} />
 
-        {/* Protected routes */}
-        <Route
-          path="/organization-setup"
-          element={
-            <ProtectedRoute>
-              <OrganizationSetup />
-            </ProtectedRoute>
-          }
-        />
+          {/* Protected routes */}
+          <Route
+            path="/organization-setup"
+            element={
+              <ProtectedRoute>
+                <OrganizationSetup />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route path="/dashboard" element={<ProtectedDashboard />} />
+          <Route path="/dashboard" element={<ProtectedDashboard />} />
 
-        {/* Fallback */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </BrowserRouter>
+          {/* Fallback */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </ThemeProvider>
   );
 }
 

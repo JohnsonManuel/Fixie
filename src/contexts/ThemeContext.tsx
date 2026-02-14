@@ -28,20 +28,27 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
     if (savedTheme) {
       return savedTheme;
     }
-    
+
     // Check system preference
     if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
       return 'dark';
     }
-    
+
     return 'light';
   });
 
   useEffect(() => {
     // Save theme to localStorage
     localStorage.setItem('theme', theme);
-    
-    // Apply theme to document
+
+    // Apply theme to document for Tailwind "class" strategy
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+
+    // Also keep data-theme for any other selectors
     document.documentElement.setAttribute('data-theme', theme);
     document.body.className = `theme-${theme}`;
   }, [theme]);
