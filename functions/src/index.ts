@@ -5,5 +5,8 @@
 import { initializeApp } from "firebase-admin/app";
 initializeApp();
 
-// Export only chat function
+// Export chat function
 export { chat } from "./chat";
+
+// Export scheduled cleanup for unverified users (runs every 24 hours)
+export { cleanupUnverifiedUsers } from "./cleanup-unverified-users";

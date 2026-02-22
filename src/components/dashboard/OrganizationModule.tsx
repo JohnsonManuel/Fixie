@@ -234,25 +234,56 @@ const OrganizationModule = ({
                                     <h2 className="text-3xl font-bold tracking-tight text-[var(--text-primary)]">{organizations.find(o => o.id === activeOrgId)?.domain}</h2>
                                 </div>
                             </div>
-                            <div className="bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-3xl overflow-hidden shadow-sm">
-                                <div className="px-6 py-4 border-b border-[var(--border-primary)] bg-[var(--bg-tertiary)]">
-                                    <h3 className="text-sm font-bold uppercase tracking-widest opacity-50 text-[var(--text-secondary)]">Active Members</h3>
-                                </div>
-                                <div className="divide-y divide-[var(--border-primary)]">
-                                    {Object.entries(organizations.find(o => o.id === activeOrgId)?.members || {}).map(([uid, m]: any) => (
-                                        <div key={uid} className="flex justify-between items-center px-6 py-4 hover:bg-[var(--bg-tertiary)] transition-colors">
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-8 h-8 rounded-full bg-[var(--bg-tertiary)] border border-[var(--border-primary)] flex items-center justify-center text-[10px] font-bold text-[var(--text-primary)]">{m.email.substring(0, 2).toUpperCase()}</div>
-                                                <div>
-                                                    <p className="text-sm font-medium text-[var(--text-primary)]">{m.email}</p>
-                                                    <p className={`text-[10px] font-bold uppercase tracking-tighter ${m.status === "active" ? "text-emerald-500" : "text-amber-500"}`}>{m.status}</p>
-                                                </div>
+                            {(() => {
+                                const members = Object.entries(organizations.find(o => o.id === activeOrgId)?.members || {});
+                                const adminMembers = members.filter(([, m]: any) => m.role === "admin");
+                                const normalMembers = members.filter(([, m]: any) => m.role !== "admin");
+
+                                const MemberCard = ({ uid, m }: { uid: string; m: any }) => (
+                                    <div key={uid} className="flex justify-between items-center px-6 py-4 hover:bg-[var(--bg-tertiary)] transition-colors">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-8 h-8 rounded-full bg-[var(--bg-tertiary)] border border-[var(--border-primary)] flex items-center justify-center text-[10px] font-bold text-[var(--text-primary)]">{m.email.substring(0, 2).toUpperCase()}</div>
+                                            <div>
+                                                <p className="text-sm font-medium text-[var(--text-primary)]">{m.email}</p>
+                                                <p className={`text-[10px] font-bold uppercase tracking-tighter ${m.status === "active" ? "text-emerald-500" : "text-amber-500"}`}>{m.status}</p>
                                             </div>
-                                            <span className="px-3 py-1 rounded-full bg-[var(--bg-tertiary)] text-[10px] font-bold opacity-60 uppercase tracking-widest border border-[var(--border-primary)] text-[var(--text-secondary)]">{m.role || "user"}</span>
                                         </div>
-                                    ))}
-                                </div>
-                            </div>
+                                        <span className="px-3 py-1 rounded-full bg-[var(--bg-tertiary)] text-[10px] font-bold opacity-60 uppercase tracking-widest border border-[var(--border-primary)] text-[var(--text-secondary)]">{m.role || "user"}</span>
+                                    </div>
+                                );
+
+                                return (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        {/* ADMIN USERS COLUMN */}
+                                        <div className="bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-3xl overflow-hidden shadow-sm">
+                                            <div className="px-6 py-4 border-b border-[var(--border-primary)] bg-[var(--bg-tertiary)]">
+                                                <h3 className="text-sm font-bold uppercase tracking-widest opacity-50 text-[var(--text-secondary)]">Admins ({adminMembers.length})</h3>
+                                            </div>
+                                            <div className="divide-y divide-[var(--border-primary)]">
+                                                {adminMembers.length > 0 ? (
+                                                    adminMembers.map(([uid, m]: any) => <MemberCard key={uid} uid={uid} m={m} />)
+                                                ) : (
+                                                    <p className="px-6 py-8 text-center text-sm opacity-40 text-[var(--text-secondary)]">No admins</p>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {/* NORMAL USERS COLUMN */}
+                                        <div className="bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-3xl overflow-hidden shadow-sm">
+                                            <div className="px-6 py-4 border-b border-[var(--border-primary)] bg-[var(--bg-tertiary)]">
+                                                <h3 className="text-sm font-bold uppercase tracking-widest opacity-50 text-[var(--text-secondary)]">Users ({normalMembers.length})</h3>
+                                            </div>
+                                            <div className="divide-y divide-[var(--border-primary)]">
+                                                {normalMembers.length > 0 ? (
+                                                    normalMembers.map(([uid, m]: any) => <MemberCard key={uid} uid={uid} m={m} />)
+                                                ) : (
+                                                    <p className="px-6 py-8 text-center text-sm opacity-40 text-[var(--text-secondary)]">No users</p>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })()}
                         </motion.div>
                     ) : (
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex-1 flex flex-col items-center justify-center text-center p-8 opacity-20 text-[var(--text-primary)]">
