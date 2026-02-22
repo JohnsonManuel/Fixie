@@ -53,6 +53,7 @@ interface OrganizationToolsProps {
 }
 
 const isSecretField = (f: ToolField) => f.type === "secret" || f.isSecret === true;
+const looksLikeUrl = (v: string) => /^(https?:\/\/|www\.)[^\s]+$/i.test(v.trim()) || /^[a-z0-9-]+(\.[a-z0-9-]+)+\.[a-z]{2,}(\/\S*)?$/i.test(v.trim());
 
 export default function OrganizationTools({
   organizationId,
@@ -449,16 +450,28 @@ export default function OrganizationTools({
                     </div>
 
                     <div className="space-y-1">
-                      {(toolDef?.fields || []).map((field) => (
-                        <div key={field.key} className="text-xs">
-                          <span className="text-gray-400">{field.label}:</span>{" "}
-                          <span className="text-gray-300 font-mono">
-                            {isSecretField(field)
-                              ? "••••••••••••"
-                              : configuredTool.credentials?.[field.key] ?? ""}
-                          </span>
-                        </div>
-                      ))}
+                      {(toolDef?.fields || []).map((field) => {
+                        const value = configuredTool.credentials?.[field.key] ?? "";
+                        return (
+                          <div key={field.key} className="text-xs">
+                            <span className="text-gray-400">{field.label}:</span>{" "}
+                            {isSecretField(field) ? (
+                              <span className="text-gray-300 font-mono">••••••••••••</span>
+                            ) : looksLikeUrl(value) ? (
+                              <a
+                                href={value.startsWith("http") ? value : `https://${value}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-indigo-400 hover:text-indigo-300 underline font-mono transition-colors"
+                              >
+                                {value}
+                              </a>
+                            ) : (
+                              <span className="text-gray-300 font-mono">{value}</span>
+                            )}
+                          </div>
+                        );
+                      })}
 
                       {!toolDef && (
                         <div className="text-xs text-gray-500">
