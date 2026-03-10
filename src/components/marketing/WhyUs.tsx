@@ -48,7 +48,7 @@ export function WhyUs({ onDemoClick }: WhyUsProps) {
                 text-white font-semibold shadow-md hover:shadow-lg 
                 transition-transform duration-300 hover:scale-[1.03] text-center w-auto min-w-[160px]"
             >
-              <span className="text-center w-full">⚡ Book a demo</span>
+              <span className="text-center w-full">⚡ Schedule a call</span>
             </button>
           </div>
         </div>
