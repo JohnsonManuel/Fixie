@@ -262,14 +262,15 @@ const ChatModule = ({
     return (
         <div className="chat-tab flex h-full w-full bg-[var(--bg-primary)]">
             <aside className={`sidebar w-1/4 min-w-[18rem] flex flex-col ${isSidebarOpen ? 'open' : 'hidden md:flex'}`}>
-                <div className="sidebar-header flex items-center justify-between px-4 py-4">
-                    <h2 className="text-sm font-bold tracking-tight uppercase opacity-50 text-[var(--text-primary)]">History</h2>
-                    <motion.button 
-                        whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} 
-                        onClick={createNewChat} 
-                        className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 text-white text-xs font-bold rounded-full shadow-lg shadow-indigo-500/20"
+                <div className="sidebar-header flex items-center justify-between px-4 py-3.5">
+                    <h2 className="text-[10px] font-black tracking-widest uppercase opacity-40 text-[var(--text-primary)]">Conversations</h2>
+                    <motion.button
+                        whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+                        onClick={createNewChat}
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-white text-xs font-bold rounded-full shadow-lg shadow-indigo-500/20"
+                        style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}
                     >
-                        <AddIcon sx={{ fontSize: 16 }}/> New Chat
+                        <AddIcon sx={{ fontSize: 15 }}/> New Chat
                     </motion.button>
                 </div>
 
@@ -316,20 +317,20 @@ const ChatModule = ({
                     </AnimatePresence>
                 </div>
 
-                <div className="sidebar-footer border-t border-[var(--border-primary)] p-4 bg-[var(--bg-secondary)]">
-                    <div className="md:hidden space-y-1 mb-4">
+                <div className="sidebar-footer border-t border-[var(--border-primary)] p-3 bg-[var(--bg-secondary)]">
+                    <div className="md:hidden space-y-1 mb-3">
                         {userRole === "admin" && (
                             <>
-                                <button onClick={() => { setActiveTab("organization");  }} className={`flex items-center gap-3 w-full px-3 py-2 text-sm rounded-lg transition-colors ${activeTab === 'organization' ? 'bg-indigo-600/10 text-indigo-500' : 'text-[var(--text-secondary)]'}`}>
+                                <button onClick={() => { setActiveTab("organization"); }} className={`flex items-center gap-3 w-full px-3 py-2 text-xs font-semibold rounded-lg transition-colors ${activeTab === 'organization' ? 'bg-indigo-500/10 text-indigo-400' : 'text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)]'}`}>
                                     <BusinessIcon fontSize="small" /> Organization
                                 </button>
-                                <button onClick={() => { setActiveTab("tools");  }} className={`flex items-center gap-3 w-full px-3 py-2 text-sm rounded-lg transition-colors ${activeTab === 'tools' ? 'bg-indigo-600/10 text-indigo-500' : 'text-[var(--text-secondary)]'}`}>
+                                <button onClick={() => { setActiveTab("tools"); }} className={`flex items-center gap-3 w-full px-3 py-2 text-xs font-semibold rounded-lg transition-colors ${activeTab === 'tools' ? 'bg-indigo-500/10 text-indigo-400' : 'text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)]'}`}>
                                     <SettingsSuggestIcon fontSize="small" /> Tool Manager
                                 </button>
                             </>
                         )}
                     </div>
-                    <button onClick={logout} className="flex items-center gap-3 w-full px-3 py-2 text-sm font-bold text-red-500 hover:bg-red-500/10 rounded-lg transition-all">
+                    <button onClick={logout} className="flex items-center gap-3 w-full px-3 py-2 text-xs font-bold text-red-400 hover:bg-red-500/10 rounded-lg transition-all">
                         <LogoutIcon fontSize="small" /> Sign Out
                     </button>
                 </div>
@@ -342,10 +343,10 @@ const ChatModule = ({
                             <div className="relative mb-6">
                                 <div className="absolute inset-0 bg-indigo-500/20 blur-3xl animate-pulse rounded-full" />
                                 <motion.div animate={{ rotate: 360, scale: [1, 1.05, 1] }} transition={{ rotate: { duration: 5, repeat: Infinity, ease: "linear" }, scale: { duration: 2, repeat: Infinity } }} className="relative w-20 h-20 bg-[var(--bg-secondary)] border border-indigo-500/30 rounded-3xl flex items-center justify-center shadow-2xl">
-                                    <AutoAwesomeIcon sx={{ fontSize: 32, color: '#8EBBFF' }} />
+                                    <AutoAwesomeIcon sx={{ fontSize: 32, color: '#818cf8' }} />
                                 </motion.div>
                             </div>
-                            <span className="text-sm font-bold tracking-widest uppercase text-[var(--text-secondary)] animate-pulse">Initializing Session</span>
+                            <span className="text-[11px] font-black tracking-widest uppercase text-[var(--text-secondary)] animate-pulse">Initializing Session</span>
                         </motion.div>
                     ) : conversations.length === 0 ? (
                         <motion.div key="welcome-invite" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.98 }} className="flex-1 flex flex-col items-center justify-center text-center p-8">
@@ -353,12 +354,18 @@ const ChatModule = ({
                                 <div className="absolute inset-0 bg-indigo-500/10 blur-2xl rounded-full" />
                                 <MapsUgcIcon sx={{ fontSize: 64, color: 'var(--accent-primary)', position: 'relative' }} />
                             </div>
-                            <h2 className="text-4xl font-black mb-4 text-[var(--text-primary)] tracking-tight">Hi, I'm <span className="text-indigo-500">Fixie</span>.</h2>
+                            <h2 className="text-4xl font-black mb-4 tracking-tight text-[var(--text-primary)]">
+                                Hi, I'm{" "}
+                                <span style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+                                    Fixie
+                                </span>.
+                            </h2>
                             <p className="text-[var(--text-secondary)] text-lg max-w-md mb-10 leading-relaxed">Your assistant for technical issues and account automation. Ready to start?</p>
                             <motion.button
                                 whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
                                 onClick={createNewChat}
-                                className="px-10 py-4 bg-indigo-600 text-white font-bold rounded-2xl shadow-xl shadow-indigo-500/25 flex items-center gap-3"
+                                className="px-10 py-4 text-white font-bold rounded-2xl shadow-xl shadow-indigo-500/25 flex items-center gap-3"
+                                style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}
                             >
                                 <AddIcon /> Start Your First Conversation
                             </motion.button>
@@ -371,8 +378,8 @@ const ChatModule = ({
                                 ))}
                                 {isLoading && (
                                     <div className="flex items-center gap-3 p-2 ml-10">
-                                        <AutoAwesomeIcon sx={{ fontSize: 18, color: '#8EBBFF' }} className="animate-spin-slow" />
-                                        <span className="text-xs font-bold tracking-widest uppercase bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">Thinking</span>
+                                        <AutoAwesomeIcon sx={{ fontSize: 18, color: '#818cf8' }} className="animate-spin-slow" />
+                                        <span className="text-xs font-bold tracking-widest uppercase bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">Thinking</span>
                                     </div>
                                 )}
                                 <div ref={messagesEndRef} />
