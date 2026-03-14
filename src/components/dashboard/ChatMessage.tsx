@@ -141,22 +141,35 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, onApprovalAction }) 
                                 {/* GENERIC OPTIONS LOOP: 
                                    This maps over the options array sent from the graph 
                                 */}
-                                {toolArgs?.options?.map((option: string) => (
-                                    <button 
-                                        key={option}
-                                        onClick={() => onApprovalAction?.(option, message)} 
-                                        className={`w-full text-xs font-bold py-3 rounded-xl transition-all flex justify-between items-center px-4 group
-                                          ${option.toLowerCase() === 'reject' || option.toLowerCase() === 'deny'
-                                            ? 'border border-red-500/30 text-red-400 hover:bg-red-500/10' 
-                                            : 'bg-indigo-600/10 hover:bg-indigo-600 border border-indigo-500/20 text-white'
-                                          }`}
-                                    >
-                                        <span className="capitalize">{option.replace(/_/g, ' ')}</span>
-                                        <span className="opacity-0 group-hover:opacity-100 transition-opacity text-[10px] font-black">
-                                          {option.toLowerCase() === 'reject' || option.toLowerCase() === 'deny' ? '✕' : 'SELECT →'}
-                                        </span>
-                                    </button>
-                                ))}
+                                {toolArgs?.options?.map((option: string) => {
+                                    const isReject = option.toLowerCase() === 'reject' || option.toLowerCase() === 'deny';
+                                    const isDefault = toolArgs?.default === option;
+                                    // Use human-readable label from backend if provided
+                                    const displayLabel = toolArgs?.labels?.[option] || option.replace(/_/g, ' ');
+                                    return (
+                                        <button
+                                            key={option}
+                                            onClick={() => onApprovalAction?.(option, message)}
+                                            className={`w-full text-xs font-bold py-3 rounded-xl transition-all flex justify-between items-center px-4 group
+                                              ${isReject
+                                                ? 'border border-red-500/30 text-red-400 hover:bg-red-500/10'
+                                                : isDefault
+                                                  ? 'bg-indigo-600/20 hover:bg-indigo-600 border border-indigo-500/40 text-white ring-1 ring-indigo-400/40'
+                                                  : 'bg-indigo-600/10 hover:bg-indigo-600 border border-indigo-500/20 text-white'
+                                              }`}
+                                        >
+                                            <span className="capitalize flex items-center gap-2">
+                                                {isDefault && !isReject && (
+                                                    <span className="text-[8px] font-black uppercase tracking-widest text-indigo-400 bg-indigo-400/10 px-1.5 py-0.5 rounded-full border border-indigo-400/20">Default</span>
+                                                )}
+                                                {displayLabel}
+                                            </span>
+                                            <span className="opacity-0 group-hover:opacity-100 transition-opacity text-[10px] font-black">
+                                              {isReject ? '✕' : 'SELECT →'}
+                                            </span>
+                                        </button>
+                                    );
+                                })}
                             </motion.div>
                         )}
                     </AnimatePresence>

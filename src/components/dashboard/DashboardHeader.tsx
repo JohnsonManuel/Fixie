@@ -30,6 +30,7 @@ const DashboardHeader = ({ activeTab, setActiveTab, userRole, toggleSidebar ,isS
                 <div className="header-brand">
                     <img src={fixieLogo} alt="Fixie Logo" className="header-logo" />
                     <span className="header-title">Fixie</span>
+                    <span className="hidden-mobile text-[10px] font-bold tracking-widest uppercase px-2 py-0.5 rounded-full border border-indigo-500/30 text-indigo-500 bg-indigo-500/5 ml-1">AI</span>
                 </div>
 
                 <nav className="header-tabs hidden-mobile">
