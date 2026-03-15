@@ -1,120 +1,121 @@
-import React, { useState } from "react";
-import { useAuth } from "../../hooks/useAuth";
-import { useTheme } from "../../contexts/ThemeContext";
-import "../../styles/Dashboard.css";
+import { useEffect, useState } from 'react';
+import type { User as FbUser } from 'firebase/auth';
+import { AppProvider, useApp } from '../../contexts/FixieAppContext';
+import { initAuth, signOutAndRedirect } from '../../lib/fixie/auth';
+import { setSessionToken, apiGet } from '../../lib/fixie/api';
+import { LoadingScreen } from '../../components/fixie/screens/LoadingScreen';
+import { NoAccountScreen } from '../../components/fixie/screens/NoAccountScreen';
+import { Sidebar } from '../../components/fixie/layout/Sidebar';
+import { ChatView } from '../../components/fixie/views/ChatView';
+import { UsersView } from '../../components/fixie/views/UsersView';
+import { McpView } from '../../components/fixie/views/McpView';
+import { TicketsView } from '../../components/fixie/views/TicketsView';
+import { ApprovalsView } from '../../components/fixie/views/ApprovalsView';
+import type { AppUser, AppOrg, View } from '../../types/fixie';
 
-// Component Imports
-import DashboardHeader from "../../components/dashboard/DashboardHeader";
-import ChatModule from "../../components/dashboard/ChatModule";
-import OrganizationModule from "../../components/dashboard/OrganizationModule";
-import ToolsModule from "../../components/dashboard/ToolsModule";
+type ScreenState = 'loading' | 'no-account' | 'app';
 
-type DashboardContentProps = {
-    userRole: string | null;
-    organizationKey: string | null;
-};
-
-function DashboardContent({ userRole, organizationKey }: DashboardContentProps) {
-    const { user, logout, loading } = useAuth();
-    const { theme } = useTheme();
-
-    // UI State
-    const [activeTab, setActiveTab] = useState<"chat" | "organization" | "tools">("chat");
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
-    // ===========================================================================
-    // AUTHENTICATION GUARD
-    // ===========================================================================
-
-    if (loading) return null;
-
-    if (!user) {
-        logout();
-        return null;
-    }
-
-    // ===========================================================================
-    // MAIN DASHBOARD RENDER
-    // ===========================================================================
-
-    return (
-        <div className="dashboard" data-theme={theme}>
-            {/* 1. HEADER SECTION */}
-            <DashboardHeader
-                activeTab={activeTab}
-                setActiveTab={setActiveTab}
-                userRole={userRole}
-                toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
-                isSidebarOpen={isSidebarOpen}
-            />
-
-            {/* 2. MAIN CONTENT SECTION */}
-            <main className="dashboard-content">
-
-                {/* CHAT TAB */}
-                {activeTab === "chat" && (
-                    <ChatModule
-                        isSidebarOpen={isSidebarOpen}
-                        setIsSidebarOpen={setIsSidebarOpen}
-                        activeTab={activeTab}
-                        setActiveTab={setActiveTab}
-                        userRole={userRole}
-                        logout={logout}
-                    />
-                )}
-
-                {/* ORGANIZATION TAB (Admin Only) */}
-                {activeTab === "organization" && userRole === "admin" && (
-                    <OrganizationModule
-                        userRole={userRole}
-                        organizationKey={organizationKey}
-                        isSidebarOpen={isSidebarOpen}
-                        setIsSidebarOpen={setIsSidebarOpen} /* ADDED THIS PROP */
-                        activeTab={activeTab}
-                        setActiveTab={setActiveTab}
-                        logout={logout}
-                    />
-                )}
-
-                {/* TOOLS TAB (Admin Only) */}
-                {activeTab === "tools" && userRole === "admin" && (
-                    <ToolsModule
-                        isSidebarOpen={isSidebarOpen}
-                        setIsSidebarOpen={setIsSidebarOpen} /* ADDED THIS PROP */
-                        activeTab={activeTab}
-                        setActiveTab={setActiveTab}
-                        logout={logout}
-                    />
-                )}
-
-                {/* FALLBACK FOR NON-ADMINS */}
-                {activeTab !== "chat" && userRole !== "admin" && (
-                    <div className="no-permission-container flex flex-1 items-center justify-center">
-                        <div className="text-center">
-                            <p className="text-gray-500 font-medium">You do not have permission to view this tab.</p>
-                            <button
-                                onClick={() => setActiveTab("chat")}
-                                className="mt-4 text-indigo-500 text-sm font-bold hover:underline"
-                            >
-                                Back to Chat
-                            </button>
-                        </div>
-                    </div>
-                )}
-            </main>
-        </div>
-    );
+export function Dashboard() {
+  return (
+    <AppProvider>
+      <Inner />
+    </AppProvider>
+  );
 }
 
-// ===========================================================================
-// ROOT COMPONENT
-// ===========================================================================
+function Inner() {
+  const { setAppUser, setAppOrg, currentView, setCurrentView, addToast, setPendingApprovalCount } = useApp();
+  const [screen, setScreen] = useState<ScreenState>('loading');
 
-type DashboardProps = {
-    userRole: string | null;
-    organizationKey: string | null;
-};
+  async function loadAppUser() {
+    setScreen('loading');
+    try {
+      const data = await apiGet<{ user: AppUser; org: AppOrg }>('/api/auth/me');
+      setAppUser(data.user);
+      setAppOrg(data.org);
+      setScreen('app');
+      if (data.user.is_admin) {
+        loadApprovalCount(data.user.is_admin, setPendingApprovalCount);
+      }
+    } catch (err: unknown) {
+      const e = err as { status?: number; detail?: { code?: string } };
+      if (e.status === 404) {
+        setScreen('no-account');
+      } else {
+        addToast('Failed to load user data', 'error');
+        signOutAndRedirect();
+      }
+    }
+  }
 
-export default function Dashboard({ userRole, organizationKey }: DashboardProps) {
-    return <DashboardContent userRole={userRole} organizationKey={organizationKey} />;
+  useEffect(() => {
+    const unsub = initAuth(
+      (fbUser: FbUser) => {
+        // Get the token directly from the user object to avoid any race with auth.currentUser
+        fbUser.getIdToken().then(token => {
+          setSessionToken(token);
+          loadAppUser();
+        });
+      },
+      () => {
+        // Just redirect — do NOT call fbSignOut here.
+        // Signing out prematurely (e.g. during Firebase's async init) destroys the session
+        // and causes an infinite redirect loop.
+        window.location.href = '/login';
+      },
+    );
+    return unsub;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  if (screen === 'loading')    return <LoadingScreen />;
+  if (screen === 'no-account') return <NoAccountScreen />;
+
+  return (
+    <>
+      <div className="flex h-screen overflow-hidden bg-[#f8f9fb]">
+        <Sidebar onViewChange={(v: View) => setCurrentView(v)} />
+        <main className="flex-1 overflow-hidden flex flex-col">
+          {currentView === 'chat'      && <ChatView />}
+          {currentView === 'users'     && <UsersView />}
+          {currentView === 'mcp'       && <McpView />}
+          {currentView === 'tickets'   && <TicketsView />}
+          {currentView === 'approvals' && <ApprovalsView />}
+        </main>
+      </div>
+      <ToastLayer />
+    </>
+  );
+}
+
+function loadApprovalCount(isAdmin: boolean, setter: (n: number) => void) {
+  if (!isAdmin) return;
+  const fetchCount = async () => {
+    try {
+      const pending = await apiGet<unknown[]>('/api/approvals/pending');
+      setter(pending.length);
+    } catch { /* silent */ }
+  };
+  fetchCount();
+  const id = setInterval(fetchCount, 60_000);
+  return () => clearInterval(id);
+}
+
+function ToastLayer() {
+  const { toasts, removeToast } = useApp();
+  return (
+    <div className="fixed bottom-6 right-6 z-[9999] flex flex-col gap-2">
+      {toasts.map(t => (
+        <div
+          key={t.id}
+          onClick={() => removeToast(t.id)}
+          className={`flex items-center gap-2.5 px-4 py-3 rounded-xl text-[13.5px] font-medium shadow-lg max-w-sm cursor-pointer ${
+            t.type === 'error' ? 'bg-red-500 text-white' : 'bg-[#1a1a2e] text-white'
+          }`}
+        >
+          {t.message}
+        </div>
+      ))}
+    </div>
+  );
 }
