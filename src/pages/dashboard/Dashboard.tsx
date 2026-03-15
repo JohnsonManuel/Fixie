@@ -24,7 +24,7 @@ export function Dashboard() {
 }
 
 function Inner() {
-  const { setAppUser, setAppOrg, currentView, setCurrentView, addToast, setPendingApprovalCount } = useApp();
+  const { appUser, setAppUser, setAppOrg, currentView, setCurrentView, addToast, setPendingApprovalCount } = useApp();
   const [screen, setScreen] = useState<ScreenState>('loading');
 
   async function loadAppUser() {
@@ -67,6 +67,11 @@ function Inner() {
     return unsub;
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (!appUser?.is_admin) return;
+    return loadApprovalCount(true, setPendingApprovalCount);
+  }, [appUser?.is_admin, setPendingApprovalCount]);
 
   if (screen === 'loading')    return <LoadingScreen />;
   if (screen === 'no-account') return <NoAccountScreen />;

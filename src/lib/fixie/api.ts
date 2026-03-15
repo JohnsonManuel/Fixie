@@ -13,7 +13,7 @@ async function getToken(): Promise<string> {
   if (sessionToken) return sessionToken;
   if (getApps().length) {
     const user = getAuth().currentUser;
-    if (user) return user.getIdToken();
+    if (user) return await user.getIdToken();
   }
   redirectToLogin();
   throw new Error('Not authenticated');
