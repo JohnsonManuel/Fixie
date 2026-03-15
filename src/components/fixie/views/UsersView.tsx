@@ -6,6 +6,7 @@ import { timeAgo } from '../../../lib/fixie/utils';
 import { Pill } from '../ui/Pill';
 import { Button } from '../ui/Button';
 import { EmptyState } from '../ui/EmptyState';
+import { TableSkeleton } from '../ui/Skeleton';
 import { InviteModal } from '../modals/InviteModal';
 import type { OrgUser } from '../../../types/fixie';
 
@@ -50,43 +51,73 @@ export function UsersView() {
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      <div className="px-7 py-5 border-b border-neutral-200 bg-white flex items-center justify-between shrink-0">
+      {/* Header */}
+      <div
+        className="px-7 py-5 flex items-center justify-between shrink-0 bg-white"
+        style={{ borderBottom: '1px solid #e8edf3' }}
+      >
         <div>
           <h1 className="text-lg font-bold text-neutral-900">Users</h1>
-          <p className="text-[13px] text-neutral-500 mt-0.5">Manage who has access to your organisation</p>
+          <p className="text-[13px] text-neutral-400 mt-0.5">Manage who has access to your organisation</p>
         </div>
         <Button onClick={() => setInviteOpen(true)}>＋ Add User</Button>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-7">
-        <div className="bg-white border border-neutral-200 rounded-xl shadow-sm overflow-hidden">
+      {/* Body */}
+      <div className="flex-1 overflow-y-auto p-7" style={{ background: '#f8fafc' }}>
+        <div
+          className="bg-white rounded-2xl overflow-hidden"
+          style={{ border: '1px solid #e8edf3', boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}
+        >
           {loading ? (
-            <div className="text-center py-10 text-neutral-400">Loading…</div>
+            <TableSkeleton rows={6} cols={6} />
           ) : users.length === 0 ? (
             <EmptyState icon="👥" title="No users yet" body="Add team members with the button above." />
           ) : (
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto fade-in">
               <table className="w-full border-collapse">
                 <thead>
-                  <tr className="border-b border-neutral-100">
+                  <tr style={{ borderBottom: '1px solid #f1f5f9' }}>
                     {['User', 'Email', 'Domain', 'Role', 'Last Seen', 'Joined', ''].map(h => (
-                      <th key={h} className="text-left text-[11.5px] font-semibold text-neutral-400 uppercase tracking-wider px-4 py-2.5 whitespace-nowrap">{h}</th>
+                      <th
+                        key={h}
+                        className="text-left text-[11px] font-bold text-neutral-400 uppercase tracking-wider px-4 py-3 whitespace-nowrap"
+                      >
+                        {h}
+                      </th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {users.map(u => (
-                    <tr key={u.id} className="border-b border-neutral-50 last:border-0 hover:bg-neutral-50/50 transition-colors">
+                    <tr
+                      key={u.id}
+                      className="transition-colors"
+                      style={{ borderBottom: '1px solid #f8fafc' }}
+                      onMouseEnter={e => (e.currentTarget.style.background = '#fafbfc')}
+                      onMouseLeave={e => (e.currentTarget.style.background = '')}
+                    >
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2.5">
-                          {u.photo_url
-                            ? <img src={u.photo_url} className="w-7 h-7 rounded-full object-cover" alt={u.name} />
-                            : <div className="w-7 h-7 rounded-full bg-indigo-100 text-indigo-600 text-[12px] font-bold flex items-center justify-center shrink-0">{u.name.charAt(0)}</div>
-                          }
-                          <span className="text-[13.5px] font-medium text-neutral-900">{u.name}</span>
+                          {u.photo_url ? (
+                            <img
+                              src={u.photo_url}
+                              className="w-7 h-7 rounded-full object-cover"
+                              alt={u.name}
+                              style={{ boxShadow: '0 0 0 2px rgba(24,119,242,0.1)' }}
+                            />
+                          ) : (
+                            <div
+                              className="w-7 h-7 rounded-full text-white text-[11px] font-bold flex items-center justify-center shrink-0"
+                              style={{ background: 'linear-gradient(135deg, #1877F2 0%, #0E4F99 100%)' }}
+                            >
+                              {u.name.charAt(0)}
+                            </div>
+                          )}
+                          <span className="text-[13.5px] font-semibold text-neutral-900">{u.name}</span>
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-[13.5px] text-neutral-500">{u.email}</td>
+                      <td className="px-4 py-3 text-[13px] text-neutral-500">{u.email}</td>
                       <td className="px-4 py-3">
                         {u.email_domain
                           ? <Pill variant="mono">{u.email_domain}</Pill>

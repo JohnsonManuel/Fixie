@@ -78,7 +78,7 @@ function Inner() {
 
   return (
     <>
-      <div className="flex h-screen overflow-hidden bg-[#f8f9fb]">
+      <div className="flex h-screen overflow-hidden" style={{ background: '#f8fafc' }}>
         <Sidebar onViewChange={(v: View) => setCurrentView(v)} />
         <main className="flex-1 overflow-hidden flex flex-col">
           {currentView === 'chat'      && <ChatView />}

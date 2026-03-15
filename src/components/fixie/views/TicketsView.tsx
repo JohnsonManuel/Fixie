@@ -5,6 +5,7 @@ import { formatDate } from '../../../lib/fixie/utils';
 import { Pill } from '../ui/Pill';
 import { Button } from '../ui/Button';
 import { EmptyState } from '../ui/EmptyState';
+import { TableSkeleton } from '../ui/Skeleton';
 import type { Ticket } from '../../../types/fixie';
 
 export function TicketsView() {
@@ -30,27 +31,35 @@ export function TicketsView() {
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      <div className="px-7 py-5 border-b border-neutral-200 bg-white flex items-center justify-between shrink-0">
+      {/* Header */}
+      <div
+        className="px-7 py-5 flex items-center justify-between shrink-0 bg-white"
+        style={{ borderBottom: '1px solid #e8edf3' }}
+      >
         <div>
           <h1 className="text-lg font-bold text-neutral-900">Tickets</h1>
-          <p className="text-[13px] text-neutral-500 mt-0.5">Track support tickets created through AI chat</p>
+          <p className="text-[13px] text-neutral-400 mt-0.5">Track support tickets created through AI chat</p>
         </div>
         <Button variant="outline" size="sm" onClick={load}>↻ Refresh</Button>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-7">
-        <div className="bg-white border border-neutral-200 rounded-xl shadow-sm overflow-hidden">
+      {/* Body */}
+      <div className="flex-1 overflow-y-auto p-7" style={{ background: '#f8fafc' }}>
+        <div
+          className="bg-white rounded-2xl overflow-hidden"
+          style={{ border: '1px solid #e8edf3', boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}
+        >
           {loading ? (
-            <div className="text-center py-10 text-neutral-400">Loading…</div>
+            <TableSkeleton rows={5} cols={6} />
           ) : tickets.length === 0 ? (
             <EmptyState icon="🎫" title="No tickets yet" body="Tickets appear here when users run ticket-related tools in chat." />
           ) : (
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto fade-in">
               <table className="w-full border-collapse">
                 <thead>
-                  <tr className="border-b border-neutral-100">
+                  <tr style={{ borderBottom: '1px solid #f1f5f9' }}>
                     {['Ticket', 'Tool', 'Status', 'Result', 'Submitted', 'Reviewed By'].map(h => (
-                      <th key={h} className="text-left text-[11.5px] font-semibold text-neutral-400 uppercase tracking-wider px-4 py-2.5 whitespace-nowrap">{h}</th>
+                      <th key={h} className="text-left text-[11px] font-bold text-neutral-400 uppercase tracking-wider px-4 py-3 whitespace-nowrap">{h}</th>
                     ))}
                   </tr>
                 </thead>
@@ -61,12 +70,18 @@ export function TicketsView() {
                     const ticketUrl = result?.url as string | undefined;
                     const subject = (t.tool_input?.subject ?? t.tool_input?.title ?? JSON.stringify(t.tool_input).slice(0, 60)) as string;
                     return (
-                      <tr key={t.id} className="border-b border-neutral-50 last:border-0 hover:bg-neutral-50/50">
+                      <tr
+                        key={t.id}
+                        className="transition-colors"
+                        style={{ borderBottom: '1px solid #f8fafc' }}
+                        onMouseEnter={e => (e.currentTarget.style.background = '#fafbfc')}
+                        onMouseLeave={e => (e.currentTarget.style.background = '')}
+                      >
                         <td className="px-4 py-3">
                           {ticketId
                             ? ticketUrl
-                              ? <a href={ticketUrl} target="_blank" rel="noopener noreferrer" className="font-medium text-indigo-500 hover:underline">#{ticketId}</a>
-                              : <span className="text-neutral-400">#{ticketId}</span>
+                              ? <a href={ticketUrl} target="_blank" rel="noopener noreferrer" className="font-semibold hover:underline" style={{ color: '#1877F2' }}>#{ticketId}</a>
+                              : <span className="text-neutral-400 font-semibold">#{ticketId}</span>
                             : <span className="text-neutral-300">—</span>}
                           <div className="text-[12px] text-neutral-400 mt-0.5 max-w-[200px] truncate" title={subject}>{subject}</div>
                         </td>

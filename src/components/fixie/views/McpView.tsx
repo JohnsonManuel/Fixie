@@ -3,7 +3,7 @@ import { useToast } from '../../../hooks/useFixieToast';
 import { apiGet, apiPatch, apiDelete } from '../../../lib/fixie/api';
 import { Pill } from '../ui/Pill';
 import { Button } from '../ui/Button';
-import { Spinner } from '../ui/Spinner';
+import { CardSkeleton } from '../ui/Skeleton';
 import { FreshdeskModal } from '../modals/FreshdeskModal';
 import { ZohoDeskModal } from '../modals/ZohoDeskModal';
 import { McpModal } from '../modals/McpModal';
@@ -27,11 +27,11 @@ const GUIDED_META: Record<GuidedType, { label: string; icon: string; description
 
 export function McpView() {
   const { toast } = useToast();
-  const [servers, setServers]         = useState<McpServer[]>([]);
-  const [loading, setLoading]         = useState(true);
+  const [servers, setServers]             = useState<McpServer[]>([]);
+  const [loading, setLoading]             = useState(true);
   const [mcpModalOpen, setMcpModalOpen]   = useState(false);
   const [editingMcpId, setEditingMcpId]   = useState<string | null>(null);
-  const [guidedModal, setGuidedModal] = useState<{ type: GuidedType; editingId: string | null } | null>(null);
+  const [guidedModal, setGuidedModal]     = useState<{ type: GuidedType; editingId: string | null } | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -71,20 +71,30 @@ export function McpView() {
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      <div className="px-7 py-5 border-b border-neutral-200 bg-white shrink-0">
+      {/* Header */}
+      <div
+        className="px-7 py-5 shrink-0 bg-white"
+        style={{ borderBottom: '1px solid #e8edf3' }}
+      >
         <h1 className="text-lg font-bold text-neutral-900">MCP Servers</h1>
-        <p className="text-[13px] text-neutral-500 mt-0.5">Configure integrations available to your team's AI chat</p>
+        <p className="text-[13px] text-neutral-400 mt-0.5">Configure integrations available to your team's AI chat</p>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-7 flex flex-col gap-6">
+      {/* Body */}
+      <div className="flex-1 overflow-y-auto p-7 flex flex-col gap-6" style={{ background: '#f8fafc' }}>
 
         {/* Ticketing integrations */}
         <section>
-          <div className="text-[11px] font-semibold text-neutral-400 uppercase tracking-widest mb-3">Ticketing Integrations</div>
+          <div className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-3">
+            Ticketing Integrations
+          </div>
           {loading ? (
-            <div className="flex justify-center py-8"><Spinner /></div>
-          ) : (
             <div className="flex flex-col gap-3">
+              <CardSkeleton />
+              <CardSkeleton />
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3 fade-in">
               {GUIDED_TYPES.map(type => {
                 const server = servers.find(s => s.server_type === type) ?? null;
                 const meta   = GUIDED_META[type];
@@ -114,7 +124,7 @@ export function McpView() {
         {/* Advanced / custom MCP servers */}
         <section>
           <details>
-            <summary className="cursor-pointer text-[13px] font-semibold text-neutral-500 border-t border-neutral-200 pt-4 pb-2 flex items-center gap-2 select-none list-none [&::-webkit-details-marker]:hidden">
+            <summary className="cursor-pointer text-[13px] font-semibold text-neutral-500 pt-4 pb-2 flex items-center gap-2 select-none list-none [&::-webkit-details-marker]:hidden" style={{ borderTop: '1px solid #e8edf3' }}>
               <span className="text-[10px] text-neutral-400">▶</span>
               Advanced — Custom MCP Servers
             </summary>
@@ -123,14 +133,25 @@ export function McpView() {
                 <Button onClick={() => { setEditingMcpId(null); setMcpModalOpen(true); }}>＋ Add Custom Server</Button>
               </div>
               {advanced.length === 0 ? (
-                <div className="text-center py-8 text-neutral-400 text-sm">No custom MCP servers configured.</div>
+                <div
+                  className="text-center py-8 text-neutral-400 text-sm rounded-2xl bg-white"
+                  style={{ border: '1px solid #e8edf3' }}
+                >
+                  No custom MCP servers configured.
+                </div>
               ) : (
-                <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
+                <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4 fade-in">
                   {advanced.map(s => (
-                    <div key={s.id} className="bg-white border border-neutral-200 rounded-xl p-4 shadow-sm">
+                    <div
+                      key={s.id}
+                      className="bg-white rounded-2xl p-4 transition-shadow"
+                      style={{ border: '1px solid #e8edf3', boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}
+                      onMouseEnter={e => ((e.currentTarget as HTMLElement).style.boxShadow = '0 4px 20px rgba(24,119,242,0.08)')}
+                      onMouseLeave={e => ((e.currentTarget as HTMLElement).style.boxShadow = '0 2px 12px rgba(0,0,0,0.04)')}
+                    >
                       <div className="flex items-start justify-between gap-2 mb-2">
                         <div>
-                          <div className="text-[15px] font-bold text-neutral-900">{s.name}</div>
+                          <div className="text-[14px] font-bold text-neutral-900">{s.name}</div>
                           <div className="text-[11px] text-neutral-400 uppercase tracking-wider mt-0.5">{s.server_type}</div>
                         </div>
                         <Pill variant={s.is_active ? 'green' : 'gray'}>{s.is_active ? 'Active' : 'Inactive'}</Pill>
@@ -142,7 +163,7 @@ export function McpView() {
                       {s.tools.length > 0 && (
                         <div className="flex flex-wrap gap-1 mb-3">
                           {s.tools.map(t => (
-                            <span key={t} className="text-[11px] px-1.5 py-0.5 bg-neutral-100 border border-neutral-200 rounded text-neutral-500 font-mono">{t}</span>
+                            <span key={t} className="text-[11px] px-1.5 py-0.5 rounded font-mono text-neutral-500" style={{ background: '#f1f5f9', border: '1px solid #e2e8f0' }}>{t}</span>
                           ))}
                         </div>
                       )}
@@ -193,7 +214,12 @@ function TicketingSetupCard({
   icon: string; label: string; description: string; onConnect: () => void;
 }) {
   return (
-    <div className="bg-white border border-neutral-200 rounded-xl p-6 shadow-sm flex items-center gap-5">
+    <div
+      className="bg-white rounded-2xl p-6 flex items-center gap-5 transition-shadow"
+      style={{ border: '1px solid #e8edf3', boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}
+      onMouseEnter={e => ((e.currentTarget as HTMLElement).style.boxShadow = '0 4px 20px rgba(24,119,242,0.08)')}
+      onMouseLeave={e => ((e.currentTarget as HTMLElement).style.boxShadow = '0 2px 12px rgba(0,0,0,0.04)')}
+    >
       <div className="text-4xl shrink-0">{icon}</div>
       <div className="flex-1">
         <div className="text-[15px] font-bold text-neutral-900 mb-1">Connect {label}</div>
@@ -211,7 +237,12 @@ function TicketingCard({
 }) {
   const domainOrOrg = server.credentials?.domain ?? server.credentials?.org_id ?? 'Not configured';
   return (
-    <div className="bg-white border border-neutral-200 rounded-xl p-5 shadow-sm flex items-center gap-4">
+    <div
+      className="bg-white rounded-2xl p-5 flex items-center gap-4 transition-shadow"
+      style={{ border: '1px solid #e8edf3', boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}
+      onMouseEnter={e => ((e.currentTarget as HTMLElement).style.boxShadow = '0 4px 20px rgba(24,119,242,0.08)')}
+      onMouseLeave={e => ((e.currentTarget as HTMLElement).style.boxShadow = '0 2px 12px rgba(0,0,0,0.04)')}
+    >
       <div className="text-3xl shrink-0">{icon}</div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2.5 mb-1">

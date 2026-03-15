@@ -1,9 +1,15 @@
 export function Spinner({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) {
-  const sz = size === 'sm' ? 'w-5 h-5 border-2' : size === 'lg' ? 'w-10 h-10 border-4' : 'w-8 h-8 border-3';
+  const sz = size === 'sm' ? 'w-4 h-4' : size === 'lg' ? 'w-10 h-10' : 'w-7 h-7';
+  const bw = size === 'sm' ? 2 : size === 'lg' ? 3 : 2;
   return (
     <div
-      className={`${sz} border-neutral-200 border-t-indigo-500 rounded-full animate-spin`}
-      style={{ borderWidth: size === 'sm' ? 2 : size === 'lg' ? 4 : 3 }}
+      className={`${sz} rounded-full animate-spin`}
+      style={{
+        borderWidth: bw,
+        borderStyle: 'solid',
+        borderColor: 'rgba(24,119,242,0.15)',
+        borderTopColor: '#1877F2',
+      }}
     />
   );
 }
