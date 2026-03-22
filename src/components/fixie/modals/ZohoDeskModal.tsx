@@ -59,7 +59,7 @@ export function ZohoDeskModal({
     if (!orgId.trim())       { setError('Organization ID is required to test the connection.'); return; }
     setError(''); setTestStatus('testing'); setTestMessage('');
     try {
-      await apiPost('/api/admin/mcp-servers/test', {
+      await apiPost('/api/admin/integrations/test', {
         server_type: 'zohodesk',
         credentials: { access_token: accessToken.trim(), org_id: orgId.trim(), region },
       });
@@ -80,10 +80,10 @@ export function ZohoDeskModal({
     if (accessToken.trim()) credentials.access_token = accessToken.trim();
     try {
       if (editingId) {
-        await apiPatch(`/api/admin/mcp-servers/${editingId}`, { credentials, requires_approval: approval });
+        await apiPatch(`/api/admin/integrations/${editingId}`, { credentials, requires_approval: approval });
         toast('Zoho Desk updated');
       } else {
-        await apiPost('/api/admin/mcp-servers', {
+        await apiPost('/api/admin/integrations', {
           name: 'Zoho Desk', server_type: 'zohodesk',
           credentials, tool_schemas: ZOHODESK_SCHEMAS,
           requires_approval: approval, is_active: true,

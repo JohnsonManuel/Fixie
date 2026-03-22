@@ -47,7 +47,7 @@ export function FreshdeskModal({
     if (!apiKey.trim()) { setError('API key is required to test the connection.'); return; }
     setError(''); setTestStatus('testing'); setTestMessage('');
     try {
-      await apiPost('/api/admin/mcp-servers/test', {
+      await apiPost('/api/admin/integrations/test', {
         server_type: 'freshdesk',
         credentials: { domain: domain.trim(), api_key: apiKey.trim() },
       });
@@ -68,10 +68,10 @@ export function FreshdeskModal({
     if (apiKey.trim()) credentials.api_key = apiKey.trim();
     try {
       if (editingId) {
-        await apiPatch(`/api/admin/mcp-servers/${editingId}`, { credentials, requires_approval: approval });
+        await apiPatch(`/api/admin/integrations/${editingId}`, { credentials, requires_approval: approval });
         toast('Freshdesk updated');
       } else {
-        await apiPost('/api/admin/mcp-servers', {
+        await apiPost('/api/admin/integrations', {
           name: 'Freshdesk', server_type: 'freshdesk',
           credentials, tool_schemas: FRESHDESK_SCHEMAS,
           requires_approval: approval, is_active: true,

@@ -1,5 +1,6 @@
 import fixieLogo from '../../../images/image.png';
 import { redirectToLogin, signOutAndRedirect } from '../../../lib/fixie/auth';
+import { Button } from '../ui/Button';
 
 export function NoAccountScreen() {
   return (
@@ -28,12 +29,9 @@ export function NoAccountScreen() {
         </div>
 
         {/* CTA */}
-        <button
-          onClick={redirectToLogin}
-          className="w-full py-2.5 rounded-xl text-[14px] font-semibold text-white transition-all btn-brand"
-        >
-          Go to Sign Up →
-        </button>
+        <Button onClick={redirectToLogin} className="w-full justify-center">
+          Go to Sign Up
+        </Button>
 
         <button
           onClick={signOutAndRedirect}

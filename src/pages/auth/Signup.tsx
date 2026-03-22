@@ -17,6 +17,12 @@ import { sendEmailVerification } from "firebase/auth";
 
 import ThemeToggle from "../../components/layout/ThemeToggle";
 
+const PUBLIC_EMAIL_DOMAINS = new Set([
+  "gmail.com", "yahoo.com", "hotmail.com", "outlook.com", "icloud.com",
+  "protonmail.com", "proton.me", "googlemail.com", "live.com", "msn.com",
+  "aol.com", "mail.com", "ymail.com", "hotmail.co.uk", "yahoo.co.uk",
+]);
+
 const Signup: React.FC = () => {
   const { signUp } = useAuth();
   const navigate = useNavigate();
@@ -53,6 +59,7 @@ const Signup: React.FC = () => {
 
   const validateForm = () => {
     const newErrorFields: string[] = [];
+
     if (formData.password !== formData.confirmPassword) {
       setFormError("Passwords do not match");
       newErrorFields.push("confirmPassword");
@@ -65,6 +72,17 @@ const Signup: React.FC = () => {
       setErrorFields(newErrorFields);
       return false;
     }
+
+    if (role === "admin") {
+      const domain = formData.email.split("@")[1]?.toLowerCase();
+      if (!domain || PUBLIC_EMAIL_DOMAINS.has(domain)) {
+        setFormError("Admin accounts require a corporate email address. Personal email providers are not allowed.");
+        newErrorFields.push("email");
+        setErrorFields(newErrorFields);
+        return false;
+      }
+    }
+
     setErrorFields([]);
     return true;
   };

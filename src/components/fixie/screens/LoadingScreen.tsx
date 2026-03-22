@@ -39,21 +39,10 @@ export function LoadingScreen() {
       {/* Progress bar */}
       <div className="w-32 h-1 bg-neutral-200 rounded-full overflow-hidden">
         <div
-          className="h-full rounded-full"
-          style={{
-            background: 'linear-gradient(135deg, #1877F2 0%, #0E4F99 100%)',
-            animation: 'loading-bar 1.4s ease-in-out infinite',
-          }}
+          className="loading-bar h-full rounded-full"
+          style={{ background: 'linear-gradient(135deg, #1877F2 0%, #0E4F99 100%)' }}
         />
       </div>
-
-      <style>{`
-        @keyframes loading-bar {
-          0%   { width: 0%; margin-left: 0%; }
-          50%  { width: 70%; margin-left: 15%; }
-          100% { width: 0%; margin-left: 100%; }
-        }
-      `}</style>
     </div>
   );
 }

@@ -62,6 +62,28 @@ body {
 }
 .fade-in { animation: fade-in-up 0.3s ease-out forwards; }
 
+/* ── Chat bubble entrance ───────────────────────────────────────────── */
+@keyframes bubble-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.chat-bubble { animation: bubble-in 0.2s ease-out both; }
+
+/* ── Toast entrance ─────────────────────────────────────────────────── */
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)   scale(1); }
+}
+.toast-enter { animation: toast-in 0.18s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+/* ── Loading bar (LoadingScreen) ────────────────────────────────────── */
+@keyframes loading-bar {
+  0%   { width: 0%;   margin-left: 0%; }
+  50%  { width: 70%;  margin-left: 15%; }
+  100% { width: 0%;   margin-left: 100%; }
+}
+.loading-bar { animation: loading-bar 1.4s ease-in-out infinite; }
+
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;

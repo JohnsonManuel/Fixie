@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from 'react';
 import { useApp } from '../../../contexts/FixieAppContext';
 import { useToast } from '../../../hooks/useFixieToast';
 import { apiGet, apiPatch, apiDelete } from '../../../lib/fixie/api';
-import { timeAgo } from '../../../lib/fixie/utils';
 import { Pill } from '../ui/Pill';
 import { Button } from '../ui/Button';
 import { EmptyState } from '../ui/EmptyState';
@@ -78,7 +77,7 @@ export function UsersView() {
               <table className="w-full border-collapse">
                 <thead>
                   <tr style={{ borderBottom: '1px solid #f1f5f9' }}>
-                    {['User', 'Email', 'Domain', 'Role', 'Last Seen', 'Joined', ''].map(h => (
+                    {['User', 'Email', 'Domain', 'Role', 'Joined', ''].map(h => (
                       <th
                         key={h}
                         className="text-left text-[11px] font-bold text-neutral-400 uppercase tracking-wider px-4 py-3 whitespace-nowrap"
@@ -126,8 +125,7 @@ export function UsersView() {
                       <td className="px-4 py-3">
                         <Pill variant={u.is_admin ? 'blue' : 'gray'}>{u.is_admin ? 'Admin' : 'Member'}</Pill>
                       </td>
-                      <td className="px-4 py-3 text-[13px] text-neutral-400 whitespace-nowrap">{timeAgo(u.last_seen_at)}</td>
-                      <td className="px-4 py-3 text-[13px] text-neutral-400 whitespace-nowrap">{new Date(u.created_at).toLocaleDateString()}</td>
+                      <td className="px-4 py-3 text-[13px] text-neutral-400 whitespace-nowrap">{u.created_at ? new Date(u.created_at).toLocaleDateString() : '—'}</td>
                       <td className="px-4 py-3">
                         <div className="flex gap-1.5 justify-end">
                           <Button size="sm" variant="outline" onClick={() => toggleRole(u.id, u.is_admin)}>

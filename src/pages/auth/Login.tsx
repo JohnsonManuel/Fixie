@@ -144,15 +144,9 @@ function Login({ onBackToHome }: LoginProps) {
               },
             },
           });
-        } else {
-          // Standard user, but no org for their domain
-          setFormError(
-            "No organization is registered for this email domain. Please contact your administrator."
-          );
-          await logout();
-          setIsLoading(false);
-          return;
         }
+        // Standard users with no org are allowed through — the dashboard
+        // will show them a limited view (chat only, no org badge).
       }
 
       // 5. Redirect user
@@ -165,46 +159,54 @@ function Login({ onBackToHome }: LoginProps) {
     }
   };
 
+  // Shared post-OAuth handler for Google and GitHub.
+  // Ensures a Firestore user doc exists (required by the backend's /api/auth/me),
+  // and adds the user to their org if one exists for their domain.
+  const handleOAuthUser = async (user: any) => {
+    // 1. Ensure the backend Firestore doc exists
+    const userRef = doc(db, "users", user.uid);
+    const userSnap = await getDoc(userRef);
+    if (!userSnap.exists()) {
+      const domain = user.email?.split("@")[1]?.toLowerCase() ?? "";
+      await setDoc(userRef, {
+        email: user.email,
+        displayName: user.displayName || user.email?.split("@")[0] || "",
+        role: "user",
+        verified: true,
+        profileComplete: false,
+        orgDomain: domain,
+        organizationKey: domain ? domain.split(".")[0] : null,
+        createdAt: new Date().toISOString(),
+      });
+    }
+
+    // 2. Add to org if one exists for their domain (best-effort, not required)
+    const domain = user.email?.split("@")[1]?.toLowerCase();
+    if (domain) {
+      const orgQuery = query(collection(db, "organizations"), where("domain", "==", domain));
+      const orgSnap = await getDocs(orgQuery);
+      if (!orgSnap.empty) {
+        const orgDoc = orgSnap.docs[0];
+        const orgData = orgDoc.data();
+        const orgRef = doc(db, "organizations", orgDoc.id);
+        const alreadyMember = orgData.members && orgData.members[user.uid];
+        if (!alreadyMember) {
+          await updateDoc(orgRef, {
+            [`members.${user.uid}`]: { email: user.email, role: "user", status: "active" },
+          });
+        }
+      }
+    }
+  };
+
   const handleGoogleLogin = async () => {
     setIsLoading(true);
     try {
       const result = await signInWithGoogle();
-      const user = result.user;
-
-      // Handle organization membership for Google users
-      const domain = user.email?.split("@")[1].toLowerCase();
-      if (domain) {
-        const orgQuery = query(
-          collection(db, "organizations"),
-          where("domain", "==", domain)
-        );
-        const orgSnap = await getDocs(orgQuery);
-
-        if (!orgSnap.empty) {
-          const orgDoc = orgSnap.docs[0];
-          const orgId = orgDoc.id;
-          const orgData = orgDoc.data();
-          const orgRef = doc(db, "organizations", orgId);
-
-          const alreadyMember = orgData.members && orgData.members[user.uid];
-          if (!alreadyMember) {
-            await updateDoc(orgRef, {
-              [`members.${user.uid}`]: {
-                email: user.email,
-                role: "user",
-                status: "active",
-              }
-            });
-          }
-        }
-      }
-
+      await handleOAuthUser(result.user);
       navigate("/dashboard");
     } catch (err: any) {
-      if (err.code === 'auth/popup-closed-by-user') {
-        // User closed the popup, don't show error
-        return;
-      }
+      if (err.code === 'auth/popup-closed-by-user') return;
       setFormError(err.message);
     } finally {
       setIsLoading(false);
@@ -215,42 +217,10 @@ function Login({ onBackToHome }: LoginProps) {
     setIsLoading(true);
     try {
       const result = await signInWithGithub();
-      const user = result.user;
-
-      // Handle organization membership for GitHub users
-      const domain = user.email?.split("@")[1].toLowerCase();
-      if (domain) {
-        const orgQuery = query(
-          collection(db, "organizations"),
-          where("domain", "==", domain)
-        );
-        const orgSnap = await getDocs(orgQuery);
-
-        if (!orgSnap.empty) {
-          const orgDoc = orgSnap.docs[0];
-          const orgId = orgDoc.id;
-          const orgData = orgDoc.data();
-          const orgRef = doc(db, "organizations", orgId);
-
-          const alreadyMember = orgData.members && orgData.members[user.uid];
-          if (!alreadyMember) {
-            await updateDoc(orgRef, {
-              [`members.${user.uid}`]: {
-                email: user.email,
-                role: "user",
-                status: "active",
-              }
-            });
-          }
-        }
-      }
-
+      await handleOAuthUser(result.user);
       navigate("/dashboard");
     } catch (err: any) {
-      if (err.code === 'auth/popup-closed-by-user') {
-        // User closed the popup, don't show error
-        return;
-      }
+      if (err.code === 'auth/popup-closed-by-user') return;
       setFormError(err.message);
     } finally {
       setIsLoading(false);

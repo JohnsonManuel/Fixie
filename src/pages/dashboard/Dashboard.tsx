@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { User as FbUser } from 'firebase/auth';
+import fixieLogo from '../../images/image.png';
 import { AppProvider, useApp } from '../../contexts/FixieAppContext';
 import { initAuth, signOutAndRedirect } from '../../lib/fixie/auth';
 import { setSessionToken, apiGet } from '../../lib/fixie/api';
@@ -26,6 +27,7 @@ export function Dashboard() {
 function Inner() {
   const { appUser, setAppUser, setAppOrg, currentView, setCurrentView, addToast, setPendingApprovalCount } = useApp();
   const [screen, setScreen] = useState<ScreenState>('loading');
+  const [navOpen, setNavOpen] = useState(false);
 
   async function loadAppUser() {
     setScreen('loading');
@@ -51,16 +53,12 @@ function Inner() {
   useEffect(() => {
     const unsub = initAuth(
       (fbUser: FbUser) => {
-        // Get the token directly from the user object to avoid any race with auth.currentUser
         fbUser.getIdToken().then(token => {
           setSessionToken(token);
           loadAppUser();
         });
       },
       () => {
-        // Just redirect — do NOT call fbSignOut here.
-        // Signing out prematurely (e.g. during Firebase's async init) destroys the session
-        // and causes an infinite redirect loop.
         window.location.href = '/login';
       },
     );
@@ -78,10 +76,22 @@ function Inner() {
 
   return (
     <>
-      <div className="flex h-screen overflow-hidden" style={{ background: '#f8fafc' }}>
-        <Sidebar onViewChange={(v: View) => setCurrentView(v)} />
-        <main className="flex-1 overflow-hidden flex flex-col">
-          {currentView === 'chat'      && <ChatView />}
+      <div className="flex h-screen overflow-hidden bg-[#f8fafc]">
+        <Sidebar
+          onViewChange={(v: View) => setCurrentView(v)}
+          mobileOpen={navOpen}
+          onMobileClose={() => setNavOpen(false)}
+        />
+        <main className="flex-1 overflow-hidden flex flex-col min-w-0">
+          {/* Mobile top bar — shown for every view except chat (chat has its own header) */}
+          {currentView !== 'chat' && (
+            <MobileTopBar
+              appUser={appUser}
+              onOpenNav={() => setNavOpen(true)}
+            />
+          )}
+
+          {currentView === 'chat'      && <ChatView onOpenNav={() => setNavOpen(true)} />}
           {currentView === 'users'     && <UsersView />}
           {currentView === 'mcp'       && <McpView />}
           {currentView === 'tickets'   && <TicketsView />}
@@ -90,6 +100,60 @@ function Inner() {
       </div>
       <ToastLayer />
     </>
+  );
+}
+
+/** Mobile-only top bar shown above non-chat views so users can always open the nav sidebar. */
+function MobileTopBar({ appUser, onOpenNav }: { appUser: AppUser | null; onOpenNav: () => void }) {
+  return (
+    <div
+      className="md:hidden flex items-center px-4 shrink-0 bg-white"
+      style={{ minHeight: 56, borderBottom: '1px solid #e8edf3' }}
+    >
+      {/* Fixie brand */}
+      <div className="flex items-center gap-2.5 flex-1">
+        <img
+          src={fixieLogo}
+          alt="Fixie"
+          className="w-7 h-7 rounded-xl object-cover"
+          style={{ boxShadow: '0 2px 10px rgba(24,119,242,0.22)' }}
+        />
+        <span
+          className="text-[18px] font-bold tracking-tight"
+          style={{
+            background: 'linear-gradient(135deg, #1877F2 0%, #0E4F99 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+          }}
+        >
+          Fixie
+        </span>
+      </div>
+
+      {/* User avatar — tapping opens nav sidebar */}
+      <button
+        onClick={onOpenNav}
+        aria-label="Open navigation menu"
+        className="w-9 h-9 flex items-center justify-center rounded-xl shrink-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#1877F2]"
+      >
+        {appUser?.photo_url ? (
+          <img
+            src={appUser.photo_url}
+            alt={appUser.name}
+            className="w-8 h-8 rounded-full object-cover"
+            style={{ boxShadow: '0 0 0 2px rgba(24,119,242,0.2)' }}
+          />
+        ) : (
+          <div
+            className="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-bold text-white"
+            style={{ background: 'linear-gradient(135deg, #1877F2 0%, #0E4F99 100%)' }}
+          >
+            {(appUser?.name ?? 'U').charAt(0).toUpperCase()}
+          </div>
+        )}
+      </button>
+    </div>
   );
 }
 
@@ -109,16 +173,25 @@ function loadApprovalCount(isAdmin: boolean, setter: (n: number) => void) {
 function ToastLayer() {
   const { toasts, removeToast } = useApp();
   return (
-    <div className="fixed bottom-6 right-6 z-[9999] flex flex-col gap-2">
+    <div
+      aria-live="polite"
+      aria-atomic="false"
+      className="fixed bottom-6 right-6 z-[9999] flex flex-col gap-2 pointer-events-none"
+    >
       {toasts.map(t => (
         <div
           key={t.id}
+          role={t.type === 'error' ? 'alert' : 'status'}
           onClick={() => removeToast(t.id)}
-          className={`flex items-center gap-2.5 px-4 py-3 rounded-xl text-[13.5px] font-medium shadow-lg max-w-sm cursor-pointer ${
-            t.type === 'error' ? 'bg-red-500 text-white' : 'bg-[#1a1a2e] text-white'
+          className={`toast-enter pointer-events-auto flex items-center gap-2.5 px-4 py-3 rounded-xl text-[13.5px] font-medium shadow-lg max-w-sm cursor-pointer select-none ${
+            t.type === 'error' ? 'bg-red-500 text-white' : 'bg-neutral-900 text-white'
           }`}
         >
-          {t.message}
+          <span className="shrink-0 text-[15px]" aria-hidden="true">
+            {t.type === 'error' ? '✕' : '✓'}
+          </span>
+          <span className="flex-1">{t.message}</span>
+          <span className="shrink-0 ml-1 opacity-50 text-[12px] font-normal" aria-hidden="true">✕</span>
         </div>
       ))}
     </div>

@@ -40,7 +40,7 @@ export interface PendingConfirmation {
   tool_name: string;
   tool_input: Record<string, unknown>;
   tool_use_id: string;
-  mcp_server_id: string;
+  integration_id: string;
   server_name: string;
   requires_approval: boolean;
   conversation_snapshot: unknown;
@@ -68,7 +68,6 @@ export interface OrgUser {
   is_admin: boolean;
   email_domain: string | null;
   created_at: string;
-  last_seen_at: string;
 }
 
 export interface ApprovalRequest {

@@ -48,10 +48,10 @@ export function McpModal({
     setLoading(true); setError('');
     try {
       if (editingId) {
-        await apiPatch(`/api/admin/mcp-servers/${editingId}`, { name, credentials, tool_schemas, requires_approval: approval });
+        await apiPatch(`/api/admin/integrations/${editingId}`, { name, credentials, tool_schemas, requires_approval: approval });
         toast('Server updated');
       } else {
-        await apiPost('/api/admin/mcp-servers', {
+        await apiPost('/api/admin/integrations', {
           name, server_type: type, server_url: url.trim() || null,
           credentials, tool_schemas, requires_approval: approval,
         });

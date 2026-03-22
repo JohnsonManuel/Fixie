@@ -36,7 +36,7 @@ export function McpView() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await apiGet<McpServer[]>('/api/admin/mcp-servers');
+      const data = await apiGet<McpServer[]>('/api/admin/integrations');
       setServers(data);
     } catch {
       toast('Failed to load MCP servers', 'error');
@@ -49,7 +49,7 @@ export function McpView() {
 
   const toggleServer = async (id: string, active: boolean) => {
     try {
-      await apiPatch(`/api/admin/mcp-servers/${id}`, { is_active: !active });
+      await apiPatch(`/api/admin/integrations/${id}`, { is_active: !active });
       toast(`Server ${active ? 'disabled' : 'enabled'}`);
       load();
     } catch { toast('Failed to update server', 'error'); }
@@ -58,7 +58,7 @@ export function McpView() {
   const deleteServer = async (id: string, name: string) => {
     if (!window.confirm(`Delete "${name}"? This cannot be undone.`)) return;
     try {
-      await apiDelete(`/api/admin/mcp-servers/${id}`);
+      await apiDelete(`/api/admin/integrations/${id}`);
       toast(`"${name}" deleted`);
       load();
     } catch { toast('Failed to delete server', 'error'); }
