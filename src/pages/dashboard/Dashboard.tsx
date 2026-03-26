@@ -76,7 +76,7 @@ function Inner() {
 
   return (
     <>
-      <div className="flex h-screen overflow-hidden bg-[#f8fafc]">
+      <div className="flex h-screen overflow-hidden bg-zinc-50">
         <Sidebar
           onViewChange={(v: View) => setCurrentView(v)}
           mobileOpen={navOpen}
@@ -108,50 +108,20 @@ function MobileTopBar({ appUser, onOpenNav }: { appUser: AppUser | null; onOpenN
   return (
     <div
       className="md:hidden flex items-center px-4 shrink-0 bg-white"
-      style={{ minHeight: 56, borderBottom: '1px solid #e8edf3' }}
+      style={{ minHeight: 52, borderBottom: '1px solid #e4e4e7' }}
     >
-      {/* Fixie brand */}
-      <div className="flex items-center gap-2.5 flex-1">
-        <img
-          src={fixieLogo}
-          alt="Fixie"
-          className="w-7 h-7 rounded-xl object-cover"
-          style={{ boxShadow: '0 2px 10px rgba(24,119,242,0.22)' }}
-        />
-        <span
-          className="text-[18px] font-bold tracking-tight"
-          style={{
-            background: 'linear-gradient(135deg, #1877F2 0%, #0E4F99 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
-          }}
-        >
-          Fixie
-        </span>
+      <div className="flex items-center gap-2 flex-1">
+        <img src={fixieLogo} alt="Fixie" className="w-6 h-6 rounded-md object-cover" />
+        <span className="text-[14px] font-bold text-zinc-900 tracking-tight">Fixie</span>
       </div>
-
-      {/* User avatar — tapping opens nav sidebar */}
       <button
         onClick={onOpenNav}
         aria-label="Open navigation menu"
-        className="w-9 h-9 flex items-center justify-center rounded-xl shrink-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#1877F2]"
+        className="w-8 h-8 flex items-center justify-center rounded-md shrink-0 hover:bg-zinc-100 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-600"
       >
-        {appUser?.photo_url ? (
-          <img
-            src={appUser.photo_url}
-            alt={appUser.name}
-            className="w-8 h-8 rounded-full object-cover"
-            style={{ boxShadow: '0 0 0 2px rgba(24,119,242,0.2)' }}
-          />
-        ) : (
-          <div
-            className="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-bold text-white"
-            style={{ background: 'linear-gradient(135deg, #1877F2 0%, #0E4F99 100%)' }}
-          >
-            {(appUser?.name ?? 'U').charAt(0).toUpperCase()}
-          </div>
-        )}
+        <div className="w-7 h-7 rounded-full bg-violet-600 text-white text-[11px] font-bold flex items-center justify-center">
+          {(appUser?.name ?? 'U').charAt(0).toUpperCase()}
+        </div>
       </button>
     </div>
   );
@@ -184,7 +154,7 @@ function ToastLayer() {
           role={t.type === 'error' ? 'alert' : 'status'}
           onClick={() => removeToast(t.id)}
           className={`toast-enter pointer-events-auto flex items-center gap-2.5 px-4 py-3 rounded-xl text-[13.5px] font-medium shadow-lg max-w-sm cursor-pointer select-none ${
-            t.type === 'error' ? 'bg-red-500 text-white' : 'bg-neutral-900 text-white'
+            t.type === 'error' ? 'bg-red-500 text-white' : 'bg-violet-700 text-white'
           }`}
         >
           <span className="shrink-0 text-[15px]" aria-hidden="true">

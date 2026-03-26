@@ -3,18 +3,19 @@ import React from 'react';
 type Variant = 'primary' | 'outline' | 'danger' | 'ghost';
 type Size = 'sm' | 'md';
 
-const base = 'inline-flex items-center gap-1.5 font-semibold rounded-lg transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed';
+const base =
+  'inline-flex items-center gap-1.5 font-semibold rounded-md transition-colors duration-100 disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-600 focus-visible:outline-offset-2';
 
 const variants: Record<Variant, string> = {
   primary: 'btn-brand',
-  outline: 'bg-transparent border border-neutral-200 text-neutral-700 hover:bg-neutral-50 hover:border-neutral-300',
-  danger:  'bg-red-500 text-white hover:bg-red-600 shadow-sm',
-  ghost:   'bg-transparent text-neutral-500 hover:text-red-500 hover:bg-red-50',
+  outline: 'bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-50 hover:border-zinc-300',
+  danger:  'bg-red-500 text-white hover:bg-red-600',
+  ghost:   'bg-transparent text-zinc-500 hover:text-red-500 hover:bg-red-50',
 };
 
 const sizes: Record<Size, string> = {
-  sm: 'px-3 py-1.5 text-[12.5px]',
-  md: 'px-4 py-2 text-[13.5px]',
+  sm: 'px-2.5 py-1.5 text-[12px]',
+  md: 'px-3.5 py-2 text-[13px]',
 };
 
 export function Button({

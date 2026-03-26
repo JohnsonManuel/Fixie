@@ -46,13 +46,20 @@ export interface PendingConfirmation {
   conversation_snapshot: unknown;
 }
 
+export interface ToolSchema {
+  name: string;
+  description: string;
+  admin_only?: boolean;
+  input_schema: Record<string, unknown>;
+}
+
 export interface McpServer {
   id: string;
   name: string;
   server_type: string;
   server_url: string | null;
   credentials: Record<string, string>;
-  tool_schemas: unknown[];
+  tool_schemas: ToolSchema[];
   tool_count: number;
   tools: string[];
   requires_approval: boolean;
