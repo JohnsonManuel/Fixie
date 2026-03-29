@@ -1,0 +1,23 @@
+<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Datadog">
+  <circle cx="32" cy="32" r="32" fill="#632CA6"/>
+  <!-- Datadog stylized dog mark: simplified silhouette -->
+  <!-- Body -->
+  <ellipse cx="32" cy="36" rx="14" ry="11" fill="white"/>
+  <!-- Head -->
+  <circle cx="32" cy="22" r="10" fill="white"/>
+  <!-- Ear left -->
+  <ellipse cx="23" cy="17" rx="5" ry="7" rx="4" fill="white" transform="rotate(-15 23 17)"/>
+  <!-- Ear right -->
+  <ellipse cx="41" cy="17" rx="4" ry="7" fill="white" transform="rotate(15 41 17)"/>
+  <!-- Eye left -->
+  <circle cx="28" cy="21" r="2" fill="#632CA6"/>
+  <!-- Eye right -->
+  <circle cx="36" cy="21" r="2" fill="#632CA6"/>
+  <!-- Nose -->
+  <ellipse cx="32" cy="27" rx="2.5" ry="1.5" fill="#632CA6"/>
+  <!-- Tail -->
+  <path d="M46 32 Q56 26 54 38" stroke="white" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <!-- Legs -->
+  <rect x="22" y="44" width="5" height="8" rx="2.5" fill="white"/>
+  <rect x="37" y="44" width="5" height="8" rx="2.5" fill="white"/>
+</svg>

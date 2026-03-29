@@ -1,0 +1,20 @@
+<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Slack">
+  <rect width="64" height="64" rx="14" fill="white"/>
+  <!-- Slack 4-color pinwheel: 4 rounded bars arranged in a hashtag-like pattern -->
+  <!-- Top-left: yellow -->
+  <rect x="13" y="13" width="11" height="22" rx="5.5" fill="#ECB22E"/>
+  <!-- Cap of top-left -->
+  <rect x="13" y="29" width="22" height="11" rx="5.5" fill="#ECB22E"/>
+  <!-- Top-right: green -->
+  <rect x="29" y="13" width="22" height="11" rx="5.5" fill="#2EB67D"/>
+  <!-- Right bar of top-right -->
+  <rect x="40" y="13" width="11" height="22" rx="5.5" fill="#2EB67D"/>
+  <!-- Bottom-right: red -->
+  <rect x="40" y="29" width="11" height="22" rx="5.5" fill="#E01E5A"/>
+  <!-- Cap of bottom-right -->
+  <rect x="29" y="40" width="22" height="11" rx="5.5" fill="#E01E5A"/>
+  <!-- Bottom-left: blue -->
+  <rect x="13" y="40" width="22" height="11" rx="5.5" fill="#36C5F0"/>
+  <!-- Left bar of bottom-left -->
+  <rect x="13" y="29" width="11" height="22" rx="5.5" fill="#36C5F0"/>
+</svg>

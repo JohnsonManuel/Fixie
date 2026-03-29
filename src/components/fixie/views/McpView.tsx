@@ -8,8 +8,21 @@ import { FreshdeskModal } from '../modals/FreshdeskModal';
 import { ZohoDeskModal } from '../modals/ZohoDeskModal';
 import { CustomServerModal } from '../modals/McpModal';
 import { GenericIntegrationModal, INTEGRATION_CONFIGS } from '../modals/GenericIntegrationModal';
-import { ReactComponent as FreshdeskLogo } from '../../../assets/logos/freshdesk.svg';
-import { ReactComponent as ZohoDeskLogo } from '../../../assets/logos/zohodesk.svg';
+import { ReactComponent as FreshdeskLogo }  from '../../../assets/logos/freshdesk.svg';
+import { ReactComponent as ZohoDeskLogo }   from '../../../assets/logos/zohodesk.svg';
+import { ReactComponent as ZendeskLogo }    from '../../../assets/logos/zendesk.svg';
+import { ReactComponent as JiraLogo }       from '../../../assets/logos/jira.svg';
+import { ReactComponent as ServiceNowLogo } from '../../../assets/logos/servicenow.svg';
+import { ReactComponent as GitHubLogo }     from '../../../assets/logos/github.svg';
+import { ReactComponent as GitLabLogo }     from '../../../assets/logos/gitlab.svg';
+import { ReactComponent as JenkinsLogo }    from '../../../assets/logos/jenkins.svg';
+import { ReactComponent as LinearLogo }     from '../../../assets/logos/linear.svg';
+import { ReactComponent as SlackLogo }      from '../../../assets/logos/slack.svg';
+import { ReactComponent as DatadogLogo }    from '../../../assets/logos/datadog.svg';
+import { ReactComponent as NewRelicLogo }   from '../../../assets/logos/newrelic.svg';
+import { ReactComponent as PagerDutyLogo }  from '../../../assets/logos/pagerduty.svg';
+import { ReactComponent as OpsGenieLogo }   from '../../../assets/logos/opsgenie.svg';
+import { ReactComponent as ConfluenceLogo } from '../../../assets/logos/confluence.svg';
 import { Toggle } from '../ui/Toggle';
 import type { IntegrationConfig, ToolSchema } from '../../../types/fixie';
 
@@ -34,6 +47,22 @@ const INTEGRATION_COLORS: Record<string, string> = {
   servicenow: '#81b5a1', github: '#24292f', gitlab: '#fc6d26', jenkins: '#d33833',
   linear: '#5e6ad2', slack: '#4a154b', datadog: '#632ca6', newrelic: '#008c99',
   pagerduty: '#06ac38', opsgenie: '#ef4444', confluence: '#0052cc', custom: '#71717a', mcp: '#2563eb',
+};
+
+const CATALOG_LOGOS: Record<string, React.ReactNode> = {
+  zendesk:    <ZendeskLogo    className="w-9 h-9 shrink-0" />,
+  jira:       <JiraLogo       className="w-9 h-9 shrink-0" />,
+  servicenow: <ServiceNowLogo className="w-9 h-9 shrink-0" />,
+  github:     <GitHubLogo     className="w-9 h-9 shrink-0" />,
+  gitlab:     <GitLabLogo     className="w-9 h-9 shrink-0" />,
+  jenkins:    <JenkinsLogo    className="w-9 h-9 shrink-0" />,
+  linear:     <LinearLogo     className="w-9 h-9 shrink-0" />,
+  slack:      <SlackLogo      className="w-9 h-9 shrink-0" />,
+  datadog:    <DatadogLogo    className="w-9 h-9 shrink-0" />,
+  newrelic:   <NewRelicLogo   className="w-9 h-9 shrink-0" />,
+  pagerduty:  <PagerDutyLogo  className="w-9 h-9 shrink-0" />,
+  opsgenie:   <OpsGenieLogo   className="w-9 h-9 shrink-0" />,
+  confluence: <ConfluenceLogo className="w-9 h-9 shrink-0" />,
 };
 
 function IntegrationConfigIcon({ serverType }: { serverType: string }) {
@@ -273,7 +302,7 @@ export function IntegrationsView() {
                       <TicketingCard
                         key={item.slug}
                         server={server}
-                        logo={<IntegrationConfigIcon serverType={item.slug} />}
+                        logo={CATALOG_LOGOS[item.slug] ?? <IntegrationConfigIcon serverType={item.slug} />}
                         label={item.label}
                         subtitle={cfg?.displayValue?.(server.credentials ?? {}) ?? (server.credentials?.domain ?? server.credentials?.instance_url ?? '—')}
                         onEdit={() => openCatalogItem(item.slug, server.id)}
@@ -285,7 +314,7 @@ export function IntegrationsView() {
                     ) : (
                       <TicketingSetupCard
                         key={item.slug}
-                        logo={<IntegrationConfigIcon serverType={item.slug} />}
+                        logo={CATALOG_LOGOS[item.slug] ?? <IntegrationConfigIcon serverType={item.slug} />}
                         label={item.label}
                         description={item.description}
                         onConnect={() => openCatalogItem(item.slug)}

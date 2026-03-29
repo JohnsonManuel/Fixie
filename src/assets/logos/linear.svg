@@ -1,0 +1,8 @@
+<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Linear">
+  <circle cx="32" cy="32" r="32" fill="#5E6AD2"/>
+  <!-- Linear mark: a stylized hexagon/prism with diagonal lines -->
+  <path d="M14 44 L44 14" stroke="white" stroke-width="3" stroke-linecap="round"/>
+  <path d="M14 44 L50 44 L50 20" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <path d="M24 50 L50 24" stroke="white" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
+  <path d="M34 50 L50 34" stroke="white" stroke-width="2" stroke-linecap="round" opacity="0.35"/>
+</svg>

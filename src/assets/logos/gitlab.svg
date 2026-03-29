@@ -1,0 +1,8 @@
+<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="GitLab">
+  <circle cx="32" cy="32" r="32" fill="#FC6D26"/>
+  <!-- GitLab tanuki simplified as stacked chevrons/fox face -->
+  <path d="M32 50 L10 28 L16 14 L22 30 L32 26 L42 30 L48 14 L54 28 Z" fill="#FCA326"/>
+  <path d="M32 50 L22 30 L42 30 Z" fill="white"/>
+  <path d="M32 50 L10 28 L22 30 Z" fill="#E24329"/>
+  <path d="M32 50 L54 28 L42 30 Z" fill="#E24329"/>
+</svg>

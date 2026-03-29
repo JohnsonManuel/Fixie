@@ -1,0 +1,6 @@
+<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="PagerDuty">
+  <circle cx="32" cy="32" r="32" fill="#06AC38"/>
+  <!-- PagerDuty P mark -->
+  <rect x="20" y="12" width="8" height="40" rx="2" fill="white"/>
+  <path d="M28 12 Q46 12 46 24 Q46 36 28 36" stroke="white" stroke-width="8" fill="none" stroke-linecap="round"/>
+</svg>
