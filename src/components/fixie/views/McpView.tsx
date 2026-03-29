@@ -6,7 +6,7 @@ import { Button } from '../ui/Button';
 import { CardSkeleton } from '../ui/Skeleton';
 import { FreshdeskModal } from '../modals/FreshdeskModal';
 import { ZohoDeskModal } from '../modals/ZohoDeskModal';
-import { CustomServerModal } from '../modals/CustomServerModal';
+import { CustomServerModal } from '../modals/McpModal';
 import { GenericIntegrationModal, INTEGRATION_CONFIGS } from '../modals/GenericIntegrationModal';
 import { ReactComponent as FreshdeskLogo } from '../../../assets/logos/freshdesk.svg';
 import { ReactComponent as ZohoDeskLogo } from '../../../assets/logos/zohodesk.svg';
