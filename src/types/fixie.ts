@@ -1,4 +1,4 @@
-export type View = 'chat' | 'users' | 'mcp' | 'tickets' | 'approvals';
+export type View = 'chat' | 'users' | 'integrations' | 'tickets' | 'approvals';
 
 export interface AppUser {
   id: string;
@@ -53,7 +53,7 @@ export interface ToolSchema {
   input_schema: Record<string, unknown>;
 }
 
-export interface McpServer {
+export interface IntegrationConfig {
   id: string;
   name: string;
   server_type: string;

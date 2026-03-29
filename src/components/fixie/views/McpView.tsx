@@ -6,11 +6,12 @@ import { Button } from '../ui/Button';
 import { CardSkeleton } from '../ui/Skeleton';
 import { FreshdeskModal } from '../modals/FreshdeskModal';
 import { ZohoDeskModal } from '../modals/ZohoDeskModal';
-import { McpModal } from '../modals/McpModal';
+import { CustomServerModal } from '../modals/CustomServerModal';
+import { GenericIntegrationModal, INTEGRATION_CONFIGS } from '../modals/GenericIntegrationModal';
 import { ReactComponent as FreshdeskLogo } from '../../../assets/logos/freshdesk.svg';
 import { ReactComponent as ZohoDeskLogo } from '../../../assets/logos/zohodesk.svg';
 import { Toggle } from '../ui/Toggle';
-import type { McpServer, ToolSchema } from '../../../types/fixie';
+import type { IntegrationConfig, ToolSchema } from '../../../types/fixie';
 
 const GUIDED_TYPES = ['freshdesk', 'zohodesk'] as const;
 type GuidedType = typeof GUIDED_TYPES[number];
@@ -28,11 +29,15 @@ const GUIDED_META: Record<GuidedType, { label: string; description: string; logo
   },
 };
 
-function McpServerIcon({ serverType }: { serverType: string }) {
-  const colors: Record<string, string> = {
-    jira: '#0052cc', linear: '#5e6ad2', github: '#24292f', zendesk: '#03363d', custom: '#71717a', mcp: '#2563eb',
-  };
-  const bg = colors[serverType] ?? '#71717a';
+const INTEGRATION_COLORS: Record<string, string> = {
+  freshdesk: '#25c16f', zohodesk: '#e42527', zendesk: '#03363d', jira: '#0052cc',
+  servicenow: '#81b5a1', github: '#24292f', gitlab: '#fc6d26', jenkins: '#d33833',
+  linear: '#5e6ad2', slack: '#4a154b', datadog: '#632ca6', newrelic: '#008c99',
+  pagerduty: '#06ac38', opsgenie: '#ef4444', confluence: '#0052cc', custom: '#71717a', mcp: '#2563eb',
+};
+
+function IntegrationConfigIcon({ serverType }: { serverType: string }) {
+  const bg = INTEGRATION_COLORS[serverType] ?? '#71717a';
   return (
     <div
       className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-[13px] font-bold shrink-0"
@@ -43,19 +48,70 @@ function McpServerIcon({ serverType }: { serverType: string }) {
   );
 }
 
-export function McpView() {
+interface CatalogItem { slug: string; label: string; description: string; }
+interface CatalogCategory { label: string; items: CatalogItem[]; }
+
+const CATALOG_CATEGORIES: CatalogCategory[] = [
+  {
+    label: 'ITSM',
+    items: [
+      { slug: 'zendesk',     label: 'Zendesk',      description: 'Manage support tickets via the Zendesk Ticketing API.' },
+      { slug: 'jira',        label: 'Jira',          description: 'Create and track issues in Jira Service Management.' },
+      { slug: 'servicenow',  label: 'ServiceNow',    description: 'Manage incidents and work notes via the ServiceNow Table API.' },
+    ],
+  },
+  {
+    label: 'DevOps',
+    items: [
+      { slug: 'github',   label: 'GitHub',   description: 'Manage issues and pull requests via the GitHub REST API.' },
+      { slug: 'gitlab',   label: 'GitLab',   description: 'Manage issues and merge requests via the GitLab REST API.' },
+      { slug: 'jenkins',  label: 'Jenkins',  description: 'Trigger builds and check job status via the Jenkins Remote API.' },
+      { slug: 'linear',   label: 'Linear',   description: 'Create and update issues via the Linear GraphQL API.' },
+    ],
+  },
+  {
+    label: 'Communication',
+    items: [
+      { slug: 'slack', label: 'Slack', description: 'Send messages and list channels via the Slack Web API.' },
+    ],
+  },
+  {
+    label: 'Monitoring',
+    items: [
+      { slug: 'datadog',  label: 'Datadog',   description: 'Manage incidents and monitors via the Datadog REST API.' },
+      { slug: 'newrelic', label: 'New Relic', description: 'Query alerts, incidents, and entities via New Relic NerdGraph.' },
+    ],
+  },
+  {
+    label: 'Incident Management',
+    items: [
+      { slug: 'pagerduty', label: 'PagerDuty', description: 'Manage on-call incidents and escalations via the PagerDuty API.' },
+      { slug: 'opsgenie',  label: 'OpsGenie',  description: 'Create and acknowledge alerts via the OpsGenie Alert API.' },
+    ],
+  },
+  {
+    label: 'Knowledge',
+    items: [
+      { slug: 'confluence', label: 'Confluence', description: 'Search and manage knowledge base pages via the Confluence REST API.' },
+    ],
+  },
+];
+
+export function IntegrationsView() {
   const { toast } = useToast();
-  const [servers, setServers]           = useState<McpServer[]>([]);
+  const [servers, setServers]           = useState<IntegrationConfig[]>([]);
   const [loading, setLoading]           = useState(true);
   const [search, setSearch]             = useState('');
-  const [mcpModalOpen, setMcpModalOpen] = useState(false);
-  const [editingMcpId, setEditingMcpId] = useState<string | null>(null);
-  const [guidedModal, setGuidedModal]   = useState<{ type: GuidedType; editingId: string | null } | null>(null);
+  const [mcpModalOpen, setCustomServerModalOpen]         = useState(false);
+  const [editingMcpId, setEditingMcpId]         = useState<string | null>(null);
+  const [initialServerType, setInitialServerType] = useState<string | undefined>(undefined);
+  const [guidedModal, setGuidedModal]             = useState<{ type: GuidedType; editingId: string | null } | null>(null);
+  const [genericModal, setGenericModal]           = useState<{ slug: string; editingId: string | null } | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await apiGet<McpServer[]>('/api/admin/integrations');
+      const data = await apiGet<IntegrationConfig[]>('/api/admin/integrations');
       setServers(data);
     } catch {
       toast('Failed to load integrations', 'error');
@@ -112,10 +168,27 @@ export function McpView() {
 
   const openGuided = (type: GuidedType, editingId: string | null = null) => setGuidedModal({ type, editingId });
 
-  const advanced = servers.filter(s => !(GUIDED_TYPES as readonly string[]).includes(s.server_type));
+  const ALL_CATALOG_SLUGS = CATALOG_CATEGORIES.flatMap(c => c.items.map(i => i.slug));
+  const advanced = servers.filter(s => !(GUIDED_TYPES as readonly string[]).includes(s.server_type) && !ALL_CATALOG_SLUGS.includes(s.server_type));
   const q = search.toLowerCase().trim();
   const filteredGuided   = GUIDED_TYPES.filter(t => !q || t.includes(q) || GUIDED_META[t].label.toLowerCase().includes(q));
   const filteredAdvanced = advanced.filter(s => !q || s.name.toLowerCase().includes(q) || s.server_type.toLowerCase().includes(q));
+  const filteredCatalog  = CATALOG_CATEGORIES
+    .map(cat => ({
+      ...cat,
+      items: cat.items.filter(i => !q || i.slug.includes(q) || i.label.toLowerCase().includes(q)),
+    }))
+    .filter(cat => cat.items.length > 0);
+
+  const openCatalogItem = (slug: string, editingId: string | null = null) => {
+    if (INTEGRATION_CONFIGS[slug]) {
+      setGenericModal({ slug, editingId });
+    } else {
+      setEditingMcpId(editingId);
+      setInitialServerType(editingId ? undefined : slug);
+      setCustomServerModalOpen(true);
+    }
+  };
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -186,11 +259,49 @@ export function McpView() {
           )}
         </section>
 
+        {/* ── Integration catalog ──────────────────────────────────────────── */}
+        {filteredCatalog.map(category => (
+          <section key={category.label}>
+            <SectionLabel>{category.label}</SectionLabel>
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 fade-in">
+              {loading
+                ? category.items.map(i => <CardSkeleton key={i.slug} />)
+                : category.items.map(item => {
+                    const server = servers.find(s => s.server_type === item.slug) ?? null;
+                    const cfg = INTEGRATION_CONFIGS[item.slug];
+                    return server ? (
+                      <TicketingCard
+                        key={item.slug}
+                        server={server}
+                        logo={<IntegrationConfigIcon serverType={item.slug} />}
+                        label={item.label}
+                        subtitle={cfg?.displayValue?.(server.credentials ?? {}) ?? (server.credentials?.domain ?? server.credentials?.instance_url ?? '—')}
+                        onEdit={() => openCatalogItem(item.slug, server.id)}
+                        onRemove={() => deleteServer(server.id, item.label)}
+                        onToggle={() => toggleServer(server.id, server.is_active)}
+                        togglingTool={togglingTool}
+                        onToolToggle={(toolName, currentAdminOnly) => toggleToolAccess(server.id, toolName, currentAdminOnly)}
+                      />
+                    ) : (
+                      <TicketingSetupCard
+                        key={item.slug}
+                        logo={<IntegrationConfigIcon serverType={item.slug} />}
+                        label={item.label}
+                        description={item.description}
+                        onConnect={() => openCatalogItem(item.slug)}
+                      />
+                    );
+                  })
+              }
+            </div>
+          </section>
+        ))}
+
         {/* ── Custom MCP servers ───────────────────────────────────────────── */}
         <section>
           <div className="flex items-center justify-between mb-3">
             <SectionLabel>Custom MCP Servers</SectionLabel>
-            <Button size="sm" variant="outline" onClick={() => { setEditingMcpId(null); setMcpModalOpen(true); }}>
+            <Button size="sm" variant="outline" onClick={() => { setEditingMcpId(null); setCustomServerModalOpen(true); }}>
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
                 <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
               </svg>
@@ -215,7 +326,7 @@ export function McpView() {
               <p className="text-[12px] text-zinc-400 mb-4 max-w-xs">
                 Connect any MCP-compatible service by URL, or configure a custom integration manually.
               </p>
-              <Button size="sm" onClick={() => { setEditingMcpId(null); setMcpModalOpen(true); }}>Add server</Button>
+              <Button size="sm" onClick={() => { setEditingMcpId(null); setCustomServerModalOpen(true); }}>Add server</Button>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 fade-in">
@@ -223,7 +334,7 @@ export function McpView() {
                 <CustomServerCard
                   key={s.id}
                   server={s}
-                  onEdit={() => { setEditingMcpId(s.id); setMcpModalOpen(true); }}
+                  onEdit={() => { setEditingMcpId(s.id); setCustomServerModalOpen(true); }}
                   onToggle={() => toggleServer(s.id, s.is_active)}
                   onRemove={() => deleteServer(s.id, s.name)}
                   togglingTool={togglingTool}
@@ -238,7 +349,17 @@ export function McpView() {
       {/* ── Modals ───────────────────────────────────────────────────────────── */}
       <FreshdeskModal open={guidedModal?.type === 'freshdesk'} onClose={() => setGuidedModal(null)} onSuccess={load} editingId={guidedModal?.type === 'freshdesk' ? guidedModal.editingId : null} allServers={servers} />
       <ZohoDeskModal  open={guidedModal?.type === 'zohodesk'}  onClose={() => setGuidedModal(null)} onSuccess={load} editingId={guidedModal?.type === 'zohodesk'  ? guidedModal.editingId : null} allServers={servers} />
-      <McpModal       open={mcpModalOpen} onClose={() => setMcpModalOpen(false)} onSuccess={load} editingId={editingMcpId} allServers={servers} />
+      <CustomServerModal       open={mcpModalOpen} onClose={() => { setCustomServerModalOpen(false); setInitialServerType(undefined); }} onSuccess={load} editingId={editingMcpId} allServers={servers} initialServerType={initialServerType} />
+      {genericModal && (
+        <GenericIntegrationModal
+          open={!!genericModal}
+          onClose={() => setGenericModal(null)}
+          onSuccess={load}
+          slug={genericModal.slug}
+          editingId={genericModal.editingId}
+          allServers={servers}
+        />
+      )}
     </div>
   );
 }
@@ -272,14 +393,14 @@ function TicketingSetupCard({ logo, label, description, onConnect }: {
   );
 }
 
-function TicketingCard({ server, logo, label, onEdit, onRemove, onToggle, togglingTool, onToolToggle }: {
-  server: McpServer; logo: React.ReactNode; label: string;
+function TicketingCard({ server, logo, label, subtitle, onEdit, onRemove, onToggle, togglingTool, onToolToggle }: {
+  server: IntegrationConfig; logo: React.ReactNode; label: string; subtitle?: string;
   onEdit: () => void; onRemove: () => void; onToggle: () => void;
   togglingTool: string | null;
   onToolToggle: (toolName: string, currentAdminOnly: boolean) => void;
 }) {
   const [toolPanelOpen, setToolPanelOpen] = useState(false);
-  const domainOrOrg = server.credentials?.domain ?? server.credentials?.org_id ?? '—';
+  const domainOrOrg = subtitle ?? server.credentials?.domain ?? server.credentials?.org_id ?? '—';
   return (
     <div
       className="bg-white rounded-xl p-5 flex flex-col gap-3 transition-shadow"
@@ -339,7 +460,7 @@ function TicketingCard({ server, logo, label, onEdit, onRemove, onToggle, toggli
 }
 
 function CustomServerCard({ server, onEdit, onToggle, onRemove, togglingTool, onToolToggle }: {
-  server: McpServer; onEdit: () => void; onToggle: () => void; onRemove: () => void;
+  server: IntegrationConfig; onEdit: () => void; onToggle: () => void; onRemove: () => void;
   togglingTool: string | null;
   onToolToggle: (toolName: string, currentAdminOnly: boolean) => void;
 }) {
@@ -353,7 +474,7 @@ function CustomServerCard({ server, onEdit, onToggle, onRemove, togglingTool, on
     >
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-3">
-          <McpServerIcon serverType={server.server_type} />
+          <IntegrationConfigIcon serverType={server.server_type} />
           <div>
             <div className="text-[13.5px] font-bold text-zinc-900">{server.name}</div>
             <div className="text-[10.5px] text-zinc-400 uppercase tracking-wider mt-0.5 font-mono">{server.server_type}</div>

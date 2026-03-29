@@ -5,7 +5,7 @@ import { Toggle } from '../ui/Toggle';
 import { apiPost, apiPatch } from '../../../lib/fixie/api';
 import { useToast } from '../../../hooks/useFixieToast';
 import { FRESHDESK_SCHEMAS } from '../../../lib/fixie/freshdesk-schemas';
-import type { McpServer } from '../../../types/fixie';
+import type { IntegrationConfig } from '../../../types/fixie';
 
 type Tab = 'apikey' | 'url';
 type TestStatus = 'idle' | 'testing' | 'ok' | 'fail';
@@ -19,7 +19,7 @@ export function FreshdeskModal({
   onClose: () => void;
   onSuccess: () => void;
   editingId: string | null;
-  allServers: McpServer[];
+  allServers: IntegrationConfig[];
 }) {
   const { toast } = useToast();
   const existing = editingId ? allServers.find(x => x.id === editingId) : null;

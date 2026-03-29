@@ -9,7 +9,7 @@ import { NoAccountScreen } from '../../components/fixie/screens/NoAccountScreen'
 import { Sidebar } from '../../components/fixie/layout/Sidebar';
 import { ChatView } from '../../components/fixie/views/ChatView';
 import { UsersView } from '../../components/fixie/views/UsersView';
-import { McpView } from '../../components/fixie/views/McpView';
+import { IntegrationsView } from '../../components/fixie/views/McpView';
 import { TicketsView } from '../../components/fixie/views/TicketsView';
 import { ApprovalsView } from '../../components/fixie/views/ApprovalsView';
 import type { AppUser, AppOrg, View } from '../../types/fixie';
@@ -93,7 +93,7 @@ function Inner() {
 
           {currentView === 'chat'      && <ChatView onOpenNav={() => setNavOpen(true)} />}
           {currentView === 'users'     && <UsersView />}
-          {currentView === 'mcp'       && <McpView />}
+          {currentView === 'integrations' && <IntegrationsView />}
           {currentView === 'tickets'   && <TicketsView />}
           {currentView === 'approvals' && <ApprovalsView />}
         </main>

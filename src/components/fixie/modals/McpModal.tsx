@@ -4,21 +4,22 @@ import { Button } from '../ui/Button';
 import { Toggle } from '../ui/Toggle';
 import { apiPost, apiPatch } from '../../../lib/fixie/api';
 import { useToast } from '../../../hooks/useFixieToast';
-import type { McpServer } from '../../../types/fixie';
+import type { IntegrationConfig } from '../../../types/fixie';
 
 type Tab = 'url' | 'manual';
 type DiscoverStatus = 'idle' | 'loading' | 'ok' | 'fail';
 
 interface ToolSchema { name: string; description: string; input_schema: Record<string, unknown>; }
 
-export function McpModal({
-  open, onClose, onSuccess, editingId, allServers,
+export function CustomServerModal({
+  open, onClose, onSuccess, editingId, allServers, initialServerType,
 }: {
   open: boolean;
   onClose: () => void;
   onSuccess: () => void;
   editingId: string | null;
-  allServers: McpServer[];
+  allServers: IntegrationConfig[];
+  initialServerType?: string;
 }) {
   const { toast } = useToast();
   const existing = editingId ? allServers.find(x => x.id === editingId) : null;
@@ -69,9 +70,16 @@ export function McpModal({
       setCreds(JSON.stringify(existing.credentials, null, 2));
       setTools(JSON.stringify(existing.tool_schemas, null, 2));
     } else {
-      setTab('url');
       setServerUrl(''); setUrlName(''); setUrlApproval(true);
-      setName(''); setType(''); setUrl(''); setApproval(true); setCreds(''); setTools('');
+      setUrl(''); setApproval(true); setCreds(''); setTools('');
+      if (initialServerType) {
+        setTab('manual');
+        setType(initialServerType);
+        setName('');
+      } else {
+        setTab('url');
+        setName(''); setType('');
+      }
     }
   }, [open, editingId, allServers]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -263,7 +271,7 @@ export function McpModal({
               <select value={type} onChange={e => setType(e.target.value)}
                 className="w-full px-3 py-2 border border-neutral-200 rounded-lg text-[13.5px] outline-none focus:border-blue-400 bg-white">
                 <option value="">Select type…</option>
-                {['jira', 'linear', 'zendesk', 'github', 'custom'].map(t => <option key={t} value={t}>{t}</option>)}
+                {['freshdesk', 'zohodesk', 'zendesk', 'jira', 'servicenow', 'github', 'gitlab', 'jenkins', 'linear', 'slack', 'datadog', 'newrelic', 'pagerduty', 'opsgenie', 'confluence', 'custom', 'mcp'].map(t => <option key={t} value={t}>{t}</option>)}
               </select>
             </div>
           </div>
