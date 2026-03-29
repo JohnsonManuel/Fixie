@@ -454,6 +454,10 @@ function TicketingCard({ server, logo, label, subtitle, onEdit, onRemove, onTogg
         <span>{server.requires_approval ? 'Approval required' : 'Auto-execute'}</span>
       </div>
 
+      {server.routing_hint && (
+        <p className="text-[11px] text-zinc-400 italic leading-snug">{server.routing_hint}</p>
+      )}
+
       <button
         type="button"
         onClick={() => setToolPanelOpen(o => !o)}
@@ -517,6 +521,10 @@ function CustomServerCard({ server, onEdit, onToggle, onRemove, togglingTool, on
         <span className="w-px h-3 bg-zinc-200" />
         <span>{server.requires_approval ? 'Approval required' : 'Auto-execute'}</span>
       </div>
+
+      {server.routing_hint && (
+        <p className="text-[11px] text-zinc-400 italic leading-snug">{server.routing_hint}</p>
+      )}
 
       {server.tools.length > 0 && (
         <div className="flex flex-wrap gap-1">

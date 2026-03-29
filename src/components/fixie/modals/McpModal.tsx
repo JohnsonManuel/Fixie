@@ -44,6 +44,7 @@ export function CustomServerModal({
   const [tools, setTools]       = useState('');
 
   // ── Shared ─────────────────────────────────────────────────────────────────
+  const [routingHint, setRoutingHint] = useState('');
   const [error, setError]     = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -69,9 +70,11 @@ export function CustomServerModal({
       setApproval(existing.requires_approval);
       setCreds(JSON.stringify(existing.credentials, null, 2));
       setTools(JSON.stringify(existing.tool_schemas, null, 2));
+      setRoutingHint(existing.routing_hint ?? '');
     } else {
       setServerUrl(''); setUrlName(''); setUrlApproval(true);
       setUrl(''); setApproval(true); setCreds(''); setTools('');
+      setRoutingHint('');
       if (initialServerType) {
         setTab('manual');
         setType(initialServerType);
@@ -117,6 +120,7 @@ export function CustomServerModal({
           credentials: {},
           tool_schemas: discoveredSchemas,
           requires_approval: urlApproval,
+          routing_hint: routingHint.trim() || null,
         };
         if (editingId) {
           await apiPatch(`/api/admin/integrations/${editingId}`, payload);
@@ -131,7 +135,7 @@ export function CustomServerModal({
         try { credentials  = creds.trim()  ? JSON.parse(creds)  : {}; } catch { setError('Invalid JSON in Credentials.');    return; }
         try { tool_schemas = tools.trim() ? JSON.parse(tools) : []; } catch { setError('Invalid JSON in Tool Schemas.');    return; }
 
-        const payload = { name, credentials, tool_schemas, requires_approval: approval };
+        const payload = { name, credentials, tool_schemas, requires_approval: approval, routing_hint: routingHint.trim() || null };
         if (editingId) {
           await apiPatch(`/api/admin/integrations/${editingId}`, payload);
           toast('Server updated');
@@ -307,6 +311,24 @@ export function CustomServerModal({
           </div>
         </div>
       )}
+
+      {/* ── Routing hint (shared, outside tabs) ───────────────────────────── */}
+      <div className="mt-5">
+        <label className="block text-[11.5px] font-medium text-zinc-600 mb-1">
+          Routing hint <span className="text-zinc-400 font-normal">(optional)</span>
+        </label>
+        <textarea
+          rows={2}
+          value={routingHint}
+          onChange={e => setRoutingHint(e.target.value)}
+          placeholder="e.g. Use for specific types of issues or requests"
+          className="w-full text-[12.5px] rounded-lg px-3 py-2 resize-none outline-none transition-all"
+          style={{ border: '1px solid #e4e4e7', background: '#fafafa' }}
+        />
+        <p className="text-[11px] text-zinc-400 mt-1">
+          Tells the AI when to use this integration vs. others when multiple are connected.
+        </p>
+      </div>
 
       {error && (
         <p className="text-[12.5px] text-red-500 mt-3">{error}</p>

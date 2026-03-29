@@ -62,6 +62,7 @@ export interface IntegrationConfig {
   tool_schemas: ToolSchema[];
   tool_count: number;
   tools: string[];
+  routing_hint: string | null;
   requires_approval: boolean;
   is_active: boolean;
   created_at: string;

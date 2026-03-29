@@ -51,6 +51,7 @@ export function ZohoDeskModal({
   const [discoveredSchemas, setDiscoveredSchemas] = useState<ToolSchema[]>([]);
 
   // ── Shared ─────────────────────────────────────────────────────────────────
+  const [routingHint, setRoutingHint] = useState('');
   const [error, setError]     = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -73,10 +74,12 @@ export function ZohoDeskModal({
         setDiscoveredSchemas(existing.tool_schemas as ToolSchema[]);
         setDiscoverStatus('ok');
       }
+      setRoutingHint(existing.routing_hint ?? '');
     } else {
       setTab('apikey');
       setAccessToken(''); setOrgId(''); setRegion('com'); setApproval(true);
       setServerUrl(''); setUrlApproval(true);
+      setRoutingHint('');
     }
   }, [open, editingId, allServers]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -128,6 +131,7 @@ export function ZohoDeskModal({
         if (editingId) {
           await apiPatch(`/api/admin/integrations/${editingId}`, {
             credentials, requires_approval: approval, server_url: null,
+            routing_hint: routingHint.trim() || null,
           });
           toast('Zoho Desk updated');
         } else {
@@ -135,6 +139,7 @@ export function ZohoDeskModal({
             name: 'Zoho Desk', server_type: 'zohodesk',
             credentials, tool_schemas: ZOHODESK_SCHEMAS,
             requires_approval: approval, is_active: true,
+            routing_hint: routingHint.trim() || null,
           });
           toast('Zoho Desk connected');
         }
@@ -147,6 +152,7 @@ export function ZohoDeskModal({
             credentials: {},
             tool_schemas: discoveredSchemas,
             requires_approval: urlApproval,
+            routing_hint: routingHint.trim() || null,
           });
           toast('Zoho Desk updated');
         } else {
@@ -155,6 +161,7 @@ export function ZohoDeskModal({
             server_url: serverUrl.trim(), credentials: {},
             tool_schemas: discoveredSchemas,
             requires_approval: urlApproval, is_active: true,
+            routing_hint: routingHint.trim() || null,
           });
           toast('Zoho Desk connected via MCP');
         }
@@ -342,6 +349,24 @@ export function ZohoDeskModal({
           </div>
         </div>
       )}
+
+      {/* ── Routing hint (shared, outside tabs) ───────────────────────────── */}
+      <div className="mt-5">
+        <label className="block text-[11.5px] font-medium text-zinc-600 mb-1">
+          Routing hint <span className="text-zinc-400 font-normal">(optional)</span>
+        </label>
+        <textarea
+          rows={2}
+          value={routingHint}
+          onChange={e => setRoutingHint(e.target.value)}
+          placeholder="e.g. Use for hardware and facilities issues — equipment failures, office requests"
+          className="w-full text-[12.5px] rounded-lg px-3 py-2 resize-none outline-none transition-all"
+          style={{ border: '1px solid #e4e4e7', background: '#fafafa' }}
+        />
+        <p className="text-[11px] text-zinc-400 mt-1">
+          Tells the AI when to use this integration vs. others when multiple are connected.
+        </p>
+      </div>
 
       {error && <p className="text-[12.5px] text-red-500 mt-3">{error}</p>}
     </Modal>

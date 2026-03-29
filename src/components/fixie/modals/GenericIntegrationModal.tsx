@@ -202,6 +202,7 @@ export function GenericIntegrationModal({
   const [discoveredSchemas,  setDiscoveredSchemas]  = useState<ToolSchema[]>([]);
 
   // ── Shared ─────────────────────────────────────────────────────────────────
+  const [routingHint, setRoutingHint] = useState('');
   const [approval,  setApproval]  = useState(true);
   const [error,     setError]     = useState('');
   const [loading,   setLoading]   = useState(false);
@@ -226,6 +227,7 @@ export function GenericIntegrationModal({
         setDiscoveredSchemas(existing.tool_schemas as ToolSchema[]);
         setDiscoverStatus('ok');
       }
+      setRoutingHint(existing.routing_hint ?? '');
     } else {
       setTab('credentials');
       const empty: Record<string, string> = {};
@@ -233,6 +235,7 @@ export function GenericIntegrationModal({
       setValues(empty);
       setApproval(true);
       setServerUrl('');
+      setRoutingHint('');
     }
   }, [open, editingId, slug]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -308,6 +311,7 @@ export function GenericIntegrationModal({
             credentials: credsToSend,
             requires_approval: approval,
             server_url: null,
+            routing_hint: routingHint.trim() || null,
           });
           toast(`${config.label} updated`);
         } else {
@@ -318,6 +322,7 @@ export function GenericIntegrationModal({
             tool_schemas:      [],  // backend pulls canonical schemas from REGISTRY
             requires_approval: approval,
             is_active:         true,
+            routing_hint:      routingHint.trim() || null,
           });
           toast(`${config.label} connected`);
         }
@@ -330,6 +335,7 @@ export function GenericIntegrationModal({
           credentials:       {},
           tool_schemas:      discoveredSchemas,
           requires_approval: urlApproval,
+          routing_hint:      routingHint.trim() || null,
         };
         if (editingId) {
           await apiPatch(`/api/admin/integrations/${editingId}`, payload);
@@ -525,6 +531,24 @@ export function GenericIntegrationModal({
           </div>
         </div>
       )}
+
+      {/* ── Routing hint (shared, outside tabs) ───────────────────────────── */}
+      <div className="mt-5">
+        <label className="block text-[11.5px] font-medium text-zinc-600 mb-1">
+          Routing hint <span className="text-zinc-400 font-normal">(optional)</span>
+        </label>
+        <textarea
+          rows={2}
+          value={routingHint}
+          onChange={e => setRoutingHint(e.target.value)}
+          placeholder={`e.g. Use ${config.label} for specific types of issues`}
+          className="w-full text-[12.5px] rounded-lg px-3 py-2 resize-none outline-none transition-all"
+          style={{ border: '1px solid #e4e4e7', background: '#fafafa' }}
+        />
+        <p className="text-[11px] text-zinc-400 mt-1">
+          Tells the AI when to use this integration vs. others when multiple are connected.
+        </p>
+      </div>
 
       {error && <p className="text-[12.5px] text-red-500 mt-3">{error}</p>}
     </Modal>
