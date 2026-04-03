@@ -17,6 +17,8 @@ import {
   serverTimestamp,
   setDoc
 } from "firebase/firestore";
+import { setPersistence, browserLocalPersistence, browserSessionPersistence } from "firebase/auth";
+import { auth } from "../../services/firebase";
 import { useNavigate } from "react-router-dom";
 import ThemeToggle from "../../components/layout/ThemeToggle";
 
@@ -40,6 +42,7 @@ function Login({ onBackToHome }: LoginProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [formError, setFormError] = useState("");
+  const [rememberMe, setRememberMe] = useState(true); // Default to true for remember me
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -58,6 +61,12 @@ function Login({ onBackToHome }: LoginProps) {
 
     try {
       const { email, password } = formData;
+
+      // Set persistence based on "Remember me" checkbox
+      await setPersistence(
+        auth,
+        rememberMe ? browserLocalPersistence : browserSessionPersistence
+      );
 
       // 1. Sign in
       const result = await signIn(email, password);
@@ -202,6 +211,12 @@ function Login({ onBackToHome }: LoginProps) {
   const handleGoogleLogin = async () => {
     setIsLoading(true);
     try {
+      // Set persistence based on "Remember me" checkbox
+      await setPersistence(
+        auth,
+        rememberMe ? browserLocalPersistence : browserSessionPersistence
+      );
+
       const result = await signInWithGoogle();
       await handleOAuthUser(result.user);
       navigate("/dashboard");
@@ -216,6 +231,12 @@ function Login({ onBackToHome }: LoginProps) {
   const handleGithubLogin = async () => {
     setIsLoading(true);
     try {
+      // Set persistence based on "Remember me" checkbox
+      await setPersistence(
+        auth,
+        rememberMe ? browserLocalPersistence : browserSessionPersistence
+      );
+
       const result = await signInWithGithub();
       await handleOAuthUser(result.user);
       navigate("/dashboard");
@@ -356,23 +377,37 @@ function Login({ onBackToHome }: LoginProps) {
                   >
                     {showPassword ? (
                       <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
-                        <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
-                        <line x1="1" y1="1" x2="23" y2="23"/>
+                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+                        <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+                        <line x1="1" y1="1" x2="23" y2="23" />
                       </svg>
                     ) : (
                       <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                        <circle cx="12" cy="12" r="3"/>
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                        <circle cx="12" cy="12" r="3" />
                       </svg>
                     )}
                   </button>
                 </div>
-                <div className="mt-1.5 ml-1">
+                <div className="mt-1.5 ml-1 flex items-center justify-between">
                   <a href="#forgot-password" className="text-[10px] sm:text-xs font-bold text-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
                     Forgot password?
                   </a>
                 </div>
+              </div>
+
+              {/* Remember me checkbox */}
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="rememberMe"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="w-4 h-4 text-indigo-600 bg-neutral-100 border-neutral-300 rounded focus:ring-indigo-500 dark:focus:ring-indigo-600 dark:ring-offset-neutral-800 focus:ring-2 dark:bg-neutral-700 dark:border-neutral-600 cursor-pointer"
+                />
+                <label htmlFor="rememberMe" className="ml-2 text-xs sm:text-sm font-medium text-neutral-700 dark:text-neutral-300 cursor-pointer select-none">
+                  Remember me for 30 days
+                </label>
               </div>
 
               <button
