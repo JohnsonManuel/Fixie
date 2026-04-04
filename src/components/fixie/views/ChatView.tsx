@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import fixieLogo from '../../../images/image.png';
 import { useApp } from '../../../contexts/FixieAppContext';
 import { useToast } from '../../../hooks/useFixieToast';
-import { apiGet, apiPost, apiDelete } from '../../../lib/fixie/api';
+import { apiGet, apiPost, apiDelete, apiUpload } from '../../../lib/fixie/api';
 import { formatMarkdown } from '../../../lib/fixie/utils';
 import { ConvListSkeleton } from '../ui/Skeleton';
 import type { Conversation, Message, PendingConfirmation } from '../../../types/fixie';
@@ -20,9 +20,13 @@ export function ChatView({ onOpenNav }: { onOpenNav: () => void }) {
   const [isTyping, setIsTyping] = useState(false);
   const [pending, setPending] = useState<PendingConfirmation | null>(null);
   const [convTitle, setConvTitle] = useState('New Chat');
-  const messagesRef = useRef<HTMLDivElement>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const suppressNextLoad = useRef(false);
+  const [isRecording, setIsRecording]       = useState(false);
+  const [isTranscribing, setIsTranscribing] = useState(false);
+  const messagesRef        = useRef<HTMLDivElement>(null);
+  const textareaRef        = useRef<HTMLTextAreaElement>(null);
+  const suppressNextLoad   = useRef(false);
+  const mediaRecorderRef   = useRef<MediaRecorder | null>(null);
+  const audioChunksRef     = useRef<Blob[]>([]);
 
   const scrollToBottom = useCallback(() => {
     if (messagesRef.current) messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
@@ -186,6 +190,56 @@ export function ChatView({ onOpenNav }: { onOpenNav: () => void }) {
     }, 0);
   };
 
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = recorder;
+      audioChunksRef.current   = [];
+
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) audioChunksRef.current.push(e.data);
+      };
+
+      recorder.onstop = async () => {
+        stream.getTracks().forEach(t => t.stop());
+        const blob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        setIsTranscribing(true);
+        try {
+          const form = new FormData();
+          form.append('audio', blob, 'recording.webm');
+          const { text } = await apiUpload<{ text: string }>('/api/chat/transcribe', form);
+          if (text.trim()) {
+            setInputVal(prev => (prev ? prev + ' ' + text.trim() : text.trim()));
+            setTimeout(() => {
+              if (textareaRef.current) autoResize(textareaRef.current);
+              textareaRef.current?.focus();
+            }, 0);
+          }
+        } catch {
+          toast('Transcription failed. Please try again.', 'error');
+        } finally {
+          setIsTranscribing(false);
+        }
+      };
+
+      recorder.start();
+      setIsRecording(true);
+    } catch {
+      toast('Microphone access denied.', 'error');
+    }
+  };
+
+  const stopRecording = () => {
+    mediaRecorderRef.current?.stop();
+    setIsRecording(false);
+  };
+
+  const toggleRecording = () => {
+    if (isRecording) stopRecording();
+    else startRecording();
+  };
+
   return (
     <div className="flex flex-1 overflow-hidden relative">
 
@@ -311,6 +365,7 @@ export function ChatView({ onOpenNav }: { onOpenNav: () => void }) {
                   className="flex-1 resize-none outline-none text-[13.5px] leading-relaxed bg-transparent disabled:opacity-50 text-zinc-900 placeholder-zinc-400"
                   style={{ maxHeight: 130, overflowY: 'hidden' }}
                 />
+                <MicButton isRecording={isRecording} isTranscribing={isTranscribing} onClick={toggleRecording} disabled={sending} />
                 <button
                   onClick={sendMessage}
                   disabled={sending || !inputVal.trim()}
@@ -431,6 +486,7 @@ export function ChatView({ onOpenNav }: { onOpenNav: () => void }) {
                   onFocus={e => { e.currentTarget.style.borderColor = '#7c3aed'; e.currentTarget.style.background = '#fff'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(124,58,237,0.1)'; }}
                   onBlur={e => { e.currentTarget.style.borderColor = '#e4e4e7'; e.currentTarget.style.background = '#fafafa'; e.currentTarget.style.boxShadow = ''; }}
                 />
+                <MicButton isRecording={isRecording} isTranscribing={isTranscribing} onClick={toggleRecording} disabled={sending} />
                 <button
                   onClick={sendMessage}
                   disabled={sending || !inputVal.trim()}
@@ -453,6 +509,48 @@ export function ChatView({ onOpenNav }: { onOpenNav: () => void }) {
         )}
       </div>
     </div>
+  );
+}
+
+// ── MicButton ─────────────────────────────────────────────────────────────────
+function MicButton({ isRecording, isTranscribing, onClick, disabled }: {
+  isRecording: boolean; isTranscribing: boolean; onClick: () => void; disabled: boolean;
+}) {
+  if (isTranscribing) {
+    return (
+      <div className="w-8 h-8 flex items-center justify-center shrink-0" aria-label="Transcribing…">
+        <svg className="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
+          <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+        </svg>
+      </div>
+    );
+  }
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled || isTranscribing}
+      aria-label={isRecording ? 'Stop recording' : 'Start voice input'}
+      className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+      style={isRecording
+        ? { background: '#fef2f2', border: '1px solid #fca5a5' }
+        : { background: 'transparent', border: '1px solid #e4e4e7' }
+      }
+    >
+      {isRecording ? (
+        /* Pulsing red dot when recording */
+        <span className="relative flex items-center justify-center w-3 h-3">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
+          <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
+        </span>
+      ) : (
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#71717a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M12 2a3 3 0 0 1 3 3v7a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z" />
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+          <line x1="12" y1="19" x2="12" y2="22" />
+        </svg>
+      )}
+    </button>
   );
 }
 
