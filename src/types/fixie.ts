@@ -50,6 +50,7 @@ export interface ToolSchema {
   name: string;
   description: string;
   admin_only?: boolean;
+  read_only?: boolean;
   input_schema: Record<string, unknown>;
 }
 
@@ -66,6 +67,8 @@ export interface IntegrationConfig {
   requires_approval: boolean;
   is_active: boolean;
   created_at: string;
+  nango_connection_id: string | null;
+  nango_provider_config_key: string | null;
 }
 
 export interface OrgUser {
