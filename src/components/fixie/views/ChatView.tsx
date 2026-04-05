@@ -118,7 +118,7 @@ export function ChatView({ onOpenNav }: { onOpenNav: () => void }) {
     if (!plain) return;
 
     stopSpeaking();
-    setIsTTSLoading(true); // show "Preparing…" while fetching audio
+    setIsTTSLoading(true);
 
     try {
       const user = getAuth().currentUser;
@@ -136,20 +136,63 @@ export function ChatView({ onOpenNav }: { onOpenNav: () => void }) {
 
       if (!res.ok) throw new Error('TTS request failed');
 
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const audio = new Audio(url);
-      audioRef.current = audio;
+      // Stream audio via MediaSource so playback starts on the first chunk
+      // (~200-400ms) rather than waiting for the full file.
+      const mimeType = 'audio/mpeg';
+      if (res.body && (window as any).MediaSource && MediaSource.isTypeSupported(mimeType)) {
+        const mediaSource = new MediaSource();
+        const audioUrl = URL.createObjectURL(mediaSource);
+        const audio = new Audio(audioUrl);
+        audioRef.current = audio;
 
-      audio.onended = () => { setIsSpeaking(false); URL.revokeObjectURL(url); audioRef.current = null; };
-      audio.onerror = () => { setIsSpeaking(false); URL.revokeObjectURL(url); audioRef.current = null; };
+        audio.onended = () => { setIsSpeaking(false); URL.revokeObjectURL(audioUrl); audioRef.current = null; };
+        audio.onerror = () => { setIsSpeaking(false); setIsTTSLoading(false); URL.revokeObjectURL(audioUrl); audioRef.current = null; };
 
-      setIsTTSLoading(false);
-      setIsSpeaking(true); // waveform only once audio is ready
-      await audio.play();
+        const reader = res.body.getReader();
+        let started = false;
+
+        mediaSource.addEventListener('sourceopen', async () => {
+          let sb: SourceBuffer;
+          try { sb = mediaSource.addSourceBuffer(mimeType); } catch { return; }
+
+          const waitUpdate = () => new Promise<void>(r => sb.addEventListener('updateend', () => r(), { once: true }));
+
+          try {
+            while (true) {
+              const { done, value } = await reader.read();
+              if (done) {
+                if (mediaSource.readyState === 'open') {
+                  if (sb.updating) await waitUpdate();
+                  mediaSource.endOfStream();
+                }
+                break;
+              }
+              if (sb.updating) await waitUpdate();
+              sb.appendBuffer(value);
+              if (!started) {
+                started = true;
+                setIsTTSLoading(false);
+                setIsSpeaking(true);
+                audio.play().catch(() => {});
+              }
+            }
+          } catch { /* stream aborted (e.g. user stopped) */ }
+        }, { once: true });
+
+      } else {
+        // Fallback for browsers that don't support MP3 in MediaSource
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const audio = new Audio(url);
+        audioRef.current = audio;
+        audio.onended = () => { setIsSpeaking(false); URL.revokeObjectURL(url); audioRef.current = null; };
+        audio.onerror = () => { setIsSpeaking(false); URL.revokeObjectURL(url); audioRef.current = null; };
+        setIsTTSLoading(false);
+        setIsSpeaking(true);
+        await audio.play();
+      }
     } catch {
       setIsTTSLoading(false);
-      // Fall back to browser TTS if OpenAI TTS fails
       setIsSpeaking(true);
       const utterance = new SpeechSynthesisUtterance(plain);
       utterance.onend   = () => setIsSpeaking(false);
