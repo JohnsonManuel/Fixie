@@ -8,5 +8,8 @@ initializeApp();
 // Export chat function
 export { chat } from "./chat";
 
+// Export TTS function
+export { tts } from "./tts";
+
 // Export scheduled cleanup for unverified users (runs every 24 hours)
 export { cleanupUnverifiedUsers } from "./cleanup-unverified-users";

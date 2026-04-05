@@ -17,3 +17,6 @@ export const LOGIN_SITE_URL: string = '/login';
 
 /** API base URL — empty means same origin. */
 export const API_BASE = process.env.REACT_APP_FIXIE_API_BASE_URL ?? 'https://fixie-chat-308405783967.us-central1.run.app';
+
+/** Firebase Functions base URL for the TTS endpoint. */
+export const TTS_BASE = process.env.REACT_APP_TTS_BASE_URL ?? 'https://europe-west3-jj-ai-platform.cloudfunctions.net';

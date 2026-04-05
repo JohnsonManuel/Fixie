@@ -3,6 +3,8 @@ import fixieLogo from '../../../images/image.png';
 import { useApp } from '../../../contexts/FixieAppContext';
 import { useToast } from '../../../hooks/useFixieToast';
 import { apiGet, apiPost, apiDelete } from '../../../lib/fixie/api';
+import { TTS_BASE } from '../../../lib/fixie/config';
+import { getAuth } from 'firebase/auth';
 import { formatMarkdown } from '../../../lib/fixie/utils';
 import { ConvListSkeleton } from '../ui/Skeleton';
 import type { Conversation, Message, PendingConfirmation } from '../../../types/fixie';
@@ -29,6 +31,7 @@ export function ChatView({ onOpenNav }: { onOpenNav: () => void }) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef   = useRef<any>(null);
   const voiceModeRef     = useRef(false);
+  const audioRef         = useRef<HTMLAudioElement | null>(null);
 
   const scrollToBottom = useCallback(() => {
     if (messagesRef.current) messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
@@ -96,25 +99,58 @@ export function ChatView({ onOpenNav }: { onOpenNav: () => void }) {
     setTimeout(scrollToBottom, 50);
   };
 
-  function speakResponse(text: string) {
+  function stopSpeaking() {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.src = '';
+      audioRef.current = null;
+    }
     window.speechSynthesis.cancel();
+    setIsSpeaking(false);
+  }
+
+  async function speakResponse(text: string) {
     const plain = text
       .replace(/<[^>]*>/g, '')
       .replace(/[#*`_~[\]()>]/g, '')
       .replace(/\n+/g, ' ')
       .trim();
     if (!plain) return;
-    const utterance = new SpeechSynthesisUtterance(plain);
-    utterance.rate = 1.0;
-    utterance.onstart = () => setIsSpeaking(true);
-    utterance.onend   = () => setIsSpeaking(false);
-    utterance.onerror = () => setIsSpeaking(false);
-    window.speechSynthesis.speak(utterance);
-  }
 
-  function stopSpeaking() {
-    window.speechSynthesis.cancel();
-    setIsSpeaking(false);
+    stopSpeaking();
+    setIsSpeaking(true);
+
+    try {
+      const user = getAuth().currentUser;
+      const token = user ? await user.getIdToken() : null;
+      if (!token) throw new Error('Not authenticated');
+
+      const res = await fetch(`${TTS_BASE}/tts`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text: plain, voice: 'nova' }),
+      });
+
+      if (!res.ok) throw new Error('TTS request failed');
+
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const audio = new Audio(url);
+      audioRef.current = audio;
+
+      audio.onended = () => { setIsSpeaking(false); URL.revokeObjectURL(url); audioRef.current = null; };
+      audio.onerror = () => { setIsSpeaking(false); URL.revokeObjectURL(url); audioRef.current = null; };
+      await audio.play();
+    } catch {
+      // Fall back to browser TTS if OpenAI TTS fails
+      const utterance = new SpeechSynthesisUtterance(plain);
+      utterance.onend   = () => setIsSpeaking(false);
+      utterance.onerror = () => setIsSpeaking(false);
+      window.speechSynthesis.speak(utterance);
+    }
   }
 
   async function sendMessageWithText(msg: string) {
