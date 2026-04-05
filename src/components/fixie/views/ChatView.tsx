@@ -24,13 +24,11 @@ export function ChatView({ onOpenNav }: { onOpenNav: () => void }) {
   const [convTitle, setConvTitle] = useState('New Chat');
   const [isRecording, setIsRecording] = useState(false);
   const [isSpeaking, setIsSpeaking]   = useState(false);
-  const [voiceMode, setVoiceMode]     = useState(false);
   const messagesRef      = useRef<HTMLDivElement>(null);
   const textareaRef      = useRef<HTMLTextAreaElement>(null);
   const suppressNextLoad = useRef(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef   = useRef<any>(null);
-  const voiceModeRef     = useRef(false);
   const audioRef         = useRef<HTMLAudioElement | null>(null);
 
   const scrollToBottom = useCallback(() => {
@@ -179,7 +177,7 @@ export function ChatView({ onOpenNav }: { onOpenNav: () => void }) {
       if (!currentConvId) { suppressNextLoad.current = true; setCurrentConvId(data.conversation_id); await loadConversations(); }
       if (data.pending_confirmation) { setPending(data.pending_confirmation); appendMsg('assistant', data.response); }
       else { appendMsg('assistant', data.response); setPending(null); }
-      if (voiceModeRef.current) speakResponse(data.response);
+      speakResponse(data.response);
     } catch (e: unknown) {
       setIsTyping(false);
       appendMsg('assistant', '⚠️ ' + (e instanceof Error ? e.message : 'Something went wrong.'));
@@ -290,12 +288,6 @@ export function ChatView({ onOpenNav }: { onOpenNav: () => void }) {
     else startRecording();
   };
 
-  const toggleVoiceMode = () => {
-    const next = !voiceModeRef.current;
-    voiceModeRef.current = next;
-    setVoiceMode(next);
-    if (!next) stopSpeaking();
-  };
 
   return (
     <div className="flex flex-1 overflow-hidden relative">
@@ -422,7 +414,6 @@ export function ChatView({ onOpenNav }: { onOpenNav: () => void }) {
                   className="flex-1 resize-none outline-none text-[13.5px] leading-relaxed bg-transparent disabled:opacity-50 text-zinc-900 placeholder-zinc-400"
                   style={{ maxHeight: 130, overflowY: 'hidden' }}
                 />
-                <VoiceModeButton voiceMode={voiceMode} isSpeaking={isSpeaking} onToggleMode={toggleVoiceMode} onStop={stopSpeaking} />
                 <MicButton isRecording={isRecording} onClick={toggleRecording} disabled={sending} />
                 <button
                   onClick={sendMessage}
@@ -529,6 +520,25 @@ export function ChatView({ onOpenNav }: { onOpenNav: () => void }) {
               className="px-4 md:px-6 pt-3 bg-white shrink-0"
               style={{ borderTop: '1px solid #e4e4e7', paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}
             >
+              {isSpeaking && (
+                <div className="flex justify-center max-w-3xl mx-auto mb-2">
+                  <button
+                    type="button"
+                    onClick={stopSpeaking}
+                    aria-label="Stop speaking"
+                    className="voice-speaking flex items-center gap-2 px-4 py-1.5 rounded-full text-[12px] font-medium text-violet-700 transition-all"
+                    style={{ background: '#ede9fe', border: '1.5px solid #a78bfa' }}
+                  >
+                    <span className="flex items-end justify-center gap-[2.5px]" style={{ height: 13, width: 17 }}>
+                      <span className="voice-bar w-[2.5px] bg-violet-500" style={{ height: '100%' }} />
+                      <span className="voice-bar w-[2.5px] bg-violet-600" style={{ height: '100%' }} />
+                      <span className="voice-bar w-[2.5px] bg-violet-500" style={{ height: '100%' }} />
+                      <span className="voice-bar w-[2.5px] bg-violet-400" style={{ height: '100%' }} />
+                    </span>
+                    Speaking — tap to stop
+                  </button>
+                </div>
+              )}
               <div className="flex gap-2 items-end max-w-3xl mx-auto">
                 <textarea
                   ref={textareaRef}
@@ -544,7 +554,6 @@ export function ChatView({ onOpenNav }: { onOpenNav: () => void }) {
                   onFocus={e => { e.currentTarget.style.borderColor = '#7c3aed'; e.currentTarget.style.background = '#fff'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(124,58,237,0.1)'; }}
                   onBlur={e => { e.currentTarget.style.borderColor = '#e4e4e7'; e.currentTarget.style.background = '#fafafa'; e.currentTarget.style.boxShadow = ''; }}
                 />
-                <VoiceModeButton voiceMode={voiceMode} isSpeaking={isSpeaking} onToggleMode={toggleVoiceMode} onStop={stopSpeaking} />
                 <MicButton isRecording={isRecording} onClick={toggleRecording} disabled={sending} />
                 <button
                   onClick={sendMessage}
@@ -571,54 +580,6 @@ export function ChatView({ onOpenNav }: { onOpenNav: () => void }) {
   );
 }
 
-// ── VoiceModeButton ───────────────────────────────────────────────────────────
-function VoiceModeButton({ voiceMode, isSpeaking, onToggleMode, onStop }: {
-  voiceMode: boolean; isSpeaking: boolean; onToggleMode: () => void; onStop: () => void;
-}) {
-  if (isSpeaking) {
-    return (
-      <button
-        type="button"
-        onClick={onStop}
-        aria-label="Stop speaking"
-        title="Stop speaking"
-        className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-all"
-        style={{ background: '#ede9fe', border: '1px solid #a78bfa' }}
-      >
-        <span className="relative flex items-center justify-center w-3 h-3">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-violet-400 opacity-75" />
-          <span className="relative inline-flex rounded-full h-2 w-2 bg-violet-600" />
-        </span>
-      </button>
-    );
-  }
-  return (
-    <button
-      type="button"
-      onClick={onToggleMode}
-      aria-label={voiceMode ? 'Disable voice responses' : 'Enable voice responses'}
-      title={voiceMode ? 'Voice responses on — click to disable' : 'Enable voice responses'}
-      className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-all"
-      style={voiceMode
-        ? { background: '#ede9fe', border: '1px solid #a78bfa' }
-        : { background: 'transparent', border: '1px solid #e4e4e7' }
-      }
-    >
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={voiceMode ? '#7c3aed' : '#71717a'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
-        {voiceMode ? (
-          <>
-            <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
-            <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
-          </>
-        ) : (
-          <line x1="23" y1="9" x2="17" y2="15" />
-        )}
-      </svg>
-    </button>
-  );
-}
-
 // ── MicButton ─────────────────────────────────────────────────────────────────
 function MicButton({ isRecording, onClick, disabled }: {
   isRecording: boolean; onClick: () => void; disabled: boolean;
@@ -630,19 +591,21 @@ function MicButton({ isRecording, onClick, disabled }: {
       disabled={disabled}
       aria-label={isRecording ? 'Stop listening' : 'Speak a message'}
       title={isRecording ? 'Listening… click to cancel' : 'Click to speak'}
-      className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+      className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-all disabled:opacity-30 disabled:cursor-not-allowed${isRecording ? ' mic-recording' : ''}`}
       style={isRecording
-        ? { background: '#fef2f2', border: '1px solid #fca5a5' }
+        ? { background: '#fef2f2', border: '1.5px solid #fca5a5' }
         : { background: 'transparent', border: '1px solid #e4e4e7' }
       }
     >
       {isRecording ? (
-        <span className="relative flex items-center justify-center w-3 h-3">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
-          <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
+        <span className="flex items-end justify-center gap-[3px]" style={{ height: 16, width: 20 }}>
+          <span className="voice-bar w-[3px] bg-red-400" style={{ height: '100%' }} />
+          <span className="voice-bar w-[3px] bg-red-500" style={{ height: '100%' }} />
+          <span className="voice-bar w-[3px] bg-red-400" style={{ height: '100%' }} />
+          <span className="voice-bar w-[3px] bg-red-300" style={{ height: '100%' }} />
         </span>
       ) : (
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#71717a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#71717a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
           <path d="M12 2a3 3 0 0 1 3 3v7a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z" />
           <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
           <line x1="12" y1="19" x2="12" y2="22" />

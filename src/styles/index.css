@@ -88,6 +88,35 @@ body {
 }
 .loading-bar { animation: loading-bar 1.4s ease-in-out infinite; }
 
+/* voice waveform bars */
+@keyframes voice-bar {
+  0%, 100% { transform: scaleY(0.2); }
+  50%      { transform: scaleY(1);   }
+}
+.voice-bar {
+  transform-origin: bottom;
+  border-radius: 2px;
+  animation: voice-bar 0.9s ease-in-out infinite;
+}
+.voice-bar:nth-child(1) { animation-delay: 0s; }
+.voice-bar:nth-child(2) { animation-delay: 0.18s; }
+.voice-bar:nth-child(3) { animation-delay: 0.36s; }
+.voice-bar:nth-child(4) { animation-delay: 0.54s; }
+
+/* mic button glow ring when recording */
+@keyframes mic-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.4); }
+  50%      { box-shadow: 0 0 0 6px rgba(239,68,68,0); }
+}
+.mic-recording { animation: mic-glow 1.2s ease-in-out infinite; }
+
+/* voice speaking glow ring */
+@keyframes voice-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(124,58,237,0.35); }
+  50%      { box-shadow: 0 0 0 6px rgba(124,58,237,0); }
+}
+.voice-speaking { animation: voice-glow 1.2s ease-in-out infinite; }
+
 code {
   font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', Menlo, Monaco, monospace;
 }
