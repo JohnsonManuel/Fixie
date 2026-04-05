@@ -1,6 +1,7 @@
 import { onRequest } from "firebase-functions/v2/https";
 import { getAuth } from "firebase-admin/auth";
 import { defineSecret } from "firebase-functions/params";
+import { Readable } from "stream";
 import cors from "cors";
 
 const OPENAI_API_KEY = defineSecret("OPENAI_API_KEY");
@@ -16,6 +17,7 @@ export const tts = onRequest(
     secrets: [OPENAI_API_KEY],
     timeoutSeconds: 30,
     memory: "256MiB",
+    minInstances: 1,   // keep warm — eliminates cold-start delay
   },
   async (req: any, res: any) => {
     return new Promise((resolve) => {
@@ -74,10 +76,10 @@ export const tts = onRequest(
             return;
           }
 
-          const audioBuffer = await oaiRes.arrayBuffer();
           res.set("Content-Type", "audio/mpeg");
           res.set("Cache-Control", "no-store");
-          res.send(Buffer.from(audioBuffer));
+          // Stream directly — don't buffer the full MP3 before responding
+          Readable.fromWeb(oaiRes.body as any).pipe(res);
           resolve();
         } catch (err) {
           console.error("TTS function error:", err);
