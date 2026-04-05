@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import fixieLogo from '../../../images/image.png';
 import { useApp } from '../../../contexts/FixieAppContext';
 import { useToast } from '../../../hooks/useFixieToast';
-import { apiGet, apiPost, apiDelete, apiUpload } from '../../../lib/fixie/api';
+import { apiGet, apiPost, apiDelete } from '../../../lib/fixie/api';
 import { formatMarkdown } from '../../../lib/fixie/utils';
 import { ConvListSkeleton } from '../ui/Skeleton';
 import type { Conversation, Message, PendingConfirmation } from '../../../types/fixie';
@@ -20,13 +20,15 @@ export function ChatView({ onOpenNav }: { onOpenNav: () => void }) {
   const [isTyping, setIsTyping] = useState(false);
   const [pending, setPending] = useState<PendingConfirmation | null>(null);
   const [convTitle, setConvTitle] = useState('New Chat');
-  const [isRecording, setIsRecording]       = useState(false);
-  const [isTranscribing, setIsTranscribing] = useState(false);
-  const messagesRef        = useRef<HTMLDivElement>(null);
-  const textareaRef        = useRef<HTMLTextAreaElement>(null);
-  const suppressNextLoad   = useRef(false);
-  const mediaRecorderRef   = useRef<MediaRecorder | null>(null);
-  const audioChunksRef     = useRef<Blob[]>([]);
+  const [isRecording, setIsRecording] = useState(false);
+  const [isSpeaking, setIsSpeaking]   = useState(false);
+  const [voiceMode, setVoiceMode]     = useState(false);
+  const messagesRef      = useRef<HTMLDivElement>(null);
+  const textareaRef      = useRef<HTMLTextAreaElement>(null);
+  const suppressNextLoad = useRef(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const recognitionRef   = useRef<any>(null);
+  const voiceModeRef     = useRef(false);
 
   const scrollToBottom = useCallback(() => {
     if (messagesRef.current) messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
@@ -94,8 +96,28 @@ export function ChatView({ onOpenNav }: { onOpenNav: () => void }) {
     setTimeout(scrollToBottom, 50);
   };
 
-  async function sendMessage() {
-    const msg = inputVal.trim();
+  function speakResponse(text: string) {
+    window.speechSynthesis.cancel();
+    const plain = text
+      .replace(/<[^>]*>/g, '')
+      .replace(/[#*`_~[\]()>]/g, '')
+      .replace(/\n+/g, ' ')
+      .trim();
+    if (!plain) return;
+    const utterance = new SpeechSynthesisUtterance(plain);
+    utterance.rate = 1.0;
+    utterance.onstart = () => setIsSpeaking(true);
+    utterance.onend   = () => setIsSpeaking(false);
+    utterance.onerror = () => setIsSpeaking(false);
+    window.speechSynthesis.speak(utterance);
+  }
+
+  function stopSpeaking() {
+    window.speechSynthesis.cancel();
+    setIsSpeaking(false);
+  }
+
+  async function sendMessageWithText(msg: string) {
     if (!msg || sending) return;
     setSending(true);
     setInputVal('');
@@ -121,12 +143,17 @@ export function ChatView({ onOpenNav }: { onOpenNav: () => void }) {
       if (!currentConvId) { suppressNextLoad.current = true; setCurrentConvId(data.conversation_id); await loadConversations(); }
       if (data.pending_confirmation) { setPending(data.pending_confirmation); appendMsg('assistant', data.response); }
       else { appendMsg('assistant', data.response); setPending(null); }
+      if (voiceModeRef.current) speakResponse(data.response);
     } catch (e: unknown) {
       setIsTyping(false);
       appendMsg('assistant', '⚠️ ' + (e instanceof Error ? e.message : 'Something went wrong.'));
     }
     setSending(false);
     textareaRef.current?.focus();
+  }
+
+  async function sendMessage() {
+    await sendMessageWithText(inputVal.trim());
   }
 
   async function confirmTool(confirmed: boolean) {
@@ -190,54 +217,48 @@ export function ChatView({ onOpenNav }: { onOpenNav: () => void }) {
     }, 0);
   };
 
-  const startRecording = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const recorder = new MediaRecorder(stream);
-      mediaRecorderRef.current = recorder;
-      audioChunksRef.current   = [];
-
-      recorder.ondataavailable = (e) => {
-        if (e.data.size > 0) audioChunksRef.current.push(e.data);
-      };
-
-      recorder.onstop = async () => {
-        stream.getTracks().forEach(t => t.stop());
-        const blob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-        setIsTranscribing(true);
-        try {
-          const form = new FormData();
-          form.append('audio', blob, 'recording.webm');
-          const { text } = await apiUpload<{ text: string }>('/api/chat/transcribe', form);
-          if (text.trim()) {
-            setInputVal(prev => (prev ? prev + ' ' + text.trim() : text.trim()));
-            setTimeout(() => {
-              if (textareaRef.current) autoResize(textareaRef.current);
-              textareaRef.current?.focus();
-            }, 0);
-          }
-        } catch {
-          toast('Transcription failed. Please try again.', 'error');
-        } finally {
-          setIsTranscribing(false);
-        }
-      };
-
-      recorder.start();
-      setIsRecording(true);
-    } catch {
-      toast('Microphone access denied.', 'error');
+  const startRecording = () => {
+    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SR) {
+      toast('Speech recognition is not supported in this browser. Try Chrome or Edge.', 'error');
+      return;
     }
+    stopSpeaking();
+    const recognition = new SR();
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = 'en-US';
+
+    recognition.onresult = (e: any) => {
+      const transcript = e.results[0][0].transcript.trim();
+      if (transcript) sendMessageWithText(transcript);
+    };
+    recognition.onerror = () => {
+      toast('Voice recognition failed. Please try again.', 'error');
+      setIsRecording(false);
+    };
+    recognition.onend = () => setIsRecording(false);
+
+    recognition.start();
+    recognitionRef.current = recognition;
+    setIsRecording(true);
   };
 
   const stopRecording = () => {
-    mediaRecorderRef.current?.stop();
+    recognitionRef.current?.stop();
     setIsRecording(false);
   };
 
   const toggleRecording = () => {
     if (isRecording) stopRecording();
     else startRecording();
+  };
+
+  const toggleVoiceMode = () => {
+    const next = !voiceModeRef.current;
+    voiceModeRef.current = next;
+    setVoiceMode(next);
+    if (!next) stopSpeaking();
   };
 
   return (
@@ -365,7 +386,8 @@ export function ChatView({ onOpenNav }: { onOpenNav: () => void }) {
                   className="flex-1 resize-none outline-none text-[13.5px] leading-relaxed bg-transparent disabled:opacity-50 text-zinc-900 placeholder-zinc-400"
                   style={{ maxHeight: 130, overflowY: 'hidden' }}
                 />
-                <MicButton isRecording={isRecording} isTranscribing={isTranscribing} onClick={toggleRecording} disabled={sending} />
+                <VoiceModeButton voiceMode={voiceMode} isSpeaking={isSpeaking} onToggleMode={toggleVoiceMode} onStop={stopSpeaking} />
+                <MicButton isRecording={isRecording} onClick={toggleRecording} disabled={sending} />
                 <button
                   onClick={sendMessage}
                   disabled={sending || !inputVal.trim()}
@@ -486,7 +508,8 @@ export function ChatView({ onOpenNav }: { onOpenNav: () => void }) {
                   onFocus={e => { e.currentTarget.style.borderColor = '#7c3aed'; e.currentTarget.style.background = '#fff'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(124,58,237,0.1)'; }}
                   onBlur={e => { e.currentTarget.style.borderColor = '#e4e4e7'; e.currentTarget.style.background = '#fafafa'; e.currentTarget.style.boxShadow = ''; }}
                 />
-                <MicButton isRecording={isRecording} isTranscribing={isTranscribing} onClick={toggleRecording} disabled={sending} />
+                <VoiceModeButton voiceMode={voiceMode} isSpeaking={isSpeaking} onToggleMode={toggleVoiceMode} onStop={stopSpeaking} />
+                <MicButton isRecording={isRecording} onClick={toggleRecording} disabled={sending} />
                 <button
                   onClick={sendMessage}
                   disabled={sending || !inputVal.trim()}
@@ -512,25 +535,65 @@ export function ChatView({ onOpenNav }: { onOpenNav: () => void }) {
   );
 }
 
-// ── MicButton ─────────────────────────────────────────────────────────────────
-function MicButton({ isRecording, isTranscribing, onClick, disabled }: {
-  isRecording: boolean; isTranscribing: boolean; onClick: () => void; disabled: boolean;
+// ── VoiceModeButton ───────────────────────────────────────────────────────────
+function VoiceModeButton({ voiceMode, isSpeaking, onToggleMode, onStop }: {
+  voiceMode: boolean; isSpeaking: boolean; onToggleMode: () => void; onStop: () => void;
 }) {
-  if (isTranscribing) {
+  if (isSpeaking) {
     return (
-      <div className="w-8 h-8 flex items-center justify-center shrink-0" aria-label="Transcribing…">
-        <svg className="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
-          <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-        </svg>
-      </div>
+      <button
+        type="button"
+        onClick={onStop}
+        aria-label="Stop speaking"
+        title="Stop speaking"
+        className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-all"
+        style={{ background: '#ede9fe', border: '1px solid #a78bfa' }}
+      >
+        <span className="relative flex items-center justify-center w-3 h-3">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-violet-400 opacity-75" />
+          <span className="relative inline-flex rounded-full h-2 w-2 bg-violet-600" />
+        </span>
+      </button>
     );
   }
   return (
     <button
       type="button"
+      onClick={onToggleMode}
+      aria-label={voiceMode ? 'Disable voice responses' : 'Enable voice responses'}
+      title={voiceMode ? 'Voice responses on — click to disable' : 'Enable voice responses'}
+      className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-all"
+      style={voiceMode
+        ? { background: '#ede9fe', border: '1px solid #a78bfa' }
+        : { background: 'transparent', border: '1px solid #e4e4e7' }
+      }
+    >
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={voiceMode ? '#7c3aed' : '#71717a'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+        {voiceMode ? (
+          <>
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+          </>
+        ) : (
+          <line x1="23" y1="9" x2="17" y2="15" />
+        )}
+      </svg>
+    </button>
+  );
+}
+
+// ── MicButton ─────────────────────────────────────────────────────────────────
+function MicButton({ isRecording, onClick, disabled }: {
+  isRecording: boolean; onClick: () => void; disabled: boolean;
+}) {
+  return (
+    <button
+      type="button"
       onClick={onClick}
-      disabled={disabled || isTranscribing}
-      aria-label={isRecording ? 'Stop recording' : 'Start voice input'}
+      disabled={disabled}
+      aria-label={isRecording ? 'Stop listening' : 'Speak a message'}
+      title={isRecording ? 'Listening… click to cancel' : 'Click to speak'}
       className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
       style={isRecording
         ? { background: '#fef2f2', border: '1px solid #fca5a5' }
@@ -538,7 +601,6 @@ function MicButton({ isRecording, isTranscribing, onClick, disabled }: {
       }
     >
       {isRecording ? (
-        /* Pulsing red dot when recording */
         <span className="relative flex items-center justify-center w-3 h-3">
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
           <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
