@@ -17,6 +17,8 @@ import {
   serverTimestamp,
   setDoc
 } from "firebase/firestore";
+import { setPersistence, browserLocalPersistence, browserSessionPersistence } from "firebase/auth";
+import { auth } from "../../services/firebase";
 import { useNavigate } from "react-router-dom";
 import ThemeToggle from "../../components/layout/ThemeToggle";
 
@@ -37,9 +39,10 @@ function Login({ onBackToHome }: LoginProps) {
     password: "",
   });
 
-  const [rememberMe, setRememberMe] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [formError, setFormError] = useState("");
+  const [rememberMe, setRememberMe] = useState(true); // Default to true for remember me
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -58,6 +61,12 @@ function Login({ onBackToHome }: LoginProps) {
 
     try {
       const { email, password } = formData;
+
+      // Set persistence based on "Remember me" checkbox
+      await setPersistence(
+        auth,
+        rememberMe ? browserLocalPersistence : browserSessionPersistence
+      );
 
       // 1. Sign in
       const result = await signIn(email, password);
@@ -144,15 +153,9 @@ function Login({ onBackToHome }: LoginProps) {
               },
             },
           });
-        } else {
-          // Standard user, but no org for their domain
-          setFormError(
-            "No organization is registered for this email domain. Please contact your administrator."
-          );
-          await logout();
-          setIsLoading(false);
-          return;
         }
+        // Standard users with no org are allowed through — the dashboard
+        // will show them a limited view (chat only, no org badge).
       }
 
       // 5. Redirect user
@@ -215,6 +218,12 @@ function Login({ onBackToHome }: LoginProps) {
   const handleGoogleLogin = async () => {
     setIsLoading(true);
     try {
+      // Set persistence based on "Remember me" checkbox
+      await setPersistence(
+        auth,
+        rememberMe ? browserLocalPersistence : browserSessionPersistence
+      );
+
       const result = await signInWithGoogle();
       await handleOAuthLogin(result);
     } catch (err: any) {
@@ -230,6 +239,10 @@ function Login({ onBackToHome }: LoginProps) {
   const handleMicrosoftLogin = async () => {
     setIsLoading(true);
     try {
+      await setPersistence(
+        auth,
+        rememberMe ? browserLocalPersistence : browserSessionPersistence
+      );
       const result = await signInWithMicrosoft();
       await handleOAuthLogin(result);
     } catch (err: any) {
@@ -352,35 +365,58 @@ function Login({ onBackToHome }: LoginProps) {
               </div>
 
               <div className="form-group">
-                <div className="flex justify-between items-center ml-1">
-                  <label htmlFor="password" className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">Password</label>
+                <label htmlFor="password" className="text-xs font-semibold text-neutral-700 dark:text-neutral-300 ml-1">Password</label>
+                <div className="relative mt-1.5">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    id="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    placeholder="••••••••"
+                    required
+                    disabled={isLoading}
+                    className="block w-full px-4 py-3 pr-11 border border-neutral-200 dark:border-neutral-700 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 text-sm text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(v => !v)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
+                    tabIndex={-1}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? (
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+                        <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+                        <line x1="1" y1="1" x2="23" y2="23" />
+                      </svg>
+                    ) : (
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                        <circle cx="12" cy="12" r="3" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
+                <div className="mt-1.5 ml-1 flex items-center justify-between">
                   <a href="#forgot-password" className="text-[10px] sm:text-xs font-bold text-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
                     Forgot password?
                   </a>
                 </div>
-                <input
-                  type="password"
-                  id="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  placeholder="••••••••"
-                  required
-                  disabled={isLoading}
-                  className="mt-1.5 block w-full px-4 py-3 border border-neutral-200 dark:border-neutral-700 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 text-sm text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-                />
               </div>
 
-              <div className="flex items-center ml-1">
-                <label className="flex items-center gap-2 cursor-pointer group">
-                  <input
-                    type="checkbox"
-                    checked={rememberMe}
-                    onChange={(e) => setRememberMe(e.target.checked)}
-                    disabled={isLoading}
-                    className="w-3.5 h-3.5 rounded border-neutral-300 text-indigo-600 focus:ring-indigo-500 transition-all"
-                  />
-                  <span className="text-xs text-neutral-500 dark:text-neutral-400 font-medium group-hover:text-neutral-700 dark:group-hover:text-neutral-300">Remember for 30 days</span>
+              {/* Remember me checkbox */}
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="rememberMe"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="w-4 h-4 text-indigo-600 bg-neutral-100 border-neutral-300 rounded focus:ring-indigo-500 dark:focus:ring-indigo-600 dark:ring-offset-neutral-800 focus:ring-2 dark:bg-neutral-700 dark:border-neutral-600 cursor-pointer"
+                />
+                <label htmlFor="rememberMe" className="ml-2 text-xs sm:text-sm font-medium text-neutral-700 dark:text-neutral-300 cursor-pointer select-none">
+                  Remember me for 30 days
                 </label>
               </div>
 

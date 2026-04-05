@@ -3,6 +3,16 @@ module.exports = {
   darkMode: "class",
   theme: {
     extend: {
+      colors: {
+        brand: {
+          50:  '#eff6ff',
+          100: '#dbeafe',
+          200: '#bfdbfe',
+          500: '#1877F2',
+          600: '#0E4F99',
+          700: '#0A3A7A',
+        },
+      },
       animation: {
         shimmer: "shimmer 2s linear infinite",
         orbit: "orbit calc(var(--duration) * 1s) linear infinite",

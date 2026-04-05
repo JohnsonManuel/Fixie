@@ -1,0 +1,12 @@
+<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Confluence">
+  <defs>
+    <linearGradient id="cg1" x1="54" y1="10" x2="10" y2="54" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#2684FF"/>
+      <stop offset="100%" stop-color="#0052CC"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="12" fill="url(#cg1)"/>
+  <!-- Confluence mark: two overlapping chevrons pointing outward -->
+  <path d="M11 40 Q20 30 32 34 Q44 38 52 28" stroke="white" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <path d="M11 26 Q20 16 32 20 Q44 24 52 14" stroke="white" stroke-width="5" fill="none" stroke-linecap="round" opacity="0.65"/>
+</svg>

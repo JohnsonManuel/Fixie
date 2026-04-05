@@ -17,6 +17,12 @@ import { sendEmailVerification } from "firebase/auth";
 
 import ThemeToggle from "../../components/layout/ThemeToggle";
 
+const PUBLIC_EMAIL_DOMAINS = new Set([
+  "gmail.com", "yahoo.com", "hotmail.com", "outlook.com", "icloud.com",
+  "protonmail.com", "proton.me", "googlemail.com", "live.com", "msn.com",
+  "aol.com", "mail.com", "ymail.com", "hotmail.co.uk", "yahoo.co.uk",
+]);
+
 const Signup: React.FC = () => {
   const { signUp } = useAuth();
   const navigate = useNavigate();
@@ -24,7 +30,6 @@ const Signup: React.FC = () => {
 
   const [formData, setFormData] = useState({
     email: "",
-    username: "",
     password: "",
     confirmPassword: "",
   });
@@ -54,6 +59,7 @@ const Signup: React.FC = () => {
 
   const validateForm = () => {
     const newErrorFields: string[] = [];
+
     if (formData.password !== formData.confirmPassword) {
       setFormError("Passwords do not match");
       newErrorFields.push("confirmPassword");
@@ -66,6 +72,17 @@ const Signup: React.FC = () => {
       setErrorFields(newErrorFields);
       return false;
     }
+
+    if (role === "admin") {
+      const domain = formData.email.split("@")[1]?.toLowerCase();
+      if (!domain || PUBLIC_EMAIL_DOMAINS.has(domain)) {
+        setFormError("Admin accounts require a corporate email address. Personal email providers are not allowed.");
+        newErrorFields.push("email");
+        setErrorFields(newErrorFields);
+        return false;
+      }
+    }
+
     setErrorFields([]);
     return true;
   };
@@ -116,7 +133,6 @@ const Signup: React.FC = () => {
 
       await setDoc(doc(db, "users", user.uid), {
         email: user.email,
-        username: formData.username,
         role,
         verified: false,
         profileComplete: false,
@@ -219,49 +235,26 @@ const Signup: React.FC = () => {
             {/* Signup Form */}
             {!successMessage && (
               <form className="space-y-4" onSubmit={handleSubmit}>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <label
-                      htmlFor="username"
-                      className="text-xs font-semibold text-neutral-700 dark:text-neutral-300 ml-1"
-                    >
-                      Username
-                    </label>
-                    <input
-                      type="text"
-                      id="username"
-                      name="username"
-                      value={formData.username}
-                      onChange={handleInputChange}
-                      placeholder="johndoe"
-                      className={`w-full px-4 py-3 rounded-xl border ${errorFields.includes("username")
-                        ? "border-red-500 bg-red-50/30 dark:bg-red-900/10"
-                        : "border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50"
-                        } text-sm text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all`}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <label
-                      htmlFor="email"
-                      className="text-xs font-semibold text-neutral-700 dark:text-neutral-300 ml-1"
-                    >
-                      Email Address
-                    </label>
-                    <input
-                      type="email"
-                      id="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      placeholder="name@company.com"
-                      className={`w-full px-4 py-3 rounded-xl border ${errorFields.includes("email")
-                        ? "border-red-500 bg-red-50/30 dark:bg-red-900/10"
-                        : "border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50"
-                        } text-sm text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all`}
-                      required
-                    />
-                  </div>
+                <div className="space-y-1.5">
+                  <label
+                    htmlFor="email"
+                    className="text-xs font-semibold text-neutral-700 dark:text-neutral-300 ml-1"
+                  >
+                    Email Address
+                  </label>
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    placeholder="name@company.com"
+                    className={`w-full px-4 py-3 rounded-xl border ${errorFields.includes("email")
+                      ? "border-red-500 bg-red-50/30 dark:bg-red-900/10"
+                      : "border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50"
+                      } text-sm text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all`}
+                    required
+                  />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

@@ -1,0 +1,5 @@
+<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Zendesk">
+  <rect width="64" height="64" rx="12" fill="#03363d"/>
+  <!-- Zendesk Z mark -->
+  <path d="M15 18h34L15 46h34" stroke="white" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+</svg>
