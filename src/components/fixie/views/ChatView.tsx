@@ -22,8 +22,9 @@ export function ChatView({ onOpenNav }: { onOpenNav: () => void }) {
   const [isTyping, setIsTyping] = useState(false);
   const [pending, setPending] = useState<PendingConfirmation | null>(null);
   const [convTitle, setConvTitle] = useState('New Chat');
-  const [isRecording, setIsRecording] = useState(false);
-  const [isSpeaking, setIsSpeaking]   = useState(false);
+  const [isRecording, setIsRecording]   = useState(false);
+  const [isSpeaking, setIsSpeaking]     = useState(false);
+  const [isTTSLoading, setIsTTSLoading] = useState(false);
   const messagesRef      = useRef<HTMLDivElement>(null);
   const textareaRef      = useRef<HTMLTextAreaElement>(null);
   const suppressNextLoad = useRef(false);
@@ -105,6 +106,7 @@ export function ChatView({ onOpenNav }: { onOpenNav: () => void }) {
     }
     window.speechSynthesis.cancel();
     setIsSpeaking(false);
+    setIsTTSLoading(false);
   }
 
   async function speakResponse(text: string) {
@@ -116,7 +118,7 @@ export function ChatView({ onOpenNav }: { onOpenNav: () => void }) {
     if (!plain) return;
 
     stopSpeaking();
-    setIsSpeaking(true);
+    setIsTTSLoading(true); // show "Preparing…" while fetching audio
 
     try {
       const user = getAuth().currentUser;
@@ -141,9 +143,14 @@ export function ChatView({ onOpenNav }: { onOpenNav: () => void }) {
 
       audio.onended = () => { setIsSpeaking(false); URL.revokeObjectURL(url); audioRef.current = null; };
       audio.onerror = () => { setIsSpeaking(false); URL.revokeObjectURL(url); audioRef.current = null; };
+
+      setIsTTSLoading(false);
+      setIsSpeaking(true); // waveform only once audio is ready
       await audio.play();
     } catch {
+      setIsTTSLoading(false);
       // Fall back to browser TTS if OpenAI TTS fails
+      setIsSpeaking(true);
       const utterance = new SpeechSynthesisUtterance(plain);
       utterance.onend   = () => setIsSpeaking(false);
       utterance.onerror = () => setIsSpeaking(false);
@@ -259,19 +266,37 @@ export function ChatView({ onOpenNav }: { onOpenNav: () => void }) {
     }
     stopSpeaking();
     const recognition = new SR();
-    recognition.continuous = false;
+    recognition.continuous = true;      // keep listening through natural pauses
     recognition.interimResults = false;
     recognition.lang = 'en-US';
 
+    let accumulated = '';
+    let silenceTimer: ReturnType<typeof setTimeout> | null = null;
+
     recognition.onresult = (e: any) => {
-      const transcript = e.results[0][0].transcript.trim();
-      if (transcript) sendMessageWithText(transcript);
+      // Collect all new final results
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        if (e.results[i].isFinal) {
+          const part = e.results[i][0].transcript.trim();
+          if (part) accumulated += (accumulated ? ' ' : '') + part;
+        }
+      }
+      // Reset the silence timer — send 1.5s after the last word
+      if (silenceTimer) clearTimeout(silenceTimer);
+      silenceTimer = setTimeout(() => {
+        recognition.stop();
+        if (accumulated) sendMessageWithText(accumulated);
+      }, 1500);
     };
     recognition.onerror = () => {
+      if (silenceTimer) clearTimeout(silenceTimer);
       toast('Voice recognition failed. Please try again.', 'error');
       setIsRecording(false);
     };
-    recognition.onend = () => setIsRecording(false);
+    recognition.onend = () => {
+      if (silenceTimer) clearTimeout(silenceTimer);
+      setIsRecording(false);
+    };
 
     recognition.start();
     recognitionRef.current = recognition;
@@ -520,22 +545,31 @@ export function ChatView({ onOpenNav }: { onOpenNav: () => void }) {
               className="px-4 md:px-6 pt-3 bg-white shrink-0"
               style={{ borderTop: '1px solid #e4e4e7', paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}
             >
-              {isSpeaking && (
+              {(isTTSLoading || isSpeaking) && (
                 <div className="flex justify-center max-w-3xl mx-auto mb-2">
                   <button
                     type="button"
                     onClick={stopSpeaking}
-                    aria-label="Stop speaking"
-                    className="voice-speaking flex items-center gap-2 px-4 py-1.5 rounded-full text-[12px] font-medium text-violet-700 transition-all"
-                    style={{ background: '#ede9fe', border: '1.5px solid #a78bfa' }}
+                    aria-label={isSpeaking ? 'Stop speaking' : 'Cancel'}
+                    className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-[12px] font-medium transition-all${isSpeaking ? ' voice-speaking' : ''}`}
+                    style={{ background: '#ede9fe', border: '1.5px solid #a78bfa', color: '#6d28d9' }}
                   >
-                    <span className="flex items-end justify-center gap-[2.5px]" style={{ height: 13, width: 17 }}>
-                      <span className="voice-bar w-[2.5px] bg-violet-500" style={{ height: '100%' }} />
-                      <span className="voice-bar w-[2.5px] bg-violet-600" style={{ height: '100%' }} />
-                      <span className="voice-bar w-[2.5px] bg-violet-500" style={{ height: '100%' }} />
-                      <span className="voice-bar w-[2.5px] bg-violet-400" style={{ height: '100%' }} />
-                    </span>
-                    Speaking — tap to stop
+                    {isSpeaking ? (
+                      <>
+                        <span className="flex items-end justify-center gap-[2.5px]" style={{ height: 13, width: 17 }}>
+                          <span className="voice-bar w-[2.5px] bg-violet-500" style={{ height: '100%' }} />
+                          <span className="voice-bar w-[2.5px] bg-violet-600" style={{ height: '100%' }} />
+                          <span className="voice-bar w-[2.5px] bg-violet-500" style={{ height: '100%' }} />
+                          <span className="voice-bar w-[2.5px] bg-violet-400" style={{ height: '100%' }} />
+                        </span>
+                        Speaking — tap to stop
+                      </>
+                    ) : (
+                      <>
+                        <span className="inline-block w-3 h-3 rounded-full border-2 border-violet-400 border-t-violet-700 animate-spin" />
+                        Preparing audio…
+                      </>
+                    )}
                   </button>
                 </div>
               )}
