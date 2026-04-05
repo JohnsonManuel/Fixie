@@ -12,9 +12,10 @@ import ToolsModule from "../../components/dashboard/ToolsModule";
 type DashboardContentProps = {
     userRole: string | null;
     organizationKey: string | null;
+    username: string | null;
 };
 
-function DashboardContent({ userRole, organizationKey }: DashboardContentProps) {
+function DashboardContent({ userRole, organizationKey, username }: DashboardContentProps) {
     const { user, logout, loading } = useAuth();
     const { theme } = useTheme();
 
@@ -46,6 +47,7 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
                 userRole={userRole}
                 toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
                 isSidebarOpen={isSidebarOpen}
+                username={username}
             />
 
             {/* 2. MAIN CONTENT SECTION */}
@@ -113,8 +115,9 @@ function DashboardContent({ userRole, organizationKey }: DashboardContentProps) 
 type DashboardProps = {
     userRole: string | null;
     organizationKey: string | null;
+    username: string | null;
 };
 
-export default function Dashboard({ userRole, organizationKey }: DashboardProps) {
-    return <DashboardContent userRole={userRole} organizationKey={organizationKey} />;
+export default function Dashboard({ userRole, organizationKey, username }: DashboardProps) {
+    return <DashboardContent userRole={userRole} organizationKey={organizationKey} username={username} />;
 }

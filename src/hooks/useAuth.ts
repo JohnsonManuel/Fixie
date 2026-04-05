@@ -11,7 +11,7 @@ import {
 
 import { getFirestore, doc, setDoc, collection, query, where, getDocs } from "firebase/firestore";
 import { useNavigate } from "react-router-dom"; // Keep this import
-import { auth, googleProvider, githubProvider } from '../services/firebase';
+import { auth, googleProvider, microsoftProvider } from '../services/firebase';
 import { AuthError } from '../types';
 
 const db = getFirestore();
@@ -181,18 +181,18 @@ export const useAuth = () => {
     }
   };
 
-  // Sign in with GitHub
-  const signInWithGithub = async () => {
+  // Sign in with Microsoft
+  const signInWithMicrosoft = async () => {
     try {
       setError(null);
-      const result = await signInWithPopup(auth, githubProvider);
+      const result = await signInWithPopup(auth, microsoftProvider);
       return result;
     } catch (err: any) {
       // Don't set error for user-cancelled actions
       if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') {
         throw err; // Re-throw without setting error state
       }
-      
+
       const authError: AuthError = {
         code: err.code,
         message: err.message
@@ -229,7 +229,7 @@ export const useAuth = () => {
     signUp,
     signIn,
     signInWithGoogle,
-    signInWithGithub,
+    signInWithMicrosoft,
     logout,
     clearError,
     signUpAdmin

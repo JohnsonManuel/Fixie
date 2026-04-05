@@ -9,6 +9,7 @@ function ProtectedDashboardContent() {
   const { user, loading } = useAuth();
   const [role, setRole] = useState<string | null>(null);
   const [organizationKey, setOrganizationKey] = useState<string | null>(null);
+  const [username, setUsername] = useState<string | null>(null);
   const [loadingRole, setLoadingRole] = useState(true);
   const navigate = useNavigate();
 
@@ -25,7 +26,8 @@ function ProtectedDashboardContent() {
         if (snap.exists()) {
           const data = snap.data();
           setRole(data.role || "user");
-          setOrganizationKey(data.organizationKey)
+          setOrganizationKey(data.organizationKey);
+          setUsername(data.username || user.displayName || null);
           console.log("Loaded user role before dashboard:", data.role);
         } else {
           setRole("user");
@@ -72,7 +74,7 @@ function ProtectedDashboardContent() {
   }
 
   // ✅ Render dashboard once role is ready
-  return <Dashboard userRole={role} organizationKey={organizationKey} />;
+  return <Dashboard userRole={role} organizationKey={organizationKey} username={username} />;
 }
 
 export default function ProtectedDashboard() {

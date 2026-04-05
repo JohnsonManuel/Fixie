@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
 // import { getAnalytics } from "firebase/analytics";
-import { getAuth, GoogleAuthProvider, GithubAuthProvider } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, OAuthProvider } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
 // Your Firebase configuration object
@@ -26,14 +26,14 @@ export const db = getFirestore(app);
 
 // Initialize providers
 export const googleProvider = new GoogleAuthProvider();
-export const githubProvider = new GithubAuthProvider();
+export const microsoftProvider = new OAuthProvider('microsoft.com');
 
 // Configure providers
 googleProvider.setCustomParameters({
   prompt: 'select_account'
 });
 
-githubProvider.setCustomParameters({
+microsoftProvider.setCustomParameters({
   prompt: 'select_account'
 });
 

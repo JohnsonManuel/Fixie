@@ -11,9 +11,10 @@ type DashboardHeaderProps = {
     setActiveTab: (tab: "chat" | "organization" | "tools") => void;
     userRole: string | null;
     toggleSidebar: () => void;
+    username: string | null;
 };
 
-const DashboardHeader = ({ activeTab, setActiveTab, userRole, toggleSidebar ,isSidebarOpen }: DashboardHeaderProps) => {
+const DashboardHeader = ({ activeTab, setActiveTab, userRole, toggleSidebar, isSidebarOpen, username }: DashboardHeaderProps) => {
     return (
         <header className="dashboard-header">
             <div className="header-left">
@@ -62,6 +63,11 @@ const DashboardHeader = ({ activeTab, setActiveTab, userRole, toggleSidebar ,isS
             </div>
 
             <div className="header-right">
+                {username && (
+                    <span className="text-sm font-medium text-neutral-600 dark:text-neutral-300 hidden-mobile">
+                        Welcome, <span className="font-bold text-neutral-900 dark:text-white">{username}</span>
+                    </span>
+                )}
                 <ThemeToggle />
             </div>
         </header>

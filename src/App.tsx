@@ -17,6 +17,7 @@ import PricingPage from "./pages/pricing/PricingPage";
 import FeaturesPage from "./pages/features/FeaturesPage";
 import ContactPage from "./pages/contact/ContactPage";
 import ProtectedDashboard from "./pages/dashboard/ProtectedDashboard";
+import OAuthOnboarding from "./pages/auth/OAuthOnboarding";
 import { ThemeProvider } from "./contexts/ThemeContext";
 
 // 🔒 Protect routes that need authentication
@@ -63,6 +64,7 @@ function App() {
           <Route path="/pricing" element={<PricingPage />} />
           <Route path="/features" element={<FeaturesPage />} />
           <Route path="/contact" element={<ContactPage />} />
+          <Route path="/oauth-onboarding" element={<OAuthOnboarding />} />
 
           {/* Protected routes */}
           <Route
