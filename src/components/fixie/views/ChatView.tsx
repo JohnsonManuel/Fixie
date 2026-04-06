@@ -238,20 +238,37 @@ export function ChatView({ onOpenNav }: { onOpenNav: () => void }) {
       if (pending) {
         const lower = msg.toLowerCase().trim();
         const isConfirm = ['yes', 'confirm', 'ok', 'okay', 'sure', 'go ahead', 'yep', 'confirmed'].includes(lower);
-        // Always pass the pending tool context so the backend can close out the
-        // tool_use block cleanly (confirmed or cancelled) before processing the
-        // new message — prevents the Anthropic 400 "unmatched tool_use" error.
-        body = {
-          message: msg,
-          conversation_id: currentConvId,
-          user_confirmed: isConfirm,
-          confirmed_tool_name: pending.tool_name,
-          confirmed_tool_input: pending.tool_input,
-          confirmed_tool_use_id: pending.tool_use_id,
-          confirmed_integration_id: pending.integration_id,
-          conversation_snapshot: pending.conversation_snapshot,
-        };
-        setPending(null);
+
+        if (isConfirm) {
+          // User confirmed — execute the tool
+          body = {
+            message: msg, conversation_id: currentConvId, user_confirmed: true,
+            confirmed_tool_name: pending.tool_name, confirmed_tool_input: pending.tool_input,
+            confirmed_tool_use_id: pending.tool_use_id, confirmed_integration_id: pending.integration_id,
+            conversation_snapshot: pending.conversation_snapshot,
+          };
+          setPending(null);
+        } else {
+          // User sent a new message (e.g. "change priority to high") while a
+          // tool_use is open in Firestore.  We must cancel it first so Claude
+          // doesn't see an unmatched tool_use block → 400.
+          const snap = pending;
+          setPending(null);
+          try {
+            await apiPost('/api/chat/message', {
+              message: 'cancel',
+              conversation_id: currentConvId,
+              user_confirmed: false,
+              confirmed_tool_name: snap.tool_name,
+              confirmed_tool_input: snap.tool_input,
+              confirmed_tool_use_id: snap.tool_use_id,
+              confirmed_integration_id: snap.integration_id,
+              conversation_snapshot: snap.conversation_snapshot,
+            });
+          } catch { /* best-effort — proceed even if cancel fails */ }
+          // Now send the actual new message against a clean conversation
+          body = { message: msg, conversation_id: currentConvId };
+        }
       }
       const data = await apiPost<{
         response: string; conversation_id: string;
@@ -278,7 +295,24 @@ export function ChatView({ onOpenNav }: { onOpenNav: () => void }) {
     if (!pending) return;
     const snap = pending;
     setPending(null);
-    if (!confirmed) { appendMsg('assistant', 'Action cancelled.'); return; }
+    if (!confirmed) {
+      // Must call the backend to cancel the open tool_use in Firestore,
+      // otherwise every subsequent message gets a 400 from Anthropic.
+      appendMsg('assistant', 'Action cancelled.');
+      try {
+        await apiPost('/api/chat/message', {
+          message: 'cancel',
+          conversation_id: currentConvId,
+          user_confirmed: false,
+          confirmed_tool_name: snap.tool_name,
+          confirmed_tool_input: snap.tool_input,
+          confirmed_tool_use_id: snap.tool_use_id,
+          confirmed_integration_id: snap.integration_id,
+          conversation_snapshot: snap.conversation_snapshot,
+        });
+      } catch { /* best-effort */ }
+      return;
+    }
     const confirmationText = 'Confirmed';
     appendMsg('user', confirmationText);
     setIsTyping(true);
