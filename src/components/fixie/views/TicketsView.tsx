@@ -38,8 +38,27 @@ export function TicketsView() {
 
   const load = useCallback(async () => {
     try {
-      const data = await apiGet<Ticket[]>('/api/admin/tool-executions');
-      setTickets(data);
+      // Combine pending approvals + history so tickets waiting for approval
+      // are visible alongside already-executed ones
+      const [pending, history, executed] = await Promise.allSettled([
+        apiGet<Ticket[]>('/api/approvals/pending'),
+        apiGet<Ticket[]>('/api/approvals/history'),
+        apiGet<Ticket[]>('/api/admin/tool-executions'),
+      ]);
+
+      const seen = new Set<string>();
+      const merged: Ticket[] = [];
+      const add = (items: Ticket[]) => items.forEach(t => {
+        if (!seen.has(t.id)) { seen.add(t.id); merged.push(t); }
+      });
+
+      if (pending.status === 'fulfilled')  add(pending.value);
+      if (history.status === 'fulfilled')  add(history.value);
+      if (executed.status === 'fulfilled') add(executed.value);
+
+      // Most recent first
+      merged.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      setTickets(merged);
     } catch {
       toast('Failed to load tickets', 'error');
     } finally {
