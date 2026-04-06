@@ -34,7 +34,6 @@ export async function createSupportTicket(params: TicketCreationParams): Promise
         error: "Missing subject, description, or userId"
       };
     }
-    params.email = "john@example.com"
     // Create ticket in Freshworks
     console.log('Creating ticket in Freshworks...');
     const freshworksResult = await createFreshworksTicket(params);

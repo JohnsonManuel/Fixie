@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useToast } from '../../../hooks/useFixieToast';
 import { apiGet } from '../../../lib/fixie/api';
 import { formatDate } from '../../../lib/fixie/utils';
@@ -8,13 +8,35 @@ import { EmptyState } from '../ui/EmptyState';
 import { TableSkeleton } from '../ui/Skeleton';
 import type { Ticket } from '../../../types/fixie';
 
+// Derive a human-readable service name from ticket fields
+function getService(t: Ticket): string {
+  if (t.server_type) return t.server_type;
+  if (t.integration_name) return t.integration_name;
+  const name = t.tool_name.toLowerCase();
+  if (name.includes('freshdesk') || name.includes('freshworks')) return 'freshdesk';
+  if (name.includes('zendesk')) return 'zendesk';
+  if (name.includes('jira')) return 'jira';
+  if (name.includes('servicenow')) return 'servicenow';
+  if (name.includes('zoho')) return 'zoho';
+  return 'general';
+}
+
+const SERVICE_LABELS: Record<string, string> = {
+  freshdesk: 'Freshdesk',
+  zendesk: 'Zendesk',
+  jira: 'Jira',
+  servicenow: 'ServiceNow',
+  zoho: 'Zoho Desk',
+  general: 'General',
+};
+
 export function TicketsView() {
   const { toast } = useToast();
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
+  const [serviceIdx, setServiceIdx] = useState(0); // 0 = All
 
   const load = useCallback(async () => {
-    setLoading(true);
     try {
       const data = await apiGet<Ticket[]>('/api/admin/tool-executions');
       setTickets(data);
@@ -25,10 +47,45 @@ export function TicketsView() {
     }
   }, [toast]);
 
-  useEffect(() => { load(); }, [load]);
+  // Initial load + 60s polling while view is mounted
+  useEffect(() => {
+    setLoading(true);
+    load();
+    const interval = setInterval(load, 60_000);
+    return () => clearInterval(interval);
+  }, [load]);
+
+  // Refresh immediately when a ticket is created via chat
+  useEffect(() => {
+    const handler = () => load();
+    window.addEventListener('ticket-created', handler);
+    return () => window.removeEventListener('ticket-created', handler);
+  }, [load]);
+
+  // Unique services derived from current tickets
+  const services = useMemo(() => {
+    const seen = new Set<string>();
+    tickets.forEach(t => seen.add(getService(t)));
+    return ['all', ...Array.from(seen)];
+  }, [tickets]);
+
+  const selectedService = services[serviceIdx] ?? 'all';
+
+  const filtered = useMemo(() =>
+    selectedService === 'all' ? tickets : tickets.filter(t => getService(t) === selectedService),
+    [tickets, selectedService]
+  );
+
+  const prevService = () => setServiceIdx(i => (i - 1 + services.length) % services.length);
+  const nextService = () => setServiceIdx(i => (i + 1) % services.length);
 
   const statusVariant = (s: string) =>
     s === 'approved' ? 'green' : s === 'rejected' ? 'red' : 'yellow';
+
+  const statusLabel = (t: Ticket) => {
+    if (t.status === 'pending') return 'Waiting for approval';
+    return t.status;
+  };
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -39,13 +96,51 @@ export function TicketsView() {
           <h1 className="text-[17px] font-bold text-zinc-900">Tickets</h1>
           <p className="text-[13px] text-zinc-400 mt-0.5">Support tickets created through AI chat</p>
         </div>
-        <Button variant="outline" size="sm" onClick={load}>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <polyline points="23 4 23 10 17 10" /><polyline points="1 20 1 14 7 14" />
-            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
-          </svg>
-          Refresh
-        </Button>
+
+        <div className="flex items-center gap-3">
+          {/* Service filter */}
+          {services.length > 1 && (
+            <div className="flex items-center gap-1.5">
+              <button
+                onClick={prevService}
+                aria-label="Previous service"
+                className="w-7 h-7 rounded-lg flex items-center justify-center text-zinc-400 hover:text-zinc-700 transition-colors"
+                style={{ border: '1px solid #e4e4e7' }}
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+              </button>
+
+              <select
+                value={selectedService}
+                onChange={e => setServiceIdx(services.indexOf(e.target.value))}
+                className="text-[12.5px] font-medium text-zinc-700 px-2.5 py-1 rounded-lg outline-none cursor-pointer"
+                style={{ border: '1px solid #e4e4e7', background: '#fff' }}
+              >
+                <option value="all">All services</option>
+                {services.filter(s => s !== 'all').map(s => (
+                  <option key={s} value={s}>{SERVICE_LABELS[s] ?? s}</option>
+                ))}
+              </select>
+
+              <button
+                onClick={nextService}
+                aria-label="Next service"
+                className="w-7 h-7 rounded-lg flex items-center justify-center text-zinc-400 hover:text-zinc-700 transition-colors"
+                style={{ border: '1px solid #e4e4e7' }}
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+              </button>
+            </div>
+          )}
+
+          <Button variant="outline" size="sm" onClick={() => { setLoading(true); load(); }}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <polyline points="23 4 23 10 17 10" /><polyline points="1 20 1 14 7 14" />
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+            </svg>
+            Refresh
+          </Button>
+        </div>
       </div>
 
       {/* ── Body ─────────────────────────────────────────────────────────────── */}
@@ -53,7 +148,7 @@ export function TicketsView() {
         <div className="bg-white rounded-xl overflow-hidden" style={{ border: '1px solid #e4e4e7' }}>
           {loading ? (
             <TableSkeleton rows={5} cols={6} />
-          ) : tickets.length === 0 ? (
+          ) : filtered.length === 0 ? (
             <EmptyState
               icon="🎫"
               title="No tickets yet"
@@ -64,7 +159,7 @@ export function TicketsView() {
               <table className="w-full border-collapse">
                 <thead>
                   <tr style={{ borderBottom: '1px solid #f4f4f5' }}>
-                    {['Ticket', 'Tool', 'Status', 'Result', 'Submitted', 'Reviewed by'].map(h => (
+                    {['Ticket', 'Service', 'Status', 'Result', 'Submitted', 'Reviewed by'].map(h => (
                       <th
                         key={h}
                         className="text-left text-[10.5px] font-semibold text-zinc-400 uppercase tracking-wider px-5 py-3 whitespace-nowrap"
@@ -75,11 +170,12 @@ export function TicketsView() {
                   </tr>
                 </thead>
                 <tbody>
-                  {tickets.map(t => {
+                  {filtered.map(t => {
                     const result    = t.execution_result;
                     const ticketId  = result?.ticket_id as number | undefined;
                     const ticketUrl = result?.url as string | undefined;
                     const subject   = (t.tool_input?.subject ?? t.tool_input?.title ?? JSON.stringify(t.tool_input).slice(0, 60)) as string;
+                    const service   = getService(t);
                     return (
                       <tr
                         key={t.id}
@@ -111,14 +207,18 @@ export function TicketsView() {
                           </div>
                         </td>
 
-                        {/* Tool name */}
+                        {/* Service */}
                         <td className="px-5 py-3">
-                          <code className="text-[11px] bg-zinc-100 text-zinc-600 px-2 py-0.5 rounded">{t.tool_name}</code>
+                          <span className="text-[12px] font-medium text-zinc-600">
+                            {SERVICE_LABELS[service] ?? service}
+                          </span>
                         </td>
 
                         {/* Status */}
                         <td className="px-5 py-3">
-                          <Pill variant={statusVariant(t.status)}>{t.status}</Pill>
+                          <Pill variant={statusVariant(t.status)}>
+                            {statusLabel(t)}
+                          </Pill>
                         </td>
 
                         {/* Result status */}

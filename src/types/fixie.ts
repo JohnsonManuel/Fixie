@@ -94,6 +94,8 @@ export interface ApprovalRequest {
   created_at: string;
   expires_at: string | null;
   conversation_id: string;
+  integration_name?: string;
+  server_type?: string;
 }
 
 export interface Ticket extends ApprovalRequest {}

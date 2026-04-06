@@ -25,12 +25,18 @@ export function ChatView({ onOpenNav }: { onOpenNav: () => void }) {
   const [isRecording, setIsRecording]   = useState(false);
   const [isSpeaking, setIsSpeaking]     = useState(false);
   const [isTTSLoading, setIsTTSLoading] = useState(false);
+  const [voiceEnabled, setVoiceEnabled] = useState(() => localStorage.getItem('fixie-voice') === 'true');
   const messagesRef      = useRef<HTMLDivElement>(null);
   const textareaRef      = useRef<HTMLTextAreaElement>(null);
   const suppressNextLoad = useRef(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef   = useRef<any>(null);
   const audioRef         = useRef<HTMLAudioElement | null>(null);
+  const pendingRef       = useRef<typeof pending>(null);
+  const ttsTokenRef      = useRef<{ token: string; expiry: number } | null>(null);
+
+  // Keep pendingRef in sync so STT closure can read latest value
+  useEffect(() => { pendingRef.current = pending; }, [pending]);
 
   const scrollToBottom = useCallback(() => {
     if (messagesRef.current) messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
@@ -98,6 +104,26 @@ export function ChatView({ onOpenNav }: { onOpenNav: () => void }) {
     setTimeout(scrollToBottom, 50);
   };
 
+  // Cache TTS token — Firebase tokens last 1h; reuse until 60s before expiry
+  async function getTTSToken(): Promise<string> {
+    const now = Date.now();
+    if (ttsTokenRef.current && now < ttsTokenRef.current.expiry - 60_000) {
+      return ttsTokenRef.current.token;
+    }
+    const user = getAuth().currentUser;
+    if (!user) throw new Error('Not authenticated');
+    const token = await user.getIdToken();
+    ttsTokenRef.current = { token, expiry: now + 3_600_000 };
+    return token;
+  }
+
+  const toggleVoiceEnabled = () => {
+    const next = !voiceEnabled;
+    setVoiceEnabled(next);
+    localStorage.setItem('fixie-voice', String(next));
+    if (!next) stopSpeaking();
+  };
+
   function stopSpeaking() {
     if (audioRef.current) {
       audioRef.current.pause();
@@ -110,6 +136,7 @@ export function ChatView({ onOpenNav }: { onOpenNav: () => void }) {
   }
 
   async function speakResponse(text: string) {
+    if (!voiceEnabled) return;
     const plain = text
       .replace(/<[^>]*>/g, '')
       .replace(/[#*`_~[\]()>]/g, '')
@@ -121,9 +148,7 @@ export function ChatView({ onOpenNav }: { onOpenNav: () => void }) {
     setIsTTSLoading(true);
 
     try {
-      const user = getAuth().currentUser;
-      const token = user ? await user.getIdToken() : null;
-      if (!token) throw new Error('Not authenticated');
+      const token = await getTTSToken();
 
       const res = await fetch(`${TTS_BASE}/tts`, {
         method: 'POST',
@@ -258,6 +283,8 @@ export function ChatView({ onOpenNav }: { onOpenNav: () => void }) {
       const data = await apiPost<{ response: string }>('/api/chat/message', body);
       setIsTyping(false);
       appendMsg('assistant', data.response);
+      window.dispatchEvent(new Event('ticket-created'));
+      if (voiceEnabled) speakResponse(data.response);
     } catch (e: unknown) {
       setIsTyping(false);
       appendMsg('assistant', '⚠️ ' + (e instanceof Error ? e.message : 'Something went wrong.'));
@@ -328,7 +355,15 @@ export function ChatView({ onOpenNav }: { onOpenNav: () => void }) {
       if (silenceTimer) clearTimeout(silenceTimer);
       silenceTimer = setTimeout(() => {
         recognition.stop();
-        if (accumulated) sendMessageWithText(accumulated);
+        if (!accumulated) return;
+        // If there's a pending confirmation and user said a confirmation word, auto-confirm
+        const lower = accumulated.toLowerCase().trim().replace(/[.!?]$/, '');
+        const isConfirmWord = ['yes', 'confirm', 'ok', 'okay', 'sure', 'go ahead', 'yep', 'yup', 'yes confirm', 'confirmed'].includes(lower);
+        if (isConfirmWord && pendingRef.current) {
+          confirmTool(true);
+        } else {
+          sendMessageWithText(accumulated);
+        }
       }, 1500);
     };
     recognition.onerror = () => {
@@ -482,6 +517,7 @@ export function ChatView({ onOpenNav }: { onOpenNav: () => void }) {
                   className="flex-1 resize-none outline-none text-[13.5px] leading-relaxed bg-transparent disabled:opacity-50 text-zinc-900 placeholder-zinc-400"
                   style={{ maxHeight: 130, overflowY: 'hidden' }}
                 />
+                <VoiceToggleButton enabled={voiceEnabled} onClick={toggleVoiceEnabled} />
                 <MicButton isRecording={isRecording} onClick={toggleRecording} disabled={sending} />
                 <button
                   onClick={sendMessage}
@@ -631,6 +667,7 @@ export function ChatView({ onOpenNav }: { onOpenNav: () => void }) {
                   onFocus={e => { e.currentTarget.style.borderColor = '#7c3aed'; e.currentTarget.style.background = '#fff'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(124,58,237,0.1)'; }}
                   onBlur={e => { e.currentTarget.style.borderColor = '#e4e4e7'; e.currentTarget.style.background = '#fafafa'; e.currentTarget.style.boxShadow = ''; }}
                 />
+                <VoiceToggleButton enabled={voiceEnabled} onClick={toggleVoiceEnabled} />
                 <MicButton isRecording={isRecording} onClick={toggleRecording} disabled={sending} />
                 <button
                   onClick={sendMessage}
@@ -654,6 +691,35 @@ export function ChatView({ onOpenNav }: { onOpenNav: () => void }) {
         )}
       </div>
     </div>
+  );
+}
+
+// ── VoiceToggleButton ─────────────────────────────────────────────────────────
+function VoiceToggleButton({ enabled, onClick }: { enabled: boolean; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={enabled ? 'Voice responses on — click to mute' : 'Voice responses off — click to enable'}
+      title={enabled ? 'Voice on' : 'Voice off'}
+      className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-all"
+      style={enabled
+        ? { background: '#ede9fe', border: '1.5px solid #a78bfa' }
+        : { background: 'transparent', border: '1px solid #e4e4e7' }
+      }
+    >
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={enabled ? '#7c3aed' : '#71717a'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+        {enabled ? (
+          <>
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+          </>
+        ) : (
+          <line x1="23" y1="9" x2="17" y2="15" />
+        )}
+      </svg>
+    </button>
   );
 }
 

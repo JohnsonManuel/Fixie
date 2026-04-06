@@ -88,7 +88,8 @@ export const chat = onRequest(
 
           console.log('Generating AI response for message:', message);
           // Generate AI response using OpenAI with tool calling
-          const aiResponse = await generateAIResponse(message, chatMsgs, userId, conversationId);
+          const userEmail = decodedToken.email ?? `${userId}@unknown`;
+          const aiResponse = await generateAIResponse(message, chatMsgs, userId, conversationId, userEmail);
           console.log('AI response generated successfully');
           console.log('AI response length:', aiResponse.content.length);
           console.log('AI response preview:', aiResponse.content.substring(0, 200) + '...');
@@ -246,10 +247,11 @@ function shouldOfferTicketCreationSimple(userMessage: string, aiResponse: string
 
 // Enhanced AI response generation using OpenAI with tool calling
 async function generateAIResponse(
-  userMessage: string, 
-  conversationHistory: any[], 
-  userId: string, 
-  conversationId: string
+  userMessage: string,
+  conversationHistory: any[],
+  userId: string,
+  conversationId: string,
+  userEmail: string = ''
 ): Promise<{ content: string; toolCalls?: any[] }> {
   try {
     // Check if we have an OpenAI API key
@@ -313,7 +315,7 @@ async function generateAIResponse(
       console.log('AI requested tool calls:', choice.message.tool_calls.length);
       
       // Execute tool calls
-      const toolResults = await executeToolCalls(choice.message.tool_calls, userId, conversationId);
+      const toolResults = await executeToolCalls(choice.message.tool_calls, userId, conversationId, userEmail);
       
       // Add tool call results to conversation and get final response
       const messagesWithTools = [
@@ -370,7 +372,7 @@ async function generateAIResponse(
 }
 
 // Execute tool calls requested by AI
-async function executeToolCalls(toolCalls: any[], userId: string, conversationId: string): Promise<any[]> {
+async function executeToolCalls(toolCalls: any[], userId: string, conversationId: string, userEmail: string = ''): Promise<any[]> {
   const results = [];
 
   for (const toolCall of toolCalls) {
@@ -382,7 +384,8 @@ async function executeToolCalls(toolCalls: any[], userId: string, conversationId
         const ticketResult = await createSupportTicket({
           ...args,
           userId,
-          conversationId
+          conversationId,
+          email: userEmail || args.email || `${userId}@fixie.app`,
         });
         
         results.push({
