@@ -235,11 +235,20 @@ export function ChatView({ onOpenNav }: { onOpenNav: () => void }) {
     setIsTyping(true);
     try {
       let body: Record<string, unknown> = { message: msg, conversation_id: currentConvId };
-      if (pending && msg.toLowerCase() === 'yes') {
+      if (pending) {
+        const lower = msg.toLowerCase().trim();
+        const isConfirm = ['yes', 'confirm', 'ok', 'okay', 'sure', 'go ahead', 'yep', 'confirmed'].includes(lower);
+        // Always pass the pending tool context so the backend can close out the
+        // tool_use block cleanly (confirmed or cancelled) before processing the
+        // new message — prevents the Anthropic 400 "unmatched tool_use" error.
         body = {
-          message: msg, conversation_id: currentConvId, user_confirmed: true,
-          confirmed_tool_name: pending.tool_name, confirmed_tool_input: pending.tool_input,
-          confirmed_tool_use_id: pending.tool_use_id, confirmed_integration_id: pending.integration_id,
+          message: msg,
+          conversation_id: currentConvId,
+          user_confirmed: isConfirm,
+          confirmed_tool_name: pending.tool_name,
+          confirmed_tool_input: pending.tool_input,
+          confirmed_tool_use_id: pending.tool_use_id,
+          confirmed_integration_id: pending.integration_id,
           conversation_snapshot: pending.conversation_snapshot,
         };
         setPending(null);
