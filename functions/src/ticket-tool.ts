@@ -10,7 +10,8 @@ export interface TicketCreationParams {
   category: string;
   userId: string;
   conversationId: string;
-  email:string;
+  email: string;
+  idToken?: string;
 }
 
 export interface TicketCreationResult {
