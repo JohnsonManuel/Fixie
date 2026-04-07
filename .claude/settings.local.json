@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(grep -r \"function_call\\\\|tool_use\\\\|tool_calls\" /e/FIXIE/JJAI/src --include=*.ts --include=*.tsx -n)"
+      "Bash(grep -r \"function_call\\\\|tool_use\\\\|tool_calls\" /e/FIXIE/JJAI/src --include=*.ts --include=*.tsx -n)",
+      "Bash(git pull:*)",
+      "Bash(git stash:*)"
     ]
   }
 }

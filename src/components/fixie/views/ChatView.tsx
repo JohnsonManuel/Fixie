@@ -2,54 +2,37 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import fixieLogo from '../../../images/image.png';
 import { useApp } from '../../../contexts/FixieAppContext';
 import { useToast } from '../../../hooks/useFixieToast';
-import { apiGet, apiPost, apiDelete } from '../../../lib/fixie/api';
-import { TTS_BASE } from '../../../lib/fixie/config';
-import { getAuth } from 'firebase/auth';
+import { apiGet, apiPost, apiStream } from '../../../lib/fixie/api';
 import { formatMarkdown } from '../../../lib/fixie/utils';
-import { ConvListSkeleton } from '../ui/Skeleton';
-import type { Conversation, Message, PendingConfirmation } from '../../../types/fixie';
+import { useVoiceAgent } from '../../../hooks/useVoiceAgent';
+import type { VoiceState } from '../../../hooks/useVoiceAgent';
+import type { Message, PendingConfirmation } from '../../../types/fixie';
 
-interface DisplayMessage extends Message { ts?: number; }
+interface DisplayMessage extends Message { ts?: number; streaming?: boolean; }
 
 export function ChatView({ onOpenNav }: { onOpenNav: () => void }) {
   const { appUser, appOrg, currentConvId, setCurrentConvId } = useApp();
   const { toast } = useToast();
-  const [convs, setConvs] = useState<Conversation[]>([]);
-  const [convsLoading, setConvsLoading] = useState(true);
   const [messages, setMessages] = useState<DisplayMessage[]>([]);
   const [inputVal, setInputVal] = useState('');
   const [sending, setSending] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const [pending, setPending] = useState<PendingConfirmation | null>(null);
   const [convTitle, setConvTitle] = useState('New Chat');
-  const [isRecording, setIsRecording]   = useState(false);
-  const [isSpeaking, setIsSpeaking]     = useState(false);
-  const [isTTSLoading, setIsTTSLoading] = useState(false);
-  const [voiceEnabled, setVoiceEnabled] = useState(() => localStorage.getItem('fixie-voice') === 'true');
+  const [voiceActive, setVoiceActive] = useState(false);
   const messagesRef      = useRef<HTMLDivElement>(null);
   const textareaRef      = useRef<HTMLTextAreaElement>(null);
   const suppressNextLoad = useRef(false);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const recognitionRef   = useRef<any>(null);
-  const audioRef         = useRef<HTMLAudioElement | null>(null);
-  const pendingRef       = useRef<typeof pending>(null);
-  const ttsTokenRef      = useRef<{ token: string; expiry: number } | null>(null);
 
-  // Keep pendingRef in sync so STT closure can read latest value
-  useEffect(() => { pendingRef.current = pending; }, [pending]);
+  const sendVoiceRef = useRef<(text: string) => void>(() => {});
+  const { voiceState, activate: activateVoice, deactivate: deactivateVoice, speak, setListening } = useVoiceAgent({
+    onTranscript: (text) => sendVoiceRef.current(text),
+    onInterrupt:  () => { /* TTS already stopped by hook; recording resumes automatically */ },
+    onError:      (msg) => toast(msg, 'error'),
+  });
 
   const scrollToBottom = useCallback(() => {
     if (messagesRef.current) messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
-  }, []);
-
-  const loadConversations = useCallback(async () => {
-    setConvsLoading(true);
-    try {
-      const data = await apiGet<Conversation[]>('/api/conversations');
-      setConvs(data);
-    } catch { /* silent */ } finally {
-      setConvsLoading(false);
-    }
   }, []);
 
   const loadConversationById = useCallback(async (id: string) => {
@@ -63,14 +46,6 @@ export function ChatView({ onOpenNav }: { onOpenNav: () => void }) {
       toast('Failed to load conversation', 'error');
     }
   }, [scrollToBottom, toast]);
-
-  const loadConversation = useCallback(async (id: string) => {
-    suppressNextLoad.current = true;
-    setCurrentConvId(id);
-    await loadConversationById(id);
-  }, [setCurrentConvId, loadConversationById]);
-
-  useEffect(() => { loadConversations(); }, [loadConversations]);
 
   useEffect(() => {
     if (suppressNextLoad.current) { suppressNextLoad.current = false; return; }
@@ -104,215 +79,82 @@ export function ChatView({ onOpenNav }: { onOpenNav: () => void }) {
     setTimeout(scrollToBottom, 50);
   };
 
-  // Cache TTS token — Firebase tokens last 1h; reuse until 60s before expiry
-  async function getTTSToken(): Promise<string> {
-    const now = Date.now();
-    if (ttsTokenRef.current && now < ttsTokenRef.current.expiry - 60_000) {
-      return ttsTokenRef.current.token;
-    }
-    const user = getAuth().currentUser;
-    if (!user) throw new Error('Not authenticated');
-    const token = await user.getIdToken();
-    ttsTokenRef.current = { token, expiry: now + 3_600_000 };
-    return token;
-  }
-
-  const toggleVoiceEnabled = () => {
-    const next = !voiceEnabled;
-    setVoiceEnabled(next);
-    localStorage.setItem('fixie-voice', String(next));
-    if (!next) stopSpeaking();
-  };
-
-  function stopSpeaking() {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.src = '';
-      audioRef.current = null;
-    }
-    window.speechSynthesis.cancel();
-    setIsSpeaking(false);
-    setIsTTSLoading(false);
-  }
-
-  async function speakResponse(text: string) {
-    if (!voiceEnabled) return;
-    const plain = text
-      .replace(/<[^>]*>/g, '')
-      .replace(/[#*`_~[\]()>]/g, '')
-      .replace(/\n+/g, ' ')
-      .trim();
-    if (!plain) return;
-
-    stopSpeaking();
-    setIsTTSLoading(true);
-
-    try {
-      const token = await getTTSToken();
-
-      const res = await fetch(`${TTS_BASE}/tts`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ text: plain, voice: 'nova' }),
-      });
-
-      if (!res.ok) throw new Error('TTS request failed');
-
-      // Stream audio via MediaSource so playback starts on the first chunk
-      // (~200-400ms) rather than waiting for the full file.
-      const mimeType = 'audio/mpeg';
-      if (res.body && (window as any).MediaSource && MediaSource.isTypeSupported(mimeType)) {
-        const mediaSource = new MediaSource();
-        const audioUrl = URL.createObjectURL(mediaSource);
-        const audio = new Audio(audioUrl);
-        audioRef.current = audio;
-
-        audio.onended = () => { setIsSpeaking(false); URL.revokeObjectURL(audioUrl); audioRef.current = null; };
-        audio.onerror = () => { setIsSpeaking(false); setIsTTSLoading(false); URL.revokeObjectURL(audioUrl); audioRef.current = null; };
-
-        const reader = res.body.getReader();
-        let started = false;
-
-        mediaSource.addEventListener('sourceopen', async () => {
-          let sb: SourceBuffer;
-          try { sb = mediaSource.addSourceBuffer(mimeType); } catch { return; }
-
-          const waitUpdate = () => new Promise<void>(r => sb.addEventListener('updateend', () => r(), { once: true }));
-
-          try {
-            while (true) {
-              const { done, value } = await reader.read();
-              if (done) {
-                if (mediaSource.readyState === 'open') {
-                  if (sb.updating) await waitUpdate();
-                  mediaSource.endOfStream();
-                }
-                break;
-              }
-              if (sb.updating) await waitUpdate();
-              sb.appendBuffer(value);
-              if (!started) {
-                started = true;
-                setIsTTSLoading(false);
-                setIsSpeaking(true);
-                audio.play().catch(() => {});
-              }
-            }
-          } catch { /* stream aborted (e.g. user stopped) */ }
-        }, { once: true });
-
-      } else {
-        // Fallback for browsers that don't support MP3 in MediaSource
-        const blob = await res.blob();
-        const url = URL.createObjectURL(blob);
-        const audio = new Audio(url);
-        audioRef.current = audio;
-        audio.onended = () => { setIsSpeaking(false); URL.revokeObjectURL(url); audioRef.current = null; };
-        audio.onerror = () => { setIsSpeaking(false); URL.revokeObjectURL(url); audioRef.current = null; };
-        setIsTTSLoading(false);
-        setIsSpeaking(true);
-        await audio.play();
-      }
-    } catch {
-      setIsTTSLoading(false);
-      setIsSpeaking(true);
-      const utterance = new SpeechSynthesisUtterance(plain);
-      utterance.onend   = () => setIsSpeaking(false);
-      utterance.onerror = () => setIsSpeaking(false);
-      window.speechSynthesis.speak(utterance);
-    }
-  }
-
-  async function sendMessageWithText(msg: string) {
+  async function sendMessage() {
+    const msg = inputVal.trim();
     if (!msg || sending) return;
     setSending(true);
     setInputVal('');
     if (textareaRef.current) { textareaRef.current.style.height = 'auto'; textareaRef.current.style.overflowY = 'hidden'; }
-    appendMsg('user', msg);
-    setIsTyping(true);
-    try {
-      let body: Record<string, unknown> = { message: msg, conversation_id: currentConvId };
-      if (pending) {
-        const lower = msg.toLowerCase().trim();
-        const isConfirm = ['yes', 'confirm', 'ok', 'okay', 'sure', 'go ahead', 'yep', 'confirmed'].includes(lower);
-
-        if (isConfirm) {
-          // User confirmed — execute the tool
-          body = {
-            message: msg, conversation_id: currentConvId, user_confirmed: true,
-            confirmed_tool_name: pending.tool_name, confirmed_tool_input: pending.tool_input,
-            confirmed_tool_use_id: pending.tool_use_id, confirmed_integration_id: pending.integration_id,
-            conversation_snapshot: pending.conversation_snapshot,
-          };
-          setPending(null);
-        } else {
-          // User sent a new message (e.g. "change priority to high") while a
-          // tool_use is open in Firestore.  We must cancel it first so Claude
-          // doesn't see an unmatched tool_use block → 400.
-          const snap = pending;
-          setPending(null);
-          try {
-            await apiPost('/api/chat/message', {
-              message: 'cancel',
-              conversation_id: currentConvId,
-              user_confirmed: false,
-              confirmed_tool_name: snap.tool_name,
-              confirmed_tool_input: snap.tool_input,
-              confirmed_tool_use_id: snap.tool_use_id,
-              confirmed_integration_id: snap.integration_id,
-              conversation_snapshot: snap.conversation_snapshot,
-            });
-          } catch { /* best-effort — proceed even if cancel fails */ }
-          // Now send the actual new message against a clean conversation
-          body = { message: msg, conversation_id: currentConvId };
-        }
-      }
-      const data = await apiPost<{
-        response: string; conversation_id: string;
-        pending_confirmation?: PendingConfirmation; pending_approval?: boolean;
-      }>('/api/chat/message', body);
-      setIsTyping(false);
-      if (!currentConvId) { suppressNextLoad.current = true; setCurrentConvId(data.conversation_id); await loadConversations(); }
-      if (data.pending_confirmation) { setPending(data.pending_confirmation); appendMsg('assistant', data.response); }
-      else { appendMsg('assistant', data.response); setPending(null); }
-      speakResponse(data.response);
-    } catch (e: unknown) {
-      setIsTyping(false);
-      appendMsg('assistant', '⚠️ ' + (e instanceof Error ? e.message : 'Something went wrong.'));
-    }
+    await _doSend(msg);
     setSending(false);
     textareaRef.current?.focus();
   }
 
-  async function sendMessage() {
-    await sendMessageWithText(inputVal.trim());
+  async function sendVoiceMessage(text: string) {
+    if (sending) { setListening(); return; }
+    setSending(true);
+    appendMsg('user', text);
+    await _doSend(text, (response) => speak(response), true);
+    setSending(false);
+  }
+  // Keep ref in sync so the hook's onTranscript closure always calls the latest version
+  sendVoiceRef.current = sendVoiceMessage;
+
+  async function _doSend(msg: string, onResponse?: (text: string) => void, skipUserBubble = false) {
+    if (!skipUserBubble) appendMsg('user', msg);
+
+    // Build request body (may be a confirmed-tool stage-2 payload)
+    let body: Record<string, unknown> = { message: msg, conversation_id: currentConvId };
+    if (pending && msg.toLowerCase() === 'yes') {
+      body = {
+        message: msg, conversation_id: currentConvId, user_confirmed: true,
+        confirmed_tool_name: pending.tool_name, confirmed_tool_input: pending.tool_input,
+        confirmed_tool_use_id: pending.tool_use_id, confirmed_integration_id: pending.integration_id,
+        conversation_snapshot: pending.conversation_snapshot,
+      };
+      setPending(null);
+    }
+
+    // Insert an empty streaming assistant bubble
+    const streamTs = Date.now();
+    setMessages(prev => [...prev, { role: 'assistant', content: '', ts: streamTs, streaming: true }]);
+    setTimeout(scrollToBottom, 50);
+
+    let fullText = '';
+    try {
+      const result = await apiStream('/api/chat/stream', body, (token) => {
+        fullText += token;
+        setMessages(prev => prev.map(m =>
+          m.ts === streamTs ? { ...m, content: m.content + token } : m,
+        ));
+        setTimeout(scrollToBottom, 0);
+      });
+
+      // Mark streaming complete
+      setMessages(prev => prev.map(m =>
+        m.ts === streamTs ? { ...m, streaming: false } : m,
+      ));
+
+      if (!currentConvId) { suppressNextLoad.current = true; setCurrentConvId(result.conversation_id); }
+      if (result.pending_confirmation) {
+        setPending(result.pending_confirmation as unknown as PendingConfirmation);
+      } else {
+        setPending(null);
+      }
+      onResponse?.(fullText);
+    } catch (e: unknown) {
+      // Remove the streaming placeholder and show an error bubble instead
+      setMessages(prev => prev.filter(m => m.ts !== streamTs));
+      appendMsg('assistant', '⚠️ ' + (e instanceof Error ? e.message : 'Something went wrong.'));
+      setListening();
+    }
   }
 
   async function confirmTool(confirmed: boolean) {
     if (!pending) return;
     const snap = pending;
     setPending(null);
-    if (!confirmed) {
-      // Must call the backend to cancel the open tool_use in Firestore,
-      // otherwise every subsequent message gets a 400 from Anthropic.
-      appendMsg('assistant', 'Action cancelled.');
-      try {
-        await apiPost('/api/chat/message', {
-          message: 'cancel',
-          conversation_id: currentConvId,
-          user_confirmed: false,
-          confirmed_tool_name: snap.tool_name,
-          confirmed_tool_input: snap.tool_input,
-          confirmed_tool_use_id: snap.tool_use_id,
-          confirmed_integration_id: snap.integration_id,
-          conversation_snapshot: snap.conversation_snapshot,
-        });
-      } catch { /* best-effort */ }
-      return;
-    }
+    if (!confirmed) { appendMsg('assistant', 'Action cancelled.'); return; }
     const confirmationText = 'Confirmed';
     appendMsg('user', confirmationText);
     setIsTyping(true);
@@ -326,23 +168,10 @@ export function ChatView({ onOpenNav }: { onOpenNav: () => void }) {
       const data = await apiPost<{ response: string }>('/api/chat/message', body);
       setIsTyping(false);
       appendMsg('assistant', data.response);
-      window.dispatchEvent(new Event('ticket-created'));
-      if (voiceEnabled) speakResponse(data.response);
     } catch (e: unknown) {
       setIsTyping(false);
       appendMsg('assistant', '⚠️ ' + (e instanceof Error ? e.message : 'Something went wrong.'));
     }
-  }
-
-  async function deleteConv(e: React.MouseEvent, id: string) {
-    e.stopPropagation();
-    if (!window.confirm('Delete this conversation?')) return;
-    try {
-      await apiDelete(`/api/conversations/${id}`);
-      if (currentConvId === id) startNewChat();
-      await loadConversations();
-      toast('Conversation deleted');
-    } catch { toast('Failed to delete conversation', 'error'); }
   }
 
   const integrations = appOrg?.integrations ?? [];
@@ -371,145 +200,13 @@ export function ChatView({ onOpenNav }: { onOpenNav: () => void }) {
     }, 0);
   };
 
-  const startRecording = () => {
-    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SR) {
-      toast('Speech recognition is not supported in this browser. Try Chrome or Edge.', 'error');
-      return;
-    }
-    stopSpeaking();
-    const recognition = new SR();
-    recognition.continuous = true;      // keep listening through natural pauses
-    recognition.interimResults = false;
-    recognition.lang = 'en-US';
-
-    let accumulated = '';
-    let silenceTimer: ReturnType<typeof setTimeout> | null = null;
-
-    recognition.onresult = (e: any) => {
-      // Collect all new final results
-      for (let i = e.resultIndex; i < e.results.length; i++) {
-        if (e.results[i].isFinal) {
-          const part = e.results[i][0].transcript.trim();
-          if (part) accumulated += (accumulated ? ' ' : '') + part;
-        }
-      }
-      // Reset the silence timer — send 1.5s after the last word
-      if (silenceTimer) clearTimeout(silenceTimer);
-      silenceTimer = setTimeout(() => {
-        recognition.stop();
-        if (!accumulated) return;
-        // If there's a pending confirmation and user said a confirmation word, auto-confirm
-        const lower = accumulated.toLowerCase().trim().replace(/[.!?]$/, '');
-        const isConfirmWord = ['yes', 'confirm', 'ok', 'okay', 'sure', 'go ahead', 'yep', 'yup', 'yes confirm', 'confirmed'].includes(lower);
-        if (isConfirmWord && pendingRef.current) {
-          confirmTool(true);
-        } else {
-          sendMessageWithText(accumulated);
-        }
-      }, 1500);
-    };
-    recognition.onerror = () => {
-      if (silenceTimer) clearTimeout(silenceTimer);
-      toast('Voice recognition failed. Please try again.', 'error');
-      setIsRecording(false);
-    };
-    recognition.onend = () => {
-      if (silenceTimer) clearTimeout(silenceTimer);
-      setIsRecording(false);
-    };
-
-    recognition.start();
-    recognitionRef.current = recognition;
-    setIsRecording(true);
+  const toggleVoiceMode = () => {
+    if (voiceActive) { deactivateVoice(); setVoiceActive(false); }
+    else             { activateVoice();   setVoiceActive(true);  }
   };
-
-  const stopRecording = () => {
-    recognitionRef.current?.stop();
-    setIsRecording(false);
-  };
-
-  const toggleRecording = () => {
-    if (isRecording) stopRecording();
-    else startRecording();
-  };
-
 
   return (
     <div className="flex flex-1 overflow-hidden relative">
-
-      {/* ── Conversation list — desktop ────────────────────────────────────── */}
-      <div
-        className="hidden md:flex flex-col bg-white md:w-56 md:shrink-0"
-        style={{ borderRight: '1px solid #e4e4e7' }}
-        aria-label="Conversation list"
-      >
-        {/* New Chat */}
-        <div className="p-3 shrink-0" style={{ borderBottom: '1px solid #f4f4f5' }}>
-          <button
-            onClick={startNewChat}
-            aria-label="Start a new chat"
-            className="w-full py-1.5 px-3 text-[12.5px] font-semibold rounded-md flex items-center justify-center gap-1.5 btn-brand focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-600"
-          >
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
-              <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
-            </svg>
-            New Chat
-          </button>
-        </div>
-
-        {/* Conversation items */}
-        <div className="flex-1 overflow-y-auto py-1.5 px-2">
-          {convsLoading ? (
-            <ConvListSkeleton />
-          ) : convs.length === 0 ? (
-            <p className="text-[11.5px] text-zinc-400 px-2 py-4 leading-relaxed">No chats yet — tap New Chat to start.</p>
-          ) : (
-            <div className="fade-in flex flex-col gap-px">
-              {convs.map(c => {
-                const active = c.id === currentConvId;
-                const date = new Date(c.last_message_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-                return (
-                  <div key={c.id} className="group relative">
-                    <button
-                      onClick={() => loadConversation(c.id)}
-                      aria-label={`Open conversation: ${c.title}`}
-                      aria-current={active ? 'true' : undefined}
-                      className="w-full flex items-start gap-2 px-2.5 py-2 rounded-md cursor-pointer transition-colors text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-600"
-                      style={active ? { background: '#f5f3ff' } : {}}
-                      onMouseEnter={e => { if (!active) (e.currentTarget as HTMLElement).style.background = '#fafafa'; }}
-                      onMouseLeave={e => { if (!active) (e.currentTarget as HTMLElement).style.background = ''; }}
-                    >
-                      <div className="flex-1 min-w-0 pr-5">
-                        <div className="text-[12.5px] truncate" style={{ color: active ? '#5b21b6' : '#3f3f46', fontWeight: active ? 600 : 500 }}>
-                          {c.title}
-                        </div>
-                        <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                          <span className="text-[10.5px] text-zinc-400">{date}</span>
-                          {c.status === 'pending_approval' && (
-                            <span className="text-[9.5px] font-semibold bg-amber-50 text-amber-700 px-1.5 py-px rounded-full ring-1 ring-amber-200/60">
-                              Pending
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </button>
-                    <button
-                      onClick={e => deleteConv(e, c.id)}
-                      aria-label={`Delete conversation: ${c.title}`}
-                      className="absolute right-1.5 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 focus:opacity-100 w-5 h-5 flex items-center justify-center text-zinc-400 hover:text-red-500 hover:bg-red-50 rounded transition-all"
-                    >
-                      <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
-                        <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-                      </svg>
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      </div>
 
       {/* ── Chat area ─────────────────────────────────────────────────────────── */}
       <div className="flex-1 flex flex-col overflow-hidden min-w-0 bg-zinc-50">
@@ -560,8 +257,7 @@ export function ChatView({ onOpenNav }: { onOpenNav: () => void }) {
                   className="flex-1 resize-none outline-none text-[13.5px] leading-relaxed bg-transparent disabled:opacity-50 text-zinc-900 placeholder-zinc-400"
                   style={{ maxHeight: 130, overflowY: 'hidden' }}
                 />
-                <VoiceToggleButton enabled={voiceEnabled} onClick={toggleVoiceEnabled} />
-                <MicButton isRecording={isRecording} onClick={toggleRecording} disabled={sending} />
+                <MicButton voiceState={voiceState} active={voiceActive} onClick={toggleVoiceMode} disabled={sending} />
                 <button
                   onClick={sendMessage}
                   disabled={sending || !inputVal.trim()}
@@ -662,39 +358,19 @@ export function ChatView({ onOpenNav }: { onOpenNav: () => void }) {
               {pending && <ConfirmCard pending={pending} onConfirm={confirmTool} />}
             </div>
 
+            {/* Voice status bar */}
+            {voiceActive && (
+              <VoiceStatusBar
+                voiceState={voiceState}
+                onStop={() => { deactivateVoice(); setVoiceActive(false); }}
+              />
+            )}
+
             {/* Input bar */}
             <div
               className="px-4 md:px-6 pt-3 bg-white shrink-0"
-              style={{ borderTop: '1px solid #e4e4e7', paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}
+              style={{ borderTop: voiceActive ? 'none' : '1px solid #e4e4e7', paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}
             >
-              {(isTTSLoading || isSpeaking) && (
-                <div className="flex justify-center max-w-3xl mx-auto mb-2">
-                  <button
-                    type="button"
-                    onClick={stopSpeaking}
-                    aria-label={isSpeaking ? 'Stop speaking' : 'Cancel'}
-                    className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-[12px] font-medium transition-all${isSpeaking ? ' voice-speaking' : ''}`}
-                    style={{ background: '#ede9fe', border: '1.5px solid #a78bfa', color: '#6d28d9' }}
-                  >
-                    {isSpeaking ? (
-                      <>
-                        <span className="flex items-end justify-center gap-[2.5px]" style={{ height: 13, width: 17 }}>
-                          <span className="voice-bar w-[2.5px] bg-violet-500" style={{ height: '100%' }} />
-                          <span className="voice-bar w-[2.5px] bg-violet-600" style={{ height: '100%' }} />
-                          <span className="voice-bar w-[2.5px] bg-violet-500" style={{ height: '100%' }} />
-                          <span className="voice-bar w-[2.5px] bg-violet-400" style={{ height: '100%' }} />
-                        </span>
-                        Speaking — tap to stop
-                      </>
-                    ) : (
-                      <>
-                        <span className="inline-block w-3 h-3 rounded-full border-2 border-violet-400 border-t-violet-700 animate-spin" />
-                        Preparing audio…
-                      </>
-                    )}
-                  </button>
-                </div>
-              )}
               <div className="flex gap-2 items-end max-w-3xl mx-auto">
                 <textarea
                   ref={textareaRef}
@@ -710,8 +386,7 @@ export function ChatView({ onOpenNav }: { onOpenNav: () => void }) {
                   onFocus={e => { e.currentTarget.style.borderColor = '#7c3aed'; e.currentTarget.style.background = '#fff'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(124,58,237,0.1)'; }}
                   onBlur={e => { e.currentTarget.style.borderColor = '#e4e4e7'; e.currentTarget.style.background = '#fafafa'; e.currentTarget.style.boxShadow = ''; }}
                 />
-                <VoiceToggleButton enabled={voiceEnabled} onClick={toggleVoiceEnabled} />
-                <MicButton isRecording={isRecording} onClick={toggleRecording} disabled={sending} />
+                <MicButton voiceState={voiceState} active={voiceActive} onClick={toggleVoiceMode} disabled={sending} />
                 <button
                   onClick={sendMessage}
                   disabled={sending || !inputVal.trim()}
@@ -737,61 +412,42 @@ export function ChatView({ onOpenNav }: { onOpenNav: () => void }) {
   );
 }
 
-// ── VoiceToggleButton ─────────────────────────────────────────────────────────
-function VoiceToggleButton({ enabled, onClick }: { enabled: boolean; onClick: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-label={enabled ? 'Voice responses on — click to mute' : 'Voice responses off — click to enable'}
-      title={enabled ? 'Voice on' : 'Voice off'}
-      className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-all"
-      style={enabled
-        ? { background: '#ede9fe', border: '1.5px solid #a78bfa' }
-        : { background: 'transparent', border: '1px solid #e4e4e7' }
-      }
-    >
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={enabled ? '#7c3aed' : '#71717a'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
-        {enabled ? (
-          <>
-            <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
-            <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
-          </>
-        ) : (
-          <line x1="23" y1="9" x2="17" y2="15" />
-        )}
-      </svg>
-    </button>
-  );
-}
-
 // ── MicButton ─────────────────────────────────────────────────────────────────
-function MicButton({ isRecording, onClick, disabled }: {
-  isRecording: boolean; onClick: () => void; disabled: boolean;
+function MicButton({ voiceState, active, onClick, disabled }: {
+  voiceState: VoiceState; active: boolean; onClick: () => void; disabled: boolean;
 }) {
+  const isProcessing = voiceState === 'processing' || voiceState === 'speaking';
+
+  const bgStyle = active
+    ? voiceState === 'recording'
+      ? { background: '#fef2f2', border: '1px solid #fca5a5' }
+      : { background: '#f5f3ff', border: '1px solid #c4b5fd' }
+    : { background: 'transparent', border: '1px solid #e4e4e7' };
+
   return (
     <button
       type="button"
       onClick={onClick}
-      disabled={disabled}
-      aria-label={isRecording ? 'Stop listening' : 'Speak a message'}
-      title={isRecording ? 'Listening… click to cancel' : 'Click to speak'}
-      className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-all disabled:opacity-30 disabled:cursor-not-allowed${isRecording ? ' mic-recording' : ''}`}
-      style={isRecording
-        ? { background: '#fef2f2', border: '1.5px solid #fca5a5' }
-        : { background: 'transparent', border: '1px solid #e4e4e7' }
-      }
+      disabled={disabled && !active}
+      aria-label={active ? 'Stop voice mode' : 'Start voice mode'}
+      title={active ? `Voice: ${voiceState}` : 'Voice mode'}
+      className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+      style={bgStyle}
     >
-      {isRecording ? (
-        <span className="flex items-end justify-center gap-[3px]" style={{ height: 16, width: 20 }}>
-          <span className="voice-bar w-[3px] bg-red-400" style={{ height: '100%' }} />
-          <span className="voice-bar w-[3px] bg-red-500" style={{ height: '100%' }} />
-          <span className="voice-bar w-[3px] bg-red-400" style={{ height: '100%' }} />
-          <span className="voice-bar w-[3px] bg-red-300" style={{ height: '100%' }} />
+      {voiceState === 'recording' ? (
+        <span className="relative flex items-center justify-center w-3 h-3">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
+          <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
         </span>
+      ) : isProcessing ? (
+        <svg className="animate-spin" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
+          <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+        </svg>
       ) : (
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#71717a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+          stroke={active ? '#7c3aed' : '#71717a'}
+          strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"
+        >
           <path d="M12 2a3 3 0 0 1 3 3v7a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z" />
           <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
           <line x1="12" y1="19" x2="12" y2="22" />
@@ -801,12 +457,49 @@ function MicButton({ isRecording, onClick, disabled }: {
   );
 }
 
+// ── VoiceStatusBar ─────────────────────────────────────────────────────────────
+function VoiceStatusBar({ voiceState, onStop }: { voiceState: VoiceState; onStop: () => void }) {
+  const labels: Record<VoiceState, string> = {
+    idle:       '',
+    listening:  'Listening…',
+    recording:  'Recording…',
+    processing: 'Thinking…',
+    speaking:   'Speaking — tap mic to interrupt',
+  };
+  const colors: Record<VoiceState, string> = {
+    idle: '', listening: '#7c3aed', recording: '#dc2626', processing: '#d97706', speaking: '#059669',
+  };
+
+  return (
+    <div
+      className="flex items-center justify-between px-4 py-2 text-[12px] font-medium"
+      style={{ background: '#f5f3ff', borderTop: '1px solid #ede9fe', color: colors[voiceState] }}
+    >
+      <div className="flex items-center gap-2">
+        <span className="relative flex h-2 w-2">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"
+            style={{ background: colors[voiceState] }} />
+          <span className="relative inline-flex rounded-full h-2 w-2"
+            style={{ background: colors[voiceState] }} />
+        </span>
+        {labels[voiceState]}
+      </div>
+      <button
+        onClick={onStop}
+        className="text-[11px] text-zinc-500 hover:text-red-500 transition-colors"
+      >
+        Exit voice mode
+      </button>
+    </div>
+  );
+}
+
 // ── MessageBubble ──────────────────────────────────────────────────────────────
 function MessageBubble({ message, userName }: {
   message: DisplayMessage; userName: string;
 }) {
   const isUser = message.role === 'user';
-  const timeStr = message.ts
+  const timeStr = message.ts && !message.streaming
     ? new Date(message.ts).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
     : null;
 
@@ -836,8 +529,20 @@ function MessageBubble({ message, userName }: {
               ? { background: '#7c3aed' }
               : { background: '#ffffff', border: '1px solid #e4e4e7', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }
           }
-          dangerouslySetInnerHTML={{ __html: formatMarkdown(message.content) }}
-        />
+        >
+          {message.streaming ? (
+            /* Plain text during streaming to avoid broken partial markdown */
+            <>
+              <span style={{ whiteSpace: 'pre-wrap' }}>{message.content || '\u00A0'}</span>
+              <span
+                aria-hidden="true"
+                className="inline-block w-0.5 h-[1em] bg-zinc-500 ml-0.5 align-text-bottom animate-pulse"
+              />
+            </>
+          ) : (
+            <span dangerouslySetInnerHTML={{ __html: formatMarkdown(message.content) }} />
+          )}
+        </div>
         {timeStr && <span className="text-[10.5px] text-zinc-400 px-1 select-none">{timeStr}</span>}
       </div>
     </div>

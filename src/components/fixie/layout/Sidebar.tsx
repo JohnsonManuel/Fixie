@@ -41,6 +41,36 @@ const NAV_ICONS: Record<string, React.ReactNode> = {
   ),
 };
 
+// ── Date grouping helpers ──────────────────────────────────────────────────────
+function isSameDay(a: Date, b: Date) {
+  return a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate();
+}
+
+function groupConvsByDate(convs: Conversation[]): { label: string; items: Conversation[] }[] {
+  const now = new Date();
+  const yesterday = new Date(now); yesterday.setDate(now.getDate() - 1);
+  const weekAgo   = new Date(now); weekAgo.setDate(now.getDate() - 7);
+
+  const groups = [
+    { label: 'Today',            items: [] as Conversation[] },
+    { label: 'Yesterday',        items: [] as Conversation[] },
+    { label: 'Previous 7 days',  items: [] as Conversation[] },
+    { label: 'Earlier',          items: [] as Conversation[] },
+  ];
+
+  for (const c of convs) {
+    const d = new Date(c.last_message_at);
+    if      (isSameDay(d, now))       groups[0].items.push(c);
+    else if (isSameDay(d, yesterday)) groups[1].items.push(c);
+    else if (d >= weekAgo)            groups[2].items.push(c);
+    else                              groups[3].items.push(c);
+  }
+
+  return groups.filter(g => g.items.length > 0);
+}
+
 interface NavItem { view: View; label: string; badge?: number; }
 interface SidebarProps {
   onViewChange: (v: View) => void;
@@ -56,10 +86,10 @@ export function Sidebar({ onViewChange, mobileOpen, onMobileClose }: SidebarProp
   const prevConvIdRef = useRef<string | null>(null);
 
   const adminItems: NavItem[] = [
-    { view: 'users',     label: 'Users' },
+    { view: 'users',        label: 'Users' },
     { view: 'integrations', label: 'Integrations' },
-    { view: 'tickets',   label: 'Tickets' },
-    { view: 'approvals', label: 'Approvals', badge: pendingApprovalCount },
+    { view: 'tickets',      label: 'Tickets' },
+    { view: 'approvals',    label: 'Approvals', badge: pendingApprovalCount },
   ];
 
   const loadConvs = useCallback(async () => {
@@ -73,8 +103,8 @@ export function Sidebar({ onViewChange, mobileOpen, onMobileClose }: SidebarProp
   }, []);
 
   useEffect(() => {
-    if (mobileOpen && currentView === 'chat') loadConvs();
-  }, [mobileOpen, currentView, loadConvs]);
+    if (currentView === 'chat') loadConvs();
+  }, [currentView, loadConvs]);
 
   useEffect(() => {
     if (currentView !== 'chat') return;
@@ -82,8 +112,8 @@ export function Sidebar({ onViewChange, mobileOpen, onMobileClose }: SidebarProp
     prevConvIdRef.current = currentConvId;
   }, [currentConvId, currentView, loadConvs]);
 
-  const handleNav = (v: View) => { onViewChange(v); onMobileClose(); };
-  const handleNewChat = () => { setCurrentConvId(null); onMobileClose(); };
+  const handleNav      = (v: View) => { onViewChange(v); onMobileClose(); };
+  const handleNewChat  = () => { setCurrentConvId(null); onMobileClose(); };
   const handleSelectConv = (id: string) => { setCurrentConvId(id); onMobileClose(); };
 
   const deleteConv = async (e: React.MouseEvent, id: string) => {
@@ -99,6 +129,8 @@ export function Sidebar({ onViewChange, mobileOpen, onMobileClose }: SidebarProp
     }
   };
 
+  const convGroups = groupConvsByDate(convs);
+
   return (
     <>
       {/* Mobile backdrop */}
@@ -113,22 +145,28 @@ export function Sidebar({ onViewChange, mobileOpen, onMobileClose }: SidebarProp
       <aside
         className={[
           'flex flex-col bg-white overflow-hidden',
-          'fixed top-0 left-0 h-full w-[256px] z-30',
+          'fixed top-0 left-0 h-full w-[260px] z-30',
           'transition-transform duration-200 ease-out',
           mobileOpen ? 'translate-x-0' : '-translate-x-full',
-          'md:relative md:left-auto md:w-[220px] md:h-auto md:z-auto md:translate-x-0 md:shrink-0',
+          'md:relative md:left-auto md:w-[248px] md:h-auto md:z-auto md:translate-x-0 md:shrink-0',
         ].join(' ')}
         style={{ borderRight: '1px solid #e4e4e7' }}
         aria-label="Application navigation"
       >
-        {/* ── Logo ──────────────────────────────────────────────────────────── */}
+
+        {/* ── Header ────────────────────────────────────────────────────────── */}
         <div
           className="shrink-0 flex items-center justify-between px-4 h-[52px]"
           style={{ borderBottom: '1px solid #e4e4e7' }}
         >
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
             <img src={fixieLogo} alt="Fixie" className="w-6 h-6 rounded-md object-cover shrink-0" />
             <span className="text-[14px] font-bold text-zinc-900 tracking-tight">Fixie</span>
+            {appOrg && !appOrg.slug.startsWith('user-') && (
+              <span className="text-[10.5px] font-medium text-zinc-400 bg-zinc-100 px-1.5 py-0.5 rounded-md truncate max-w-[80px]">
+                {appOrg.name}
+              </span>
+            )}
           </div>
           <button
             onClick={onMobileClose}
@@ -141,114 +179,159 @@ export function Sidebar({ onViewChange, mobileOpen, onMobileClose }: SidebarProp
           </button>
         </div>
 
-        {/* ── Scrollable body ────────────────────────────────────────────────── */}
-        <div className="flex-1 overflow-y-auto flex flex-col min-h-0">
+        {/* ── Body ──────────────────────────────────────────────────────────── */}
+        {currentView === 'chat' ? (
 
-          {/* Org badge */}
-          {appOrg && !appOrg.slug.startsWith('user-') && (
-            <div className="px-3 pt-3 pb-1 shrink-0">
-              <span
-                className="inline-flex items-center gap-1.5 text-[11px] font-medium text-zinc-500 px-2 py-1 rounded-md"
-                style={{ background: '#f4f4f5' }}
+          /* ── CHAT VIEW: New Chat → conversations → admin pinned bottom ── */
+          <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+
+            {/* New Chat CTA */}
+            <div className="px-3 pt-3 pb-2 shrink-0">
+              <button
+                onClick={handleNewChat}
+                className="w-full py-2 px-3 text-[13px] font-semibold rounded-lg flex items-center justify-center gap-2 transition-all btn-brand"
               >
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-                  <polyline points="9 22 9 12 15 12 15 22" />
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
+                  <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
                 </svg>
-                {appOrg.name}
-              </span>
+                New Chat
+              </button>
             </div>
-          )}
 
-          {/* Mobile: conversation list (chat view only) */}
-          {currentView === 'chat' && (
-            <div className="md:hidden flex flex-col shrink-0" style={{ borderBottom: '1px solid #e4e4e7' }}>
-              <div className="px-3 pt-3 pb-2">
-                <button
-                  onClick={handleNewChat}
-                  className="w-full py-1.5 px-3 text-[12.5px] font-semibold rounded-md flex items-center justify-center gap-1.5 btn-brand"
-                >
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
-                    <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
-                  </svg>
-                  New Chat
-                </button>
-              </div>
-              <div className="max-h-48 overflow-y-auto pb-2 px-2">
-                {convsLoading ? (
-                  <ConvListSkeleton />
-                ) : convs.length === 0 ? (
-                  <p className="text-[11.5px] text-zinc-400 px-2 py-2">No conversations yet</p>
-                ) : (
-                  <div className="fade-in flex flex-col gap-px">
-                    {convs.map(c => {
-                      const active = c.id === currentConvId;
-                      return (
-                        <div key={c.id} className="group relative">
-                          <button
-                            onClick={() => handleSelectConv(c.id)}
-                            aria-label={`Open conversation: ${c.title}`}
-                            aria-current={active ? 'true' : undefined}
-                            className="w-full flex items-center px-2.5 py-1.5 rounded-md text-left transition-colors"
-                            style={active ? { background: '#f4f4f5' } : {}}
-                            onMouseEnter={e => { if (!active) (e.currentTarget as HTMLElement).style.background = '#fafafa'; }}
-                            onMouseLeave={e => { if (!active) (e.currentTarget as HTMLElement).style.background = ''; }}
-                          >
-                            <div className="flex-1 min-w-0 pr-5">
-                              <div className="text-[12px] truncate text-zinc-800 font-medium">{c.title}</div>
-                              <div className="text-[10.5px] text-zinc-400 mt-0.5">{c.message_count} msg{c.message_count !== 1 ? 's' : ''}</div>
-                            </div>
-                          </button>
-                          <button
-                            onClick={e => deleteConv(e, c.id)}
-                            aria-label={`Delete conversation: ${c.title}`}
-                            className="absolute right-1.5 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 w-5 h-5 flex items-center justify-center text-zinc-400 hover:text-red-500 hover:bg-red-50 rounded transition-all"
-                          >
-                            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
-                              <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-                            </svg>
-                          </button>
-                        </div>
-                      );
-                    })}
+            {/* Conversation list */}
+            <div className="flex-1 overflow-y-auto px-2 pb-1">
+              {convsLoading ? (
+                <div className="px-1 pt-1"><ConvListSkeleton /></div>
+              ) : convs.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-10 px-4 text-center">
+                  <div className="w-9 h-9 rounded-full bg-zinc-100 flex items-center justify-center mb-3">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                    </svg>
                   </div>
-                )}
-              </div>
+                  <p className="text-[12px] text-zinc-400 leading-relaxed">No conversations yet.<br />Start one above.</p>
+                </div>
+              ) : (
+                <div className="fade-in">
+                  {convGroups.map(group => (
+                    <div key={group.label} className="mb-2">
+                      <p className="text-[10px] font-semibold text-zinc-400 uppercase tracking-widest px-2.5 py-1.5">
+                        {group.label}
+                      </p>
+                      <div className="flex flex-col gap-px">
+                        {group.items.map(c => {
+                          const active = c.id === currentConvId;
+                          return (
+                            <div key={c.id} className="group relative">
+                              <button
+                                onClick={() => handleSelectConv(c.id)}
+                                aria-label={`Open conversation: ${c.title}`}
+                                aria-current={active ? 'true' : undefined}
+                                className="w-full flex items-center px-2.5 py-2 rounded-lg text-left transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-600"
+                                style={active
+                                  ? { background: '#f5f3ff', color: '#5b21b6' }
+                                  : { color: '#52525b' }
+                                }
+                                onMouseEnter={e => { if (!active) (e.currentTarget as HTMLElement).style.background = '#f4f4f5'; }}
+                                onMouseLeave={e => { if (!active) (e.currentTarget as HTMLElement).style.background = ''; }}
+                              >
+                                {active && (
+                                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-r-full bg-violet-500" />
+                                )}
+                                <div className="flex-1 min-w-0 pr-5">
+                                  <div className="text-[12.5px] truncate" style={{ fontWeight: active ? 600 : 450 }}>
+                                    {c.title}
+                                  </div>
+                                  {c.status === 'pending_approval' && (
+                                    <span className="text-[9.5px] font-semibold bg-amber-50 text-amber-700 px-1.5 py-px rounded-full ring-1 ring-amber-200/60 mt-0.5 inline-block">
+                                      Pending approval
+                                    </span>
+                                  )}
+                                </div>
+                              </button>
+                              <button
+                                onClick={e => deleteConv(e, c.id)}
+                                aria-label={`Delete conversation: ${c.title}`}
+                                className="absolute right-1.5 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 focus:opacity-100 w-5 h-5 flex items-center justify-center text-zinc-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-all"
+                              >
+                                <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
+                                  <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                                </svg>
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-          )}
 
-          {/* Workspace section */}
-          <div className="px-3 pt-4 pb-1 shrink-0">
-            <p className="text-[10px] font-semibold text-zinc-400 uppercase tracking-widest px-1.5 mb-1">Workspace</p>
-            <NavBtn view="chat" label="Chat" active={currentView === 'chat'} onClick={() => handleNav('chat')} />
+            {/* Admin nav — pinned above footer when in chat */}
+            {appUser?.is_admin && (
+              <div className="shrink-0 px-3 pt-2 pb-1" style={{ borderTop: '1px solid #e4e4e7' }}>
+                <p className="text-[9.5px] font-semibold text-zinc-400 uppercase tracking-widest px-1.5 mb-1">Admin</p>
+                {adminItems.map(item => (
+                  <NavBtn
+                    key={item.view}
+                    view={item.view}
+                    label={item.label}
+                    badge={item.badge}
+                    active={false}
+                    onClick={() => handleNav(item.view)}
+                    compact
+                  />
+                ))}
+              </div>
+            )}
           </div>
 
-          {/* Admin section */}
-          {appUser?.is_admin && (
-            <div className="px-3 pt-3 mt-1 shrink-0" style={{ borderTop: '1px solid #f4f4f5' }}>
-              <p className="text-[10px] font-semibold text-zinc-400 uppercase tracking-widest px-1.5 mb-1">Admin</p>
-              {adminItems.map(item => (
-                <NavBtn
-                  key={item.view}
-                  view={item.view}
-                  label={item.label}
-                  badge={item.badge}
-                  active={currentView === item.view}
-                  onClick={() => handleNav(item.view)}
-                />
-              ))}
-            </div>
-          )}
+        ) : (
 
-          <div className="flex-1" />
-        </div>
+          /* ── OTHER VIEWS: full nav list ── */
+          <div className="flex-1 flex flex-col overflow-y-auto">
+
+            {/* Back to chat */}
+            <div className="px-3 pt-3 pb-1 shrink-0">
+              <button
+                onClick={() => handleNav('chat')}
+                className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-[13px] font-medium text-zinc-500 hover:text-zinc-800 hover:bg-zinc-100 transition-colors"
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                </svg>
+                Chat
+              </button>
+            </div>
+
+            {/* Admin section */}
+            {appUser?.is_admin && (
+              <div className="px-3 pt-3 shrink-0" style={{ borderTop: '1px solid #f4f4f5' }}>
+                <p className="text-[9.5px] font-semibold text-zinc-400 uppercase tracking-widest px-1.5 mb-1">Admin</p>
+                {adminItems.map(item => (
+                  <NavBtn
+                    key={item.view}
+                    view={item.view}
+                    label={item.label}
+                    badge={item.badge}
+                    active={currentView === item.view}
+                    onClick={() => handleNav(item.view)}
+                  />
+                ))}
+              </div>
+            )}
+
+            <div className="flex-1" />
+          </div>
+        )}
 
         {/* ── User footer ────────────────────────────────────────────────────── */}
         <div
           className="shrink-0 px-3 py-3 flex items-center gap-2.5"
           style={{ borderTop: '1px solid #e4e4e7' }}
         >
-          <UserAvatar name={appUser?.name ?? '?'} photoUrl={appUser?.photo_url ?? null} />
+          <UserAvatar name={appUser?.name ?? '?'} />
           <div className="flex-1 min-w-0">
             <div className="text-[12.5px] font-semibold text-zinc-900 truncate">{appUser?.name}</div>
             <div className="text-[11px] text-zinc-400">{appUser?.is_admin ? 'Admin' : 'Member'}</div>
@@ -273,16 +356,20 @@ export function Sidebar({ onViewChange, mobileOpen, onMobileClose }: SidebarProp
 
 // ── NavBtn ─────────────────────────────────────────────────────────────────────
 function NavBtn({
-  view, label, active, onClick, badge,
+  view, label, active, onClick, badge, compact,
 }: {
-  view: View; label: string; active: boolean; onClick: () => void; badge?: number;
+  view: View; label: string; active: boolean; onClick: () => void; badge?: number; compact?: boolean;
 }) {
   return (
     <button
       onClick={onClick}
-      className="w-full flex items-center gap-2 px-2.5 py-[7px] rounded-md text-[13px] font-medium transition-colors text-left mb-px relative focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-600"
+      className={[
+        'w-full flex items-center gap-2 px-2.5 rounded-lg text-[13px] font-medium transition-colors text-left mb-px relative',
+        'focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-600',
+        compact ? 'py-1.5' : 'py-[7px]',
+      ].join(' ')}
       style={active ? { background: '#f5f3ff', color: '#5b21b6', fontWeight: 600 } : { color: '#71717a' }}
-      onMouseEnter={e => { if (!active) (e.currentTarget as HTMLElement).style.background = '#fafafa'; }}
+      onMouseEnter={e => { if (!active) (e.currentTarget as HTMLElement).style.background = '#f4f4f5'; }}
       onMouseLeave={e => { if (!active) (e.currentTarget as HTMLElement).style.background = ''; }}
     >
       {active && (
@@ -302,7 +389,7 @@ function NavBtn({
 }
 
 // ── UserAvatar ─────────────────────────────────────────────────────────────────
-function UserAvatar({ name }: { name: string; photoUrl?: string | null }) {
+function UserAvatar({ name }: { name: string }) {
   return (
     <div className="w-7 h-7 rounded-full bg-violet-600 text-white text-[11px] font-bold flex items-center justify-center shrink-0">
       {name.charAt(0).toUpperCase()}
