@@ -7,6 +7,7 @@ import { formatMarkdown } from '../../../lib/fixie/utils';
 import { useVoiceAgent } from '../../../hooks/useVoiceAgent';
 import type { VoiceState } from '../../../hooks/useVoiceAgent';
 import type { Message, PendingConfirmation } from '../../../types/fixie';
+import { ChatLoadingSkeleton } from '../ui/Skeleton';
 
 interface DisplayMessage extends Message { ts?: number; streaming?: boolean; }
 
@@ -20,6 +21,7 @@ export function ChatView({ onOpenNav }: { onOpenNav: () => void }) {
   const [pending, setPending] = useState<PendingConfirmation | null>(null);
   const [convTitle, setConvTitle] = useState('New Chat');
   const [voiceActive, setVoiceActive] = useState(false);
+  const [isLoadingConv, setIsLoadingConv] = useState(false);
   const messagesRef      = useRef<HTMLDivElement>(null);
   const textareaRef      = useRef<HTMLTextAreaElement>(null);
   const suppressNextLoad = useRef(false);
@@ -37,6 +39,7 @@ export function ChatView({ onOpenNav }: { onOpenNav: () => void }) {
 
   const loadConversationById = useCallback(async (id: string) => {
     setPending(null);
+    setIsLoadingConv(true);
     try {
       const data = await apiGet<{ title: string; messages: Message[] }>(`/api/conversations/${id}`);
       setConvTitle(data.title);
@@ -44,6 +47,8 @@ export function ChatView({ onOpenNav }: { onOpenNav: () => void }) {
       setTimeout(scrollToBottom, 50);
     } catch {
       toast('Failed to load conversation', 'error');
+    } finally {
+      setIsLoadingConv(false);
     }
   }, [scrollToBottom, toast]);
 
@@ -346,16 +351,22 @@ export function ChatView({ onOpenNav }: { onOpenNav: () => void }) {
             {/* Message list */}
             <div
               ref={messagesRef}
-              className="flex-1 overflow-y-auto flex flex-col gap-3 px-4 py-5 md:px-6"
+              className="flex-1 overflow-y-auto flex flex-col gap-3 relative"
               style={{ overflowX: 'hidden' }}
               aria-live="polite"
               aria-label="Messages"
             >
-              {messages.map((m, i) => (
-                <MessageBubble key={i} message={m} userName={appUser?.name ?? 'U'} />
-              ))}
-              {isTyping && <TypingIndicator />}
-              {pending && <ConfirmCard pending={pending} onConfirm={confirmTool} />}
+              {isLoadingConv ? (
+                <ChatLoadingSkeleton />
+              ) : (
+                <div className="flex flex-col gap-3 px-4 py-5 md:px-6">
+                  {messages.map((m, i) => (
+                    <MessageBubble key={i} message={m} userName={appUser?.name ?? 'U'} />
+                  ))}
+                  {isTyping && <TypingIndicator />}
+                  {pending && <ConfirmCard pending={pending} onConfirm={confirmTool} />}
+                </div>
+              )}
             </div>
 
             {/* Voice status bar */}

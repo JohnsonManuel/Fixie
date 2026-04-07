@@ -57,6 +57,64 @@ export function ConvListSkeleton() {
   );
 }
 
+export function ChatLoadingSkeleton() {
+  // Mirrors a realistic chat layout: alternating assistant/user bubbles
+  const bubbles = [
+    { role: 'assistant', lines: [{ w: 'w-48' }, { w: 'w-64' }, { w: 'w-40' }] },
+    { role: 'user',      lines: [{ w: 'w-36' }] },
+    { role: 'assistant', lines: [{ w: 'w-56' }, { w: 'w-72' }] },
+    { role: 'user',      lines: [{ w: 'w-28' }, { w: 'w-44' }] },
+    { role: 'assistant', lines: [{ w: 'w-52' }, { w: 'w-60' }, { w: 'w-32' }] },
+    { role: 'user',      lines: [{ w: 'w-32' }] },
+  ] as const;
+
+  return (
+    <div className="relative h-full overflow-hidden">
+      {/* Bubble silhouettes */}
+      <div className="flex flex-col gap-4 px-4 py-5 md:px-6">
+        {bubbles.map((b, i) => {
+          const isUser = b.role === 'user';
+          return (
+            <div
+              key={i}
+              className={`flex gap-2.5 max-w-[72%] ${isUser ? 'self-end flex-row-reverse' : 'self-start'}`}
+            >
+              {/* Avatar */}
+              <Skeleton className={`w-6 h-6 rounded-full shrink-0 mt-1 ${isUser ? 'bg-violet-200' : ''}`} />
+
+              {/* Lines inside a bubble shape */}
+              <div
+                className={`px-3.5 py-2.5 rounded-xl flex flex-col gap-2 ${isUser ? 'rounded-tr-sm' : 'rounded-tl-sm'}`}
+                style={{
+                  background: isUser ? '#ede9fe' : '#ffffff',
+                  border: isUser ? 'none' : '1px solid #e4e4e7',
+                }}
+              >
+                {b.lines.map((line, j) => (
+                  <Skeleton key={j} className={`h-3 ${line.w}`} />
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Blur + fade overlay — covers the bottom half */}
+      <div
+        className="absolute inset-x-0 bottom-0 pointer-events-none"
+        style={{
+          height: '65%',
+          backdropFilter: 'blur(6px)',
+          WebkitBackdropFilter: 'blur(6px)',
+          maskImage: 'linear-gradient(to bottom, transparent 0%, black 55%)',
+          WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 55%)',
+          background: 'linear-gradient(to bottom, transparent 0%, rgba(250,250,250,0.6) 50%, #fafafa 100%)',
+        }}
+      />
+    </div>
+  );
+}
+
 export function ApprovalCardSkeleton() {
   return (
     <div className="bg-white border border-neutral-200 rounded-xl p-4 shadow-sm flex items-start gap-4">
