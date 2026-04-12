@@ -8,20 +8,20 @@ import { FreshdeskModal } from '../modals/FreshdeskModal';
 import { ZohoDeskModal } from '../modals/ZohoDeskModal';
 import { CustomServerModal } from '../modals/McpModal';
 import { GenericIntegrationModal, INTEGRATION_CONFIGS } from '../modals/GenericIntegrationModal';
-import { ReactComponent as FreshdeskLogo }  from '../../../assets/logos/freshdesk.svg';
-import { ReactComponent as ZohoDeskLogo }   from '../../../assets/logos/zohodesk.svg';
-import { ReactComponent as ZendeskLogo }    from '../../../assets/logos/zendesk.svg';
-import { ReactComponent as JiraLogo }       from '../../../assets/logos/jira.svg';
+import { ReactComponent as FreshdeskLogo } from '../../../assets/logos/freshdesk.svg';
+import { ReactComponent as ZohoDeskLogo } from '../../../assets/logos/zohodesk.svg';
+import { ReactComponent as ZendeskLogo } from '../../../assets/logos/zendesk.svg';
+import { ReactComponent as JiraLogo } from '../../../assets/logos/jira.svg';
 import { ReactComponent as ServiceNowLogo } from '../../../assets/logos/servicenow.svg';
-import { ReactComponent as GitHubLogo }     from '../../../assets/logos/github.svg';
-import { ReactComponent as GitLabLogo }     from '../../../assets/logos/gitlab.svg';
-import { ReactComponent as JenkinsLogo }    from '../../../assets/logos/jenkins.svg';
-import { ReactComponent as LinearLogo }     from '../../../assets/logos/linear.svg';
-import { ReactComponent as SlackLogo }      from '../../../assets/logos/slack.svg';
-import { ReactComponent as DatadogLogo }    from '../../../assets/logos/datadog.svg';
-import { ReactComponent as NewRelicLogo }   from '../../../assets/logos/newrelic.svg';
-import { ReactComponent as PagerDutyLogo }  from '../../../assets/logos/pagerduty.svg';
-import { ReactComponent as OpsGenieLogo }   from '../../../assets/logos/opsgenie.svg';
+import { ReactComponent as GitHubLogo } from '../../../assets/logos/github.svg';
+import { ReactComponent as GitLabLogo } from '../../../assets/logos/gitlab.svg';
+import { ReactComponent as JenkinsLogo } from '../../../assets/logos/jenkins.svg';
+import { ReactComponent as LinearLogo } from '../../../assets/logos/linear.svg';
+import { ReactComponent as SlackLogo } from '../../../assets/logos/slack.svg';
+import { ReactComponent as DatadogLogo } from '../../../assets/logos/datadog.svg';
+import { ReactComponent as NewRelicLogo } from '../../../assets/logos/newrelic.svg';
+import { ReactComponent as PagerDutyLogo } from '../../../assets/logos/pagerduty.svg';
+import { ReactComponent as OpsGenieLogo } from '../../../assets/logos/opsgenie.svg';
 import { ReactComponent as ConfluenceLogo } from '../../../assets/logos/confluence.svg';
 import { Toggle } from '../ui/Toggle';
 import type { IntegrationConfig, ToolSchema } from '../../../types/fixie';
@@ -52,23 +52,23 @@ const INTEGRATION_COLORS: Record<string, string> = {
 };
 
 const CATALOG_LOGOS: Record<string, React.ReactNode> = {
-  zendesk:    <ZendeskLogo    className="w-9 h-9 shrink-0" />,
-  jira:       <JiraLogo       className="w-9 h-9 shrink-0" />,
+  zendesk: <ZendeskLogo className="w-9 h-9 shrink-0" />,
+  jira: <JiraLogo className="w-9 h-9 shrink-0" />,
   servicenow: <ServiceNowLogo className="w-9 h-9 shrink-0" />,
-  github:     <GitHubLogo     className="w-9 h-9 shrink-0" />,
-  gitlab:     <GitLabLogo     className="w-9 h-9 shrink-0" />,
-  jenkins:    <JenkinsLogo    className="w-9 h-9 shrink-0" />,
-  linear:     <LinearLogo     className="w-9 h-9 shrink-0" />,
-  slack:      <SlackLogo      className="w-9 h-9 shrink-0" />,
-  datadog:    <DatadogLogo    className="w-9 h-9 shrink-0" />,
-  newrelic:   <NewRelicLogo   className="w-9 h-9 shrink-0" />,
-  pagerduty:  <PagerDutyLogo  className="w-9 h-9 shrink-0" />,
-  opsgenie:   <OpsGenieLogo   className="w-9 h-9 shrink-0" />,
+  github: <GitHubLogo className="w-9 h-9 shrink-0" />,
+  gitlab: <GitLabLogo className="w-9 h-9 shrink-0" />,
+  jenkins: <JenkinsLogo className="w-9 h-9 shrink-0" />,
+  linear: <LinearLogo className="w-9 h-9 shrink-0" />,
+  slack: <SlackLogo className="w-9 h-9 shrink-0" />,
+  datadog: <DatadogLogo className="w-9 h-9 shrink-0" />,
+  newrelic: <NewRelicLogo className="w-9 h-9 shrink-0" />,
+  pagerduty: <PagerDutyLogo className="w-9 h-9 shrink-0" />,
+  opsgenie: <OpsGenieLogo className="w-9 h-9 shrink-0" />,
   confluence: <ConfluenceLogo className="w-9 h-9 shrink-0" />,
 };
 
 function IntegrationConfigIcon({ serverType, size = 'md' }: { serverType: string; size?: 'sm' | 'md' | 'lg' }) {
-  const bg  = INTEGRATION_COLORS[serverType] ?? '#71717a';
+  const bg = INTEGRATION_COLORS[serverType] ?? '#71717a';
   const cls = size === 'sm' ? 'w-7 h-7 text-[11px]' : size === 'lg' ? 'w-12 h-12 text-[16px]' : 'w-9 h-9 text-[13px]';
   return (
     <div className={`${cls} rounded-xl flex items-center justify-center text-white font-bold shrink-0`} style={{ background: bg }}>
@@ -84,25 +84,25 @@ const CATALOG_CATEGORIES: CatalogCategory[] = [
   {
     label: 'ITSM',
     items: [
-      { slug: 'zendesk',     label: 'Zendesk',      description: 'Manage support tickets via the Zendesk Ticketing API.' },
-      { slug: 'jira',        label: 'Jira',          description: 'Create and track issues in Jira Service Management.' },
-      { slug: 'servicenow',  label: 'ServiceNow',    description: 'Manage incidents, changes, and CMDB via the ServiceNow Table API.' },
+      { slug: 'zendesk', label: 'Zendesk', description: 'Manage support tickets via the Zendesk Ticketing API.' },
+      { slug: 'jira', label: 'Jira', description: 'Create and track issues in Jira Service Management.' },
+      { slug: 'servicenow', label: 'ServiceNow', description: 'Manage incidents, changes, and CMDB via the ServiceNow Table API.' },
     ],
   },
   {
     label: 'Endpoint Management',
     items: [
       { slug: 'intune', label: 'Microsoft Intune', description: 'List, lock, sync, and wipe Windows/iOS/Android devices managed by Intune.' },
-      { slug: 'jamf',   label: 'Jamf Pro',         description: 'Manage Mac computers and iOS devices via the Jamf Pro API.' },
+      { slug: 'jamf', label: 'Jamf Pro', description: 'Manage Mac computers and iOS devices via the Jamf Pro API.' },
     ],
   },
   {
     label: 'DevOps',
     items: [
-      { slug: 'github',   label: 'GitHub',   description: 'Manage issues and pull requests via the GitHub REST API.' },
-      { slug: 'gitlab',   label: 'GitLab',   description: 'Manage issues and merge requests via the GitLab REST API.' },
-      { slug: 'jenkins',  label: 'Jenkins',  description: 'Trigger builds and check job status via the Jenkins Remote API.' },
-      { slug: 'linear',   label: 'Linear',   description: 'Create and update issues via the Linear GraphQL API.' },
+      { slug: 'github', label: 'GitHub', description: 'Manage issues and pull requests via the GitHub REST API.' },
+      { slug: 'gitlab', label: 'GitLab', description: 'Manage issues and merge requests via the GitLab REST API.' },
+      { slug: 'jenkins', label: 'Jenkins', description: 'Trigger builds and check job status via the Jenkins Remote API.' },
+      { slug: 'linear', label: 'Linear', description: 'Create and update issues via the Linear GraphQL API.' },
     ],
   },
   {
@@ -114,7 +114,7 @@ const CATALOG_CATEGORIES: CatalogCategory[] = [
   {
     label: 'Monitoring',
     items: [
-      { slug: 'datadog',  label: 'Datadog',   description: 'Manage incidents and monitors via the Datadog REST API.' },
+      { slug: 'datadog', label: 'Datadog', description: 'Manage incidents and monitors via the Datadog REST API.' },
       { slug: 'newrelic', label: 'New Relic', description: 'Query alerts, incidents, and entities via New Relic NerdGraph.' },
     ],
   },
@@ -122,7 +122,7 @@ const CATALOG_CATEGORIES: CatalogCategory[] = [
     label: 'Incident Management',
     items: [
       { slug: 'pagerduty', label: 'PagerDuty', description: 'Manage on-call incidents and escalations via the PagerDuty API.' },
-      { slug: 'opsgenie',  label: 'OpsGenie',  description: 'Create and acknowledge alerts via the OpsGenie Alert API.' },
+      { slug: 'opsgenie', label: 'OpsGenie', description: 'Create and acknowledge alerts via the OpsGenie Alert API.' },
     ],
   },
   {
@@ -143,20 +143,20 @@ function fmtToolName(name: string): string {
 
 export function IntegrationsView() {
   const { toast } = useToast();
-  const [servers, setServers]           = useState<IntegrationConfig[]>([]);
-  const [loading, setLoading]           = useState(true);
-  const [search, setSearch]             = useState('');
-  const [toolDrawer, setToolDrawer]     = useState<IntegrationConfig | null>(null);
+  const [servers, setServers] = useState<IntegrationConfig[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [toolDrawer, setToolDrawer] = useState<IntegrationConfig | null>(null);
   const [togglingTool, setTogglingTool] = useState<string | null>(null);
 
   type HealthStatus = 'checking' | 'ok' | 'error';
   const [healthMap, setHealthMap] = useState<Record<string, HealthStatus>>({});
 
-  const [mcpModalOpen, setCustomServerModalOpen]   = useState(false);
-  const [editingMcpId, setEditingMcpId]           = useState<string | null>(null);
+  const [mcpModalOpen, setCustomServerModalOpen] = useState(false);
+  const [editingMcpId, setEditingMcpId] = useState<string | null>(null);
   const [initialServerType, setInitialServerType] = useState<string | undefined>(undefined);
-  const [guidedModal, setGuidedModal]             = useState<{ type: GuidedType; editingId: string | null } | null>(null);
-  const [genericModal, setGenericModal]           = useState<{ slug: string; editingId: string | null } | null>(null);
+  const [guidedModal, setGuidedModal] = useState<{ type: GuidedType; editingId: string | null } | null>(null);
+  const [genericModal, setGenericModal] = useState<{ slug: string; editingId: string | null } | null>(null);
 
   const checkHealth = useCallback(async (active: IntegrationConfig[]) => {
     if (active.length === 0) return;
@@ -173,9 +173,9 @@ export function IntegrationsView() {
       active.map(async server => {
         try {
           await apiPost('/api/admin/integrations/test', {
-            server_type:               server.server_type,
-            credentials:               server.credentials ?? {},
-            nango_connection_id:       server.nango_connection_id ?? null,
+            server_type: server.server_type,
+            credentials: server.credentials ?? {},
+            nango_connection_id: server.nango_connection_id ?? null,
             nango_provider_config_key: server.nango_provider_config_key ?? null,
           });
           setHealthMap(prev => ({ ...prev, [server.id]: 'ok' }));
@@ -256,11 +256,11 @@ export function IntegrationsView() {
   const openGuided = (type: GuidedType, editingId: string | null = null) => setGuidedModal({ type, editingId });
 
   const ALL_CATALOG_SLUGS = CATALOG_CATEGORIES.flatMap(c => c.items.map(i => i.slug));
-  const advanced          = servers.filter(s => !(GUIDED_TYPES as readonly string[]).includes(s.server_type) && !ALL_CATALOG_SLUGS.includes(s.server_type));
-  const q                 = search.toLowerCase().trim();
-  const filteredGuided    = GUIDED_TYPES.filter(t => !q || t.includes(q) || GUIDED_META[t].label.toLowerCase().includes(q));
-  const filteredAdvanced  = advanced.filter(s => !q || s.name.toLowerCase().includes(q) || s.server_type.toLowerCase().includes(q));
-  const filteredCatalog   = CATALOG_CATEGORIES
+  const advanced = servers.filter(s => !(GUIDED_TYPES as readonly string[]).includes(s.server_type) && !ALL_CATALOG_SLUGS.includes(s.server_type));
+  const q = search.toLowerCase().trim();
+  const filteredGuided = GUIDED_TYPES.filter(t => !q || t.includes(q) || GUIDED_META[t].label.toLowerCase().includes(q));
+  const filteredAdvanced = advanced.filter(s => !q || s.name.toLowerCase().includes(q) || s.server_type.toLowerCase().includes(q));
+  const filteredCatalog = CATALOG_CATEGORIES
     .map(cat => ({ ...cat, items: cat.items.filter(i => !q || i.slug.includes(q) || i.label.toLowerCase().includes(q)) }))
     .filter(cat => cat.items.length > 0);
 
@@ -280,11 +280,11 @@ export function IntegrationsView() {
     <div className="flex flex-col h-full overflow-hidden">
 
       {/* ── Header ─────────────────────────────────────────────────────────── */}
-      <div className="px-6 md:px-8 py-5 shrink-0 bg-white" style={{ borderBottom: '1px solid #e4e4e7' }}>
+      <div className="px-6 md:px-8 py-5 shrink-0 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800">
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div>
-            <h1 className="text-[17px] font-bold text-zinc-900">Integrations</h1>
-            <p className="text-[13px] text-zinc-400 mt-0.5">Connect external services and manage tool access for your team</p>
+            <h1 className="text-[17px] font-bold text-zinc-900 dark:text-zinc-100">Integrations</h1>
+            <p className="text-[13px] text-zinc-400 dark:text-zinc-500 mt-0.5">Connect external services and manage tool access for your team</p>
           </div>
           <div className="relative">
             <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
@@ -305,7 +305,7 @@ export function IntegrationsView() {
       </div>
 
       {/* ── Body ───────────────────────────────────────────────────────────── */}
-      <div className="flex-1 overflow-y-auto p-6 md:p-8 flex flex-col gap-10" style={{ background: '#fafafa' }}>
+      <div className="flex-1 overflow-y-auto p-6 md:p-8 flex flex-col gap-10 bg-zinc-50 dark:bg-zinc-950">
 
         {/* ── Ticketing ──────────────────────────────────────────────────── */}
         <section>
@@ -318,7 +318,7 @@ export function IntegrationsView() {
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 fade-in">
               {filteredGuided.map(type => {
                 const server = servers.find(s => s.server_type === type) ?? null;
-                const meta   = GUIDED_META[type];
+                const meta = GUIDED_META[type];
                 return server ? (
                   <ConnectedCard
                     key={type}
@@ -353,32 +353,32 @@ export function IntegrationsView() {
               {loading
                 ? category.items.map(i => <CardSkeleton key={i.slug} />)
                 : category.items.map(item => {
-                    const server = servers.find(s => s.server_type === item.slug) ?? null;
-                    const cfg    = INTEGRATION_CONFIGS[item.slug];
-                    const logo   = CATALOG_LOGOS[item.slug] ?? <IntegrationConfigIcon serverType={item.slug} />;
-                    return server ? (
-                      <ConnectedCard
-                        key={item.slug}
-                        server={server}
-                        logo={logo}
-                        label={item.label}
-                        subtitle={cfg?.displayValue?.(server.credentials ?? {}) ?? (server.credentials?.domain ?? server.credentials?.instance_url ?? server.credentials?.subdomain ?? '')}
-                        health={healthMap[server.id]}
-                        onEdit={() => openCatalogItem(item.slug, server.id)}
-                        onRemove={() => deleteServer(server.id, item.label)}
-                        onToggle={() => toggleServer(server.id, server.is_active)}
-                        onManageTools={() => openTools(server)}
-                      />
-                    ) : (
-                      <SetupCard
-                        key={item.slug}
-                        logo={logo}
-                        label={item.label}
-                        description={item.description}
-                        onConnect={() => openCatalogItem(item.slug)}
-                      />
-                    );
-                  })
+                  const server = servers.find(s => s.server_type === item.slug) ?? null;
+                  const cfg = INTEGRATION_CONFIGS[item.slug];
+                  const logo = CATALOG_LOGOS[item.slug] ?? <IntegrationConfigIcon serverType={item.slug} />;
+                  return server ? (
+                    <ConnectedCard
+                      key={item.slug}
+                      server={server}
+                      logo={logo}
+                      label={item.label}
+                      subtitle={cfg?.displayValue?.(server.credentials ?? {}) ?? (server.credentials?.domain ?? server.credentials?.instance_url ?? server.credentials?.subdomain ?? '')}
+                      health={healthMap[server.id]}
+                      onEdit={() => openCatalogItem(item.slug, server.id)}
+                      onRemove={() => deleteServer(server.id, item.label)}
+                      onToggle={() => toggleServer(server.id, server.is_active)}
+                      onManageTools={() => openTools(server)}
+                    />
+                  ) : (
+                    <SetupCard
+                      key={item.slug}
+                      logo={logo}
+                      label={item.label}
+                      description={item.description}
+                      onConnect={() => openCatalogItem(item.slug)}
+                    />
+                  );
+                })
               }
             </div>
           </section>
@@ -432,7 +432,7 @@ export function IntegrationsView() {
 
       {/* ── Modals ─────────────────────────────────────────────────────────── */}
       <FreshdeskModal open={guidedModal?.type === 'freshdesk'} onClose={() => setGuidedModal(null)} onSuccess={load} editingId={guidedModal?.type === 'freshdesk' ? guidedModal.editingId : null} allServers={servers} />
-      <ZohoDeskModal  open={guidedModal?.type === 'zohodesk'}  onClose={() => setGuidedModal(null)} onSuccess={load} editingId={guidedModal?.type === 'zohodesk'  ? guidedModal.editingId : null} allServers={servers} />
+      <ZohoDeskModal open={guidedModal?.type === 'zohodesk'} onClose={() => setGuidedModal(null)} onSuccess={load} editingId={guidedModal?.type === 'zohodesk' ? guidedModal.editingId : null} allServers={servers} />
       <CustomServerModal open={mcpModalOpen} onClose={() => { setCustomServerModalOpen(false); setInitialServerType(undefined); }} onSuccess={load} editingId={editingMcpId} allServers={servers} initialServerType={initialServerType} />
       {genericModal && (
         <GenericIntegrationModal
@@ -501,9 +501,9 @@ function ConnectedCard({ server, logo, label, subtitle, health, onEdit, onRemove
   onToggle: () => void;
   onManageTools: () => void;
 }) {
-  const userTools  = server.tool_schemas.filter(t => !t.admin_only);
-  const adminTools = server.tool_schemas.filter(t =>  t.admin_only);
-  const domain     = subtitle || server.credentials?.domain || server.credentials?.instance_url || server.credentials?.subdomain || '';
+  const userTools = server.tool_schemas.filter(t => !t.admin_only);
+  const adminTools = server.tool_schemas.filter(t => t.admin_only);
+  const domain = subtitle || server.credentials?.domain || server.credentials?.instance_url || server.credentials?.subdomain || '';
 
   const borderColor = server.is_active && health === 'error' ? '#fecaca' : '#e4e4e7';
 
@@ -630,8 +630,8 @@ function HealthBadge({ isActive, health }: { isActive: boolean; health?: 'checki
 
 function ToolStatChip({ icon, label, color }: { icon: React.ReactNode; label: string; color: 'blue' | 'amber' | 'purple' }) {
   const styles = {
-    blue:   { bg: '#eff6ff', text: '#1d4ed8', border: '#bfdbfe' },
-    amber:  { bg: '#fffbeb', text: '#b45309', border: '#fcd34d' },
+    blue: { bg: '#eff6ff', text: '#1d4ed8', border: '#bfdbfe' },
+    amber: { bg: '#fffbeb', text: '#b45309', border: '#fcd34d' },
     purple: { bg: '#faf5ff', text: '#7c3aed', border: '#ddd6fe' },
   }[color];
   return (
@@ -662,8 +662,8 @@ function ToolDrawer({ server, health, togglingKey, onClose, onToggleTool }: {
 
   if (!server) return null;
 
-  const userTools  = server.tool_schemas.filter(t => !t.admin_only);
-  const adminTools = server.tool_schemas.filter(t =>  t.admin_only);
+  const userTools = server.tool_schemas.filter(t => !t.admin_only);
+  const adminTools = server.tool_schemas.filter(t => t.admin_only);
 
   return (
     <div
@@ -715,7 +715,7 @@ function ToolDrawer({ server, health, togglingKey, onClose, onToggleTool }: {
           <div className="flex items-start gap-2.5 mx-6 mt-4 px-3.5 py-3 rounded-xl text-[12.5px] text-red-700 shrink-0"
             style={{ background: '#fef2f2', border: '1px solid #fecaca' }}>
             <svg className="shrink-0 mt-0.5" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
-              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+              <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
             </svg>
             <div>
               <div className="font-semibold mb-0.5">Connection failed</div>
@@ -727,9 +727,9 @@ function ToolDrawer({ server, health, togglingKey, onClose, onToggleTool }: {
         {/* Summary bar */}
         <div className="flex items-center gap-6 px-6 py-4 shrink-0" style={{ borderBottom: '1px solid #f4f4f5', background: '#fafafa', marginTop: server.is_active && health === 'error' ? 0 : undefined }}>
           {[
-            { value: server.tool_schemas.length, label: 'Total',     color: '#18181b' },
-            { value: userTools.length,           label: 'User',      color: '#1d4ed8' },
-            { value: adminTools.length,          label: 'Admin only', color: '#b45309' },
+            { value: server.tool_schemas.length, label: 'Total', color: '#18181b' },
+            { value: userTools.length, label: 'User', color: '#1d4ed8' },
+            { value: adminTools.length, label: 'Admin only', color: '#b45309' },
             { value: server.tool_schemas.filter(t => t.read_only).length, label: 'Read-only', color: '#a1a1aa' },
           ].map((stat, i, arr) => (
             <div key={stat.label} className="flex items-center gap-6">
@@ -816,7 +816,7 @@ function DrawerSectionHeader({ label, description, color, icon }: {
   label: string; description: string; color: 'blue' | 'amber'; icon: React.ReactNode;
 }) {
   const textColor = color === 'blue' ? '#1d4ed8' : '#b45309';
-  const bgColor   = color === 'blue' ? '#eff6ff' : '#fffbeb';
+  const bgColor = color === 'blue' ? '#eff6ff' : '#fffbeb';
   return (
     <div className="flex items-start gap-2.5 px-6 py-3 sticky top-0" style={{ background: bgColor, borderBottom: '1px solid #f4f4f5' }}>
       <span style={{ color: textColor, marginTop: 1 }}>{icon}</span>
@@ -848,7 +848,7 @@ function DrawerToolRow({ tool, serverId, togglingKey, onToggle }: {
           {tool.read_only && (
             <span className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full"
               style={{ background: '#f0fdf4', color: '#15803d', border: '1px solid #bbf7d0' }}>
-              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>
+              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 9.9-1" /></svg>
               Read only
             </span>
           )}

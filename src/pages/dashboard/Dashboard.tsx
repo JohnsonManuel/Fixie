@@ -63,7 +63,7 @@ function Inner() {
       },
     );
     return unsub;
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -71,12 +71,12 @@ function Inner() {
     return loadApprovalCount(true, setPendingApprovalCount);
   }, [appUser?.is_admin, setPendingApprovalCount]);
 
-  if (screen === 'loading')    return <LoadingScreen />;
+  if (screen === 'loading') return <LoadingScreen />;
   if (screen === 'no-account') return <NoAccountScreen />;
 
   return (
     <>
-      <div className="flex h-screen overflow-hidden bg-zinc-50">
+      <div className="flex h-screen overflow-hidden bg-zinc-50 dark:bg-zinc-950">
         <Sidebar
           onViewChange={(v: View) => setCurrentView(v)}
           mobileOpen={navOpen}
@@ -91,10 +91,10 @@ function Inner() {
             />
           )}
 
-          {currentView === 'chat'      && <ChatView onOpenNav={() => setNavOpen(true)} />}
-          {currentView === 'users'     && <UsersView />}
+          {currentView === 'chat' && <ChatView onOpenNav={() => setNavOpen(true)} />}
+          {currentView === 'users' && <UsersView />}
           {currentView === 'integrations' && <IntegrationsView />}
-          {currentView === 'tickets'   && <TicketsView />}
+          {currentView === 'tickets' && <TicketsView />}
           {currentView === 'approvals' && <ApprovalsView />}
         </main>
       </div>
@@ -107,19 +107,19 @@ function Inner() {
 function MobileTopBar({ appUser, onOpenNav }: { appUser: AppUser | null; onOpenNav: () => void }) {
   return (
     <div
-      className="md:hidden flex items-center px-4 shrink-0 bg-white"
-      style={{ minHeight: 52, borderBottom: '1px solid #e4e4e7' }}
+      className="md:hidden flex items-center px-4 shrink-0 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800"
+      style={{ minHeight: 52 }}
     >
       <div className="flex items-center gap-2 flex-1">
         <img src={fixieLogo} alt="Fixie" className="w-6 h-6 rounded-md object-cover" />
-        <span className="text-[14px] font-bold text-zinc-900 tracking-tight">Fixie</span>
+        <span className="text-[14px] font-bold text-zinc-900 dark:text-zinc-100 tracking-tight">Fixie</span>
       </div>
       <button
         onClick={onOpenNav}
         aria-label="Open navigation menu"
-        className="w-8 h-8 flex items-center justify-center rounded-md shrink-0 hover:bg-zinc-100 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-600"
+        className="w-8 h-8 flex items-center justify-center rounded-md shrink-0 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-600 dark:focus-visible:outline-violet-500"
       >
-        <div className="w-7 h-7 rounded-full bg-violet-600 text-white text-[11px] font-bold flex items-center justify-center">
+        <div className="w-7 h-7 rounded-full bg-violet-600 dark:bg-violet-500 text-white text-[11px] font-bold flex items-center justify-center">
           {(appUser?.name ?? 'U').charAt(0).toUpperCase()}
         </div>
       </button>
@@ -153,9 +153,8 @@ function ToastLayer() {
           key={t.id}
           role={t.type === 'error' ? 'alert' : 'status'}
           onClick={() => removeToast(t.id)}
-          className={`toast-enter pointer-events-auto flex items-center gap-2.5 px-4 py-3 rounded-xl text-[13.5px] font-medium shadow-lg max-w-sm cursor-pointer select-none ${
-            t.type === 'error' ? 'bg-red-500 text-white' : 'bg-violet-700 text-white'
-          }`}
+          className={`toast-enter pointer-events-auto flex items-center gap-2.5 px-4 py-3 rounded-xl text-[13.5px] font-medium shadow-lg max-w-sm cursor-pointer select-none ${t.type === 'error' ? 'bg-red-500 text-white' : 'bg-violet-700 dark:bg-violet-600 text-white'
+            }`}
         >
           <span className="shrink-0 text-[15px]" aria-hidden="true">
             {t.type === 'error' ? '✕' : '✓'}

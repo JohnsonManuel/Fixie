@@ -5,6 +5,7 @@ import { signOutAndRedirect } from '../../../lib/fixie/auth';
 import { apiGet, apiDelete } from '../../../lib/fixie/api';
 import { useToast } from '../../../hooks/useFixieToast';
 import { ConvListSkeleton } from '../ui/Skeleton';
+import ThemeToggle from '../../layout/ThemeToggle';
 import type { View, Conversation } from '../../../types/fixie';
 
 // ── SVG nav icons ──────────────────────────────────────────────────────────────
@@ -51,21 +52,21 @@ function isSameDay(a: Date, b: Date) {
 function groupConvsByDate(convs: Conversation[]): { label: string; items: Conversation[] }[] {
   const now = new Date();
   const yesterday = new Date(now); yesterday.setDate(now.getDate() - 1);
-  const weekAgo   = new Date(now); weekAgo.setDate(now.getDate() - 7);
+  const weekAgo = new Date(now); weekAgo.setDate(now.getDate() - 7);
 
   const groups = [
-    { label: 'Today',            items: [] as Conversation[] },
-    { label: 'Yesterday',        items: [] as Conversation[] },
-    { label: 'Previous 7 days',  items: [] as Conversation[] },
-    { label: 'Earlier',          items: [] as Conversation[] },
+    { label: 'Today', items: [] as Conversation[] },
+    { label: 'Yesterday', items: [] as Conversation[] },
+    { label: 'Previous 7 days', items: [] as Conversation[] },
+    { label: 'Earlier', items: [] as Conversation[] },
   ];
 
   for (const c of convs) {
     const d = new Date(c.last_message_at);
-    if      (isSameDay(d, now))       groups[0].items.push(c);
+    if (isSameDay(d, now)) groups[0].items.push(c);
     else if (isSameDay(d, yesterday)) groups[1].items.push(c);
-    else if (d >= weekAgo)            groups[2].items.push(c);
-    else                              groups[3].items.push(c);
+    else if (d >= weekAgo) groups[2].items.push(c);
+    else groups[3].items.push(c);
   }
 
   return groups.filter(g => g.items.length > 0);
@@ -86,10 +87,10 @@ export function Sidebar({ onViewChange, mobileOpen, onMobileClose }: SidebarProp
   const prevConvIdRef = useRef<string | null>(null);
 
   const adminItems: NavItem[] = [
-    { view: 'users',        label: 'Users' },
+    { view: 'users', label: 'Users' },
     { view: 'integrations', label: 'Integrations' },
-    { view: 'tickets',      label: 'Tickets' },
-    { view: 'approvals',    label: 'Approvals', badge: pendingApprovalCount },
+    { view: 'tickets', label: 'Tickets' },
+    { view: 'approvals', label: 'Approvals', badge: pendingApprovalCount },
   ];
 
   const loadConvs = useCallback(async () => {
@@ -112,8 +113,8 @@ export function Sidebar({ onViewChange, mobileOpen, onMobileClose }: SidebarProp
     prevConvIdRef.current = currentConvId;
   }, [currentConvId, currentView, loadConvs]);
 
-  const handleNav      = (v: View) => { onViewChange(v); onMobileClose(); };
-  const handleNewChat  = () => { setCurrentConvId(null); onMobileClose(); };
+  const handleNav = (v: View) => { onViewChange(v); onMobileClose(); };
+  const handleNewChat = () => { setCurrentConvId(null); onMobileClose(); };
   const handleSelectConv = (id: string) => { setCurrentConvId(id); onMobileClose(); };
 
   const deleteConv = async (e: React.MouseEvent, id: string) => {
@@ -135,35 +136,32 @@ export function Sidebar({ onViewChange, mobileOpen, onMobileClose }: SidebarProp
     <>
       {/* Mobile backdrop */}
       <div
-        className={`fixed inset-0 bg-black/20 z-20 md:hidden transition-opacity duration-200 ${
-          mobileOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-        }`}
+        className={`fixed inset-0 bg-black/20 z-20 md:hidden transition-opacity duration-200 ${mobileOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+          }`}
         onClick={onMobileClose}
         aria-hidden="true"
       />
 
       <aside
         className={[
-          'flex flex-col bg-white overflow-hidden',
+          'flex flex-col bg-white dark:bg-zinc-900 overflow-hidden border-r border-zinc-200 dark:border-zinc-800',
           'fixed top-0 left-0 h-full w-[260px] z-30',
           'transition-transform duration-200 ease-out',
           mobileOpen ? 'translate-x-0' : '-translate-x-full',
           'md:relative md:left-auto md:w-[248px] md:h-auto md:z-auto md:translate-x-0 md:shrink-0',
         ].join(' ')}
-        style={{ borderRight: '1px solid #e4e4e7' }}
         aria-label="Application navigation"
       >
 
         {/* ── Header ────────────────────────────────────────────────────────── */}
         <div
-          className="shrink-0 flex items-center justify-between px-4 h-[52px]"
-          style={{ borderBottom: '1px solid #e4e4e7' }}
+          className="shrink-0 flex items-center justify-between px-4 h-[52px] border-b border-zinc-200 dark:border-zinc-800"
         >
           <div className="flex items-center gap-2.5">
             <img src={fixieLogo} alt="Fixie" className="w-6 h-6 rounded-md object-cover shrink-0" />
-            <span className="text-[14px] font-bold text-zinc-900 tracking-tight">Fixie</span>
+            <span className="text-[14px] font-bold text-zinc-900 dark:text-zinc-100 tracking-tight">Fixie</span>
             {appOrg && !appOrg.slug.startsWith('user-') && (
-              <span className="text-[10.5px] font-medium text-zinc-400 bg-zinc-100 px-1.5 py-0.5 rounded-md truncate max-w-[80px]">
+              <span className="text-[10.5px] font-medium text-zinc-400 dark:text-zinc-500 bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded-md truncate max-w-[80px]">
                 {appOrg.name}
               </span>
             )}
@@ -171,7 +169,7 @@ export function Sidebar({ onViewChange, mobileOpen, onMobileClose }: SidebarProp
           <button
             onClick={onMobileClose}
             aria-label="Close navigation"
-            className="md:hidden w-7 h-7 flex items-center justify-center rounded-md text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 transition-colors"
+            className="md:hidden w-7 h-7 flex items-center justify-center rounded-md text-zinc-400 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
           >
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
               <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
@@ -204,18 +202,18 @@ export function Sidebar({ onViewChange, mobileOpen, onMobileClose }: SidebarProp
                 <div className="px-1 pt-1"><ConvListSkeleton /></div>
               ) : convs.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-10 px-4 text-center">
-                  <div className="w-9 h-9 rounded-full bg-zinc-100 flex items-center justify-center mb-3">
+                  <div className="w-9 h-9 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mb-3">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                       <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                     </svg>
                   </div>
-                  <p className="text-[12px] text-zinc-400 leading-relaxed">No conversations yet.<br />Start one above.</p>
+                  <p className="text-[12px] text-zinc-400 dark:text-zinc-500 leading-relaxed">No conversations yet.<br />Start one above.</p>
                 </div>
               ) : (
                 <div className="fade-in">
                   {convGroups.map(group => (
                     <div key={group.label} className="mb-2">
-                      <p className="text-[10px] font-semibold text-zinc-400 uppercase tracking-widest px-2.5 py-1.5">
+                      <p className="text-[10px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest px-2.5 py-1.5">
                         {group.label}
                       </p>
                       <div className="flex flex-col gap-px">
@@ -227,23 +225,23 @@ export function Sidebar({ onViewChange, mobileOpen, onMobileClose }: SidebarProp
                                 onClick={() => handleSelectConv(c.id)}
                                 aria-label={`Open conversation: ${c.title}`}
                                 aria-current={active ? 'true' : undefined}
-                                className="w-full flex items-center px-2.5 py-2 rounded-lg text-left transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-600"
-                                style={active
-                                  ? { background: '#f5f3ff', color: '#5b21b6' }
-                                  : { color: '#52525b' }
-                                }
-                                onMouseEnter={e => { if (!active) (e.currentTarget as HTMLElement).style.background = '#f4f4f5'; }}
-                                onMouseLeave={e => { if (!active) (e.currentTarget as HTMLElement).style.background = ''; }}
+                                className={[
+                                  'w-full flex items-center px-2.5 py-2 rounded-lg text-left transition-colors',
+                                  'focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-600 dark:focus-visible:outline-violet-500',
+                                  active
+                                    ? 'bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-400'
+                                    : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800',
+                                ].join(' ')}
                               >
                                 {active && (
-                                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-r-full bg-violet-500" />
+                                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-r-full bg-violet-500 dark:bg-violet-400" />
                                 )}
                                 <div className="flex-1 min-w-0 pr-5">
-                                  <div className="text-[12.5px] truncate" style={{ fontWeight: active ? 600 : 450 }}>
+                                  <div className={`text-[12.5px] truncate ${active ? 'font-semibold' : 'font-normal'}`}>
                                     {c.title}
                                   </div>
                                   {c.status === 'pending_approval' && (
-                                    <span className="text-[9.5px] font-semibold bg-amber-50 text-amber-700 px-1.5 py-px rounded-full ring-1 ring-amber-200/60 mt-0.5 inline-block">
+                                    <span className="text-[9.5px] font-semibold bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 px-1.5 py-px rounded-full ring-1 ring-amber-200/60 dark:ring-amber-500/30 mt-0.5 inline-block">
                                       Pending approval
                                     </span>
                                   )}
@@ -252,7 +250,7 @@ export function Sidebar({ onViewChange, mobileOpen, onMobileClose }: SidebarProp
                               <button
                                 onClick={e => deleteConv(e, c.id)}
                                 aria-label={`Delete conversation: ${c.title}`}
-                                className="absolute right-1.5 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 focus:opacity-100 w-5 h-5 flex items-center justify-center text-zinc-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-all"
+                                className="absolute right-1.5 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 focus:opacity-100 w-5 h-5 flex items-center justify-center text-zinc-400 dark:text-zinc-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-all"
                               >
                                 <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
                                   <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
@@ -270,8 +268,8 @@ export function Sidebar({ onViewChange, mobileOpen, onMobileClose }: SidebarProp
 
             {/* Admin nav — pinned above footer when in chat */}
             {appUser?.is_admin && (
-              <div className="shrink-0 px-3 pt-2 pb-1" style={{ borderTop: '1px solid #e4e4e7' }}>
-                <p className="text-[9.5px] font-semibold text-zinc-400 uppercase tracking-widest px-1.5 mb-1">Admin</p>
+              <div className="shrink-0 px-3 pt-2 pb-1 border-t border-zinc-200 dark:border-zinc-800">
+                <p className="text-[9.5px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest px-1.5 mb-1">Admin</p>
                 {adminItems.map(item => (
                   <NavBtn
                     key={item.view}
@@ -296,7 +294,7 @@ export function Sidebar({ onViewChange, mobileOpen, onMobileClose }: SidebarProp
             <div className="px-3 pt-3 pb-1 shrink-0">
               <button
                 onClick={() => handleNav('chat')}
-                className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-[13px] font-medium text-zinc-500 hover:text-zinc-800 hover:bg-zinc-100 transition-colors"
+                className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-[13px] font-medium text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
               >
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
                   <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
@@ -307,8 +305,8 @@ export function Sidebar({ onViewChange, mobileOpen, onMobileClose }: SidebarProp
 
             {/* Admin section */}
             {appUser?.is_admin && (
-              <div className="px-3 pt-3 shrink-0" style={{ borderTop: '1px solid #f4f4f5' }}>
-                <p className="text-[9.5px] font-semibold text-zinc-400 uppercase tracking-widest px-1.5 mb-1">Admin</p>
+              <div className="px-3 pt-3 shrink-0 border-t border-zinc-200 dark:border-zinc-800">
+                <p className="text-[9.5px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest px-1.5 mb-1">Admin</p>
                 {adminItems.map(item => (
                   <NavBtn
                     key={item.view}
@@ -328,19 +326,19 @@ export function Sidebar({ onViewChange, mobileOpen, onMobileClose }: SidebarProp
 
         {/* ── User footer ────────────────────────────────────────────────────── */}
         <div
-          className="shrink-0 px-3 py-3 flex items-center gap-2.5"
-          style={{ borderTop: '1px solid #e4e4e7' }}
+          className="shrink-0 px-3 py-3 flex items-center gap-2 border-t border-zinc-200 dark:border-zinc-800"
         >
           <UserAvatar name={appUser?.name ?? '?'} />
           <div className="flex-1 min-w-0">
-            <div className="text-[12.5px] font-semibold text-zinc-900 truncate">{appUser?.name}</div>
-            <div className="text-[11px] text-zinc-400">{appUser?.is_admin ? 'Admin' : 'Member'}</div>
+            <div className="text-[12.5px] font-semibold text-zinc-900 dark:text-zinc-100 truncate">{appUser?.name}</div>
+            <div className="text-[11px] text-zinc-400 dark:text-zinc-500">{appUser?.is_admin ? 'Admin' : 'Member'}</div>
           </div>
+          <ThemeToggle className="w-7 h-7 p-1.5" />
           <button
             onClick={signOutAndRedirect}
             aria-label="Sign out"
             title="Sign out"
-            className="w-7 h-7 flex items-center justify-center rounded-md text-zinc-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+            className="w-7 h-7 flex items-center justify-center rounded-md text-zinc-400 dark:text-zinc-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
           >
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
@@ -365,15 +363,15 @@ function NavBtn({
       onClick={onClick}
       className={[
         'w-full flex items-center gap-2 px-2.5 rounded-lg text-[13px] font-medium transition-colors text-left mb-px relative',
-        'focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-600',
+        'focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-600 dark:focus-visible:outline-violet-500',
         compact ? 'py-1.5' : 'py-[7px]',
+        active
+          ? 'bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-400 font-semibold'
+          : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800',
       ].join(' ')}
-      style={active ? { background: '#f5f3ff', color: '#5b21b6', fontWeight: 600 } : { color: '#71717a' }}
-      onMouseEnter={e => { if (!active) (e.currentTarget as HTMLElement).style.background = '#f4f4f5'; }}
-      onMouseLeave={e => { if (!active) (e.currentTarget as HTMLElement).style.background = ''; }}
     >
       {active && (
-        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-4 rounded-r-full bg-violet-600" />
+        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-4 rounded-r-full bg-violet-600 dark:bg-violet-500" />
       )}
       <span className="w-[18px] flex items-center justify-center shrink-0 pl-px opacity-70">
         {NAV_ICONS[view]}
@@ -391,7 +389,7 @@ function NavBtn({
 // ── UserAvatar ─────────────────────────────────────────────────────────────────
 function UserAvatar({ name }: { name: string }) {
   return (
-    <div className="w-7 h-7 rounded-full bg-violet-600 text-white text-[11px] font-bold flex items-center justify-center shrink-0">
+    <div className="w-7 h-7 rounded-full bg-violet-600 dark:bg-violet-500 text-white text-[11px] font-bold flex items-center justify-center shrink-0">
       {name.charAt(0).toUpperCase()}
     </div>
   );

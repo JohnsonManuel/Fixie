@@ -53,10 +53,10 @@ export function ApprovalsView() {
     <div className="flex flex-col h-full overflow-hidden">
 
       {/* ── Header ───────────────────────────────────────────────────────────── */}
-      <div className="px-6 md:px-8 py-5 flex items-center justify-between shrink-0 bg-white" style={{ borderBottom: '1px solid #e4e4e7' }}>
+      <div className="px-6 md:px-8 py-5 flex items-center justify-between shrink-0 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800">
         <div>
-          <h1 className="text-[17px] font-bold text-zinc-900">Approvals</h1>
-          <p className="text-[13px] text-zinc-400 mt-0.5">Review and action pending tool requests</p>
+          <h1 className="text-[17px] font-bold text-zinc-900 dark:text-zinc-100">Approvals</h1>
+          <p className="text-[13px] text-zinc-400 dark:text-zinc-500 mt-0.5">Review and action pending tool requests</p>
         </div>
         <Button variant="outline" size="sm" onClick={load}>
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

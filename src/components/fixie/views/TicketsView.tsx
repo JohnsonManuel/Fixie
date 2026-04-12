@@ -52,8 +52,8 @@ export function TicketsView() {
         if (!seen.has(t.id)) { seen.add(t.id); merged.push(t); }
       });
 
-      if (pending.status === 'fulfilled')  add(pending.value);
-      if (history.status === 'fulfilled')  add(history.value);
+      if (pending.status === 'fulfilled') add(pending.value);
+      if (history.status === 'fulfilled') add(history.value);
       if (executed.status === 'fulfilled') add(executed.value);
 
       // Most recent first
@@ -110,10 +110,10 @@ export function TicketsView() {
     <div className="flex flex-col h-full overflow-hidden">
 
       {/* ── Header ───────────────────────────────────────────────────────────── */}
-      <div className="px-6 md:px-8 py-5 flex items-center justify-between shrink-0 bg-white" style={{ borderBottom: '1px solid #e4e4e7' }}>
+      <div className="px-6 md:px-8 py-5 flex items-center justify-between shrink-0 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800">
         <div>
-          <h1 className="text-[17px] font-bold text-zinc-900">Tickets</h1>
-          <p className="text-[13px] text-zinc-400 mt-0.5">Support tickets created through AI chat</p>
+          <h1 className="text-[17px] font-bold text-zinc-900 dark:text-zinc-100">Tickets</h1>
+          <p className="text-[13px] text-zinc-400 dark:text-zinc-500 mt-0.5">Support tickets created through AI chat</p>
         </div>
 
         <div className="flex items-center gap-3">
@@ -126,7 +126,7 @@ export function TicketsView() {
                 className="w-7 h-7 rounded-lg flex items-center justify-center text-zinc-400 hover:text-zinc-700 transition-colors"
                 style={{ border: '1px solid #e4e4e7' }}
               >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
               </button>
 
               <select
@@ -147,7 +147,7 @@ export function TicketsView() {
                 className="w-7 h-7 rounded-lg flex items-center justify-center text-zinc-400 hover:text-zinc-700 transition-colors"
                 style={{ border: '1px solid #e4e4e7' }}
               >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
               </button>
             </div>
           )}
@@ -163,8 +163,8 @@ export function TicketsView() {
       </div>
 
       {/* ── Body ─────────────────────────────────────────────────────────────── */}
-      <div className="flex-1 overflow-y-auto p-6 md:p-8" style={{ background: '#fafafa' }}>
-        <div className="bg-white rounded-xl overflow-hidden" style={{ border: '1px solid #e4e4e7' }}>
+      <div className="flex-1 overflow-y-auto p-6 md:p-8 bg-zinc-50 dark:bg-zinc-950">
+        <div className="bg-white dark:bg-zinc-900 rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-800">
           {loading ? (
             <TableSkeleton rows={5} cols={6} />
           ) : filtered.length === 0 ? (
@@ -190,11 +190,11 @@ export function TicketsView() {
                 </thead>
                 <tbody>
                   {filtered.map(t => {
-                    const result    = t.execution_result;
-                    const ticketId  = result?.ticket_id as number | undefined;
+                    const result = t.execution_result;
+                    const ticketId = result?.ticket_id as number | undefined;
                     const ticketUrl = result?.url as string | undefined;
-                    const subject   = (t.tool_input?.subject ?? t.tool_input?.title ?? JSON.stringify(t.tool_input).slice(0, 60)) as string;
-                    const service   = getService(t);
+                    const subject = (t.tool_input?.subject ?? t.tool_input?.title ?? JSON.stringify(t.tool_input).slice(0, 60)) as string;
+                    const service = getService(t);
                     return (
                       <tr
                         key={t.id}
