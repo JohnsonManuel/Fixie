@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { User as FbUser } from 'firebase/auth';
+import { getFirestore, doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import fixieLogo from '../../images/image.png';
 import { AppProvider, useApp } from '../../contexts/FixieAppContext';
 import { initAuth, signOutAndRedirect } from '../../lib/fixie/auth';
@@ -29,24 +30,78 @@ function Inner() {
   const [screen, setScreen] = useState<ScreenState>('loading');
   const [navOpen, setNavOpen] = useState(false);
 
-  async function loadAppUser() {
+  async function loadAppUser(fbUser: FbUser) {
     setScreen('loading');
     try {
-      const data = await apiGet<{ user: AppUser; org: AppOrg }>('/api/auth/me');
-      setAppUser(data.user);
-      setAppOrg(data.org);
+      const db = getFirestore();
+
+      // Get user data from Firestore
+      const userRef = doc(db, "users", fbUser.uid);
+      const userSnap = await getDoc(userRef);
+
+      if (!userSnap.exists()) {
+        setScreen('no-account');
+        return;
+      }
+
+      const userData = userSnap.data();
+      const email = fbUser.email || '';
+      const domain = email.split('@')[1]?.toLowerCase();
+
+      // Get org data
+      let orgData: AppOrg | null = null;
+
+      if (domain) {
+        const orgQuery = query(
+          collection(db, "organizations"),
+          where("domain", "==", domain)
+        );
+        const orgSnap = await getDocs(orgQuery);
+
+        if (!orgSnap.empty) {
+          const orgDoc = orgSnap.docs[0];
+          const org = orgDoc.data();
+
+          orgData = {
+            id: orgDoc.id,
+            name: org.organizationKey || domain.split('.')[0],
+            slug: org.organizationKey || domain.split('.')[0],
+            integrations: [],
+          };
+        }
+      }
+
+      // If no org found, create a default personal org
+      if (!orgData) {
+        orgData = {
+          id: fbUser.uid,
+          name: userData.name || email.split('@')[0],
+          slug: `user-${fbUser.uid.slice(0, 8)}`,
+          integrations: [],
+        };
+      }
+
+      // Set app user
+      const appUserData: AppUser = {
+        id: fbUser.uid,
+        email: email,
+        name: userData.name || fbUser.displayName || email.split('@')[0],
+        is_admin: userData.role === 'admin',
+        photo_url: fbUser.photoURL || null,
+      };
+
+      setAppUser(appUserData);
+      setAppOrg(orgData);
       setScreen('app');
-      if (data.user.is_admin) {
-        loadApprovalCount(data.user.is_admin, setPendingApprovalCount);
+
+      if (appUserData.is_admin) {
+        // Try to load approval count from API, but don't fail if it doesn't work
+        loadApprovalCount(true, setPendingApprovalCount);
       }
     } catch (err: unknown) {
-      const e = err as { status?: number; detail?: { code?: string } };
-      if (e.status === 404) {
-        setScreen('no-account');
-      } else {
-        addToast('Failed to load user data', 'error');
-        signOutAndRedirect();
-      }
+      console.error('Error loading user data:', err);
+      addToast('Failed to load user data', 'error');
+      signOutAndRedirect();
     }
   }
 
@@ -55,7 +110,7 @@ function Inner() {
       (fbUser: FbUser) => {
         fbUser.getIdToken().then(token => {
           setSessionToken(token);
-          loadAppUser();
+          loadAppUser(fbUser);
         });
       },
       () => {
