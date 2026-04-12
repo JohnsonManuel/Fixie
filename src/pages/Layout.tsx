@@ -39,19 +39,9 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children, showNavbar = true }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { themeMode, theme, setThemeMode } = useTheme();
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const isDark = theme === 'dark';
-
-  const cycleTheme = () => {
-    if (themeMode === 'light') {
-      setThemeMode('dark');
-    } else if (themeMode === 'dark') {
-      setThemeMode('auto');
-    } else {
-      setThemeMode('light');
-    }
-  };
 
   return (
     <div className="App w-full flex-col items-center justify-center">
@@ -63,7 +53,7 @@ const Layout: React.FC<LayoutProps> = ({ children, showNavbar = true }) => {
             <NavbarLogo />
             <NavItems items={navItems} />
             <div className="ml-2 flex items-center gap-1">
-              <NavbarButton onClick={cycleTheme} variant="secondary">
+              <NavbarButton onClick={toggleTheme} variant="secondary">
                 {isDark ? <Moon /> : <SunDim />}
               </NavbarButton>
               <NavbarButton onClick={() => navigate("/login")} variant="primary">
@@ -113,7 +103,7 @@ const Layout: React.FC<LayoutProps> = ({ children, showNavbar = true }) => {
               <div className="flex w-full items-center justify-between py-4">
                 <span className="text-neutral-600 dark:text-neutral-300 font-medium">Theme</span>
                 <button
-                  onClick={cycleTheme}
+                  onClick={toggleTheme}
                   className="flex items-center justify-center p-2 rounded-md bg-gray-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors"
                   aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
                 >

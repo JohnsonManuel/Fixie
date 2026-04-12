@@ -461,23 +461,22 @@ function SetupCard({ logo, label, description, onConnect }: {
 }) {
   return (
     <div
-      className="bg-white rounded-2xl p-5 flex flex-col gap-4 cursor-pointer group transition-all"
-      style={{ border: '1px solid #e4e4e7', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}
-      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 20px rgba(0,0,0,0.08)'; (e.currentTarget as HTMLElement).style.borderColor = '#d4d4d8'; }}
-      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 1px 3px rgba(0,0,0,0.04)'; (e.currentTarget as HTMLElement).style.borderColor = '#e4e4e7'; }}
+      className="bg-white dark:bg-zinc-900 rounded-2xl p-5 flex flex-col gap-4 cursor-pointer group transition-all border border-zinc-200 dark:border-zinc-700"
+      style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}
+      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 20px rgba(0,0,0,0.08)'; const isDark = document.documentElement.classList.contains('dark'); (e.currentTarget as HTMLElement).style.borderColor = isDark ? '#52525b' : '#d4d4d8'; }}
+      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 1px 3px rgba(0,0,0,0.04)'; const isDark = document.documentElement.classList.contains('dark'); (e.currentTarget as HTMLElement).style.borderColor = isDark ? '#3f3f46' : '#e4e4e7'; }}
       onClick={onConnect}
     >
       <div className="flex items-center gap-3">
         <div className="opacity-60 group-hover:opacity-100 transition-opacity">{logo}</div>
         <div>
-          <div className="text-[13.5px] font-semibold text-zinc-700 group-hover:text-zinc-900 transition-colors">{label}</div>
-          <div className="text-[11.5px] text-zinc-400 mt-0.5">Not connected</div>
+          <div className="text-[13.5px] font-semibold text-zinc-700 dark:text-zinc-200 group-hover:text-zinc-900 dark:group-hover:text-zinc-100 transition-colors">{label}</div>
+          <div className="text-[11.5px] text-zinc-400 dark:text-zinc-500 mt-0.5">Not connected</div>
         </div>
       </div>
-      <p className="text-[12px] text-zinc-400 leading-relaxed flex-1">{description}</p>
+      <p className="text-[12px] text-zinc-400 dark:text-zinc-500 leading-relaxed flex-1">{description}</p>
       <div
-        className="flex items-center justify-center gap-1.5 py-2 rounded-lg text-[12.5px] font-medium text-zinc-500 group-hover:text-zinc-900 group-hover:bg-zinc-50 transition-all"
-        style={{ border: '1px dashed #d4d4d8' }}
+        className="flex items-center justify-center gap-1.5 py-2 rounded-lg text-[12.5px] font-medium text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-zinc-100 group-hover:bg-zinc-50 dark:group-hover:bg-zinc-800 transition-all border border-dashed border-zinc-300 dark:border-zinc-600"
       >
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
           <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
@@ -509,7 +508,7 @@ function ConnectedCard({ server, logo, label, subtitle, health, onEdit, onRemove
 
   return (
     <div
-      className="bg-white rounded-2xl flex flex-col transition-all"
+      className="bg-white dark:bg-zinc-900 rounded-2xl flex flex-col transition-all"
       style={{ border: `1px solid ${borderColor}`, boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}
       onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 20px rgba(0,0,0,0.08)'; }}
       onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 1px 3px rgba(0,0,0,0.04)'; }}
@@ -520,9 +519,9 @@ function ConnectedCard({ server, logo, label, subtitle, health, onEdit, onRemove
           <div className="flex items-center gap-3 min-w-0">
             {logo}
             <div className="min-w-0">
-              <div className="text-[13.5px] font-semibold text-zinc-900 truncate">{label}</div>
+              <div className="text-[13.5px] font-semibold text-zinc-900 dark:text-zinc-100 truncate">{label}</div>
               {domain && (
-                <div className="text-[11.5px] text-zinc-400 mt-0.5 truncate">{domain}</div>
+                <div className="text-[11.5px] text-zinc-400 dark:text-zinc-500 mt-0.5 truncate">{domain}</div>
               )}
             </div>
           </div>
@@ -672,8 +671,8 @@ function ToolDrawer({ server, health, togglingKey, onClose, onToggleTool }: {
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div
-        className="bg-white rounded-2xl w-full max-w-2xl flex flex-col"
-        style={{ maxHeight: '85vh', boxShadow: '0 24px 64px rgba(0,0,0,0.16)', border: '1px solid #e4e4e7' }}
+        className="bg-white dark:bg-zinc-900 rounded-2xl w-full max-w-2xl flex flex-col border border-zinc-200 dark:border-zinc-800"
+        style={{ maxHeight: '85vh', boxShadow: '0 24px 64px rgba(0,0,0,0.16)' }}
         role="dialog"
         aria-modal="true"
         aria-label={`Tool permissions — ${server.name}`}

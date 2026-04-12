@@ -22,15 +22,15 @@ export function ChatView({ onOpenNav }: { onOpenNav: () => void }) {
   const [convTitle, setConvTitle] = useState('New Chat');
   const [voiceActive, setVoiceActive] = useState(false);
   const [isLoadingConv, setIsLoadingConv] = useState(false);
-  const messagesRef      = useRef<HTMLDivElement>(null);
-  const textareaRef      = useRef<HTMLTextAreaElement>(null);
+  const messagesRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const suppressNextLoad = useRef(false);
 
-  const sendVoiceRef = useRef<(text: string) => void>(() => {});
+  const sendVoiceRef = useRef<(text: string) => void>(() => { });
   const { voiceState, activate: activateVoice, deactivate: deactivateVoice, speak, setListening } = useVoiceAgent({
     onTranscript: (text) => sendVoiceRef.current(text),
-    onInterrupt:  () => { /* TTS already stopped by hook; recording resumes automatically */ },
-    onError:      (msg) => toast(msg, 'error'),
+    onInterrupt: () => { /* TTS already stopped by hook; recording resumes automatically */ },
+    onError: (msg) => toast(msg, 'error'),
   });
 
   const scrollToBottom = useCallback(() => {
@@ -56,7 +56,7 @@ export function ChatView({ onOpenNav }: { onOpenNav: () => void }) {
     if (suppressNextLoad.current) { suppressNextLoad.current = false; return; }
     if (currentConvId === null) { setMessages([]); setConvTitle('New Chat'); setPending(null); return; }
     loadConversationById(currentConvId);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentConvId]);
 
   const startNewChat = () => {
@@ -207,14 +207,14 @@ export function ChatView({ onOpenNav }: { onOpenNav: () => void }) {
 
   const toggleVoiceMode = () => {
     if (voiceActive) { deactivateVoice(); setVoiceActive(false); }
-    else             { activateVoice();   setVoiceActive(true);  }
+    else { activateVoice(); setVoiceActive(true); }
   };
 
   return (
     <div className="flex flex-1 overflow-hidden relative">
 
       {/* ── Chat area ─────────────────────────────────────────────────────────── */}
-      <div className="flex-1 flex flex-col overflow-hidden min-w-0 bg-zinc-50">
+      <div className="flex-1 flex flex-col overflow-hidden min-w-0 bg-zinc-50 dark:bg-zinc-950">
 
         {isEmpty ? (
           /* ── Welcome / empty state ────────────────────────────────────────── */
@@ -245,10 +245,10 @@ export function ChatView({ onOpenNav }: { onOpenNav: () => void }) {
             {/* Centered input */}
             <div className="w-full max-w-2xl">
               <div
-                className="flex gap-2 items-end bg-white rounded-xl px-3.5 py-2.5 transition-all"
-                style={{ border: '1px solid #e4e4e7', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}
+                className="flex gap-2 items-end bg-white dark:bg-zinc-900 rounded-xl px-3.5 py-2.5 transition-all border border-zinc-200 dark:border-zinc-700"
+                style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}
                 onFocusCapture={e => { (e.currentTarget as HTMLElement).style.borderColor = '#7c3aed'; (e.currentTarget as HTMLElement).style.boxShadow = '0 0 0 3px rgba(124,58,237,0.1)'; }}
-                onBlurCapture={e => { (e.currentTarget as HTMLElement).style.borderColor = '#e4e4e7'; (e.currentTarget as HTMLElement).style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)'; }}
+                onBlurCapture={e => { const el = e.currentTarget as HTMLElement; if (document.documentElement.classList.contains('dark')) { el.style.borderColor = '#3f3f46'; } else { el.style.borderColor = '#e4e4e7'; } el.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)'; }}
               >
                 <textarea
                   ref={textareaRef}
@@ -282,7 +282,7 @@ export function ChatView({ onOpenNav }: { onOpenNav: () => void }) {
                   <button
                     key={s.label}
                     onClick={() => applyPrompt(s.prompt)}
-                    className="text-[12px] font-medium px-3 py-1.5 rounded-full bg-white text-zinc-600 hover:text-violet-700 hover:border-violet-300 transition-colors"
+                    className="text-[12px] font-medium px-3 py-1.5 rounded-full bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border border-zinc-300 dark:border-zinc-600 hover:text-violet-700 dark:hover:text-violet-400 hover:border-violet-300 dark:hover:border-violet-600 transition-colors"
                     style={{ border: '1px solid #e4e4e7' }}
                     onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = '#c4b5fd'; (e.currentTarget as HTMLElement).style.background = '#f5f3ff'; }}
                     onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = '#e4e4e7'; (e.currentTarget as HTMLElement).style.background = '#ffffff'; }}
@@ -306,7 +306,7 @@ export function ChatView({ onOpenNav }: { onOpenNav: () => void }) {
           <>
             {/* Header */}
             <div
-              className="px-3 md:px-5 flex items-center shrink-0 bg-white"
+              className="px-3 md:px-5 flex items-center shrink-0 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800"
               style={{ borderBottom: '1px solid #e4e4e7', minHeight: 52 }}
             >
               <button
@@ -379,7 +379,7 @@ export function ChatView({ onOpenNav }: { onOpenNav: () => void }) {
 
             {/* Input bar */}
             <div
-              className="px-4 md:px-6 pt-3 bg-white shrink-0"
+              className="px-4 md:px-6 pt-3 bg-white dark:bg-zinc-900 shrink-0"
               style={{ borderTop: voiceActive ? 'none' : '1px solid #e4e4e7', paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}
             >
               <div className="flex gap-2 items-end max-w-3xl mx-auto">
@@ -471,11 +471,11 @@ function MicButton({ voiceState, active, onClick, disabled }: {
 // ── VoiceStatusBar ─────────────────────────────────────────────────────────────
 function VoiceStatusBar({ voiceState, onStop }: { voiceState: VoiceState; onStop: () => void }) {
   const labels: Record<VoiceState, string> = {
-    idle:       '',
-    listening:  'Listening…',
-    recording:  'Recording…',
+    idle: '',
+    listening: 'Listening…',
+    recording: 'Recording…',
     processing: 'Thinking…',
-    speaking:   'Speaking — tap mic to interrupt',
+    speaking: 'Speaking — tap mic to interrupt',
   };
   const colors: Record<VoiceState, string> = {
     idle: '', listening: '#7c3aed', recording: '#dc2626', processing: '#d97706', speaking: '#059669',
@@ -532,9 +532,8 @@ function MessageBubble({ message, userName }: {
       {/* Bubble + time */}
       <div className={`flex flex-col gap-1 min-w-0 ${isUser ? 'items-end' : 'items-start'}`}>
         <div
-          className={`px-3.5 py-2.5 rounded-xl text-[13.5px] leading-relaxed break-words ${
-            isUser ? 'text-white rounded-tr-sm' : 'text-zinc-800 rounded-tl-sm'
-          }`}
+          className={`px-3.5 py-2.5 rounded-xl text-[13.5px] leading-relaxed break-words ${isUser ? 'text-white rounded-tr-sm' : 'text-zinc-800 rounded-tl-sm'
+            }`}
           style={
             isUser
               ? { background: '#7c3aed' }

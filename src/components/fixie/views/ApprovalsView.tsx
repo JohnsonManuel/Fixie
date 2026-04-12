@@ -87,35 +87,33 @@ export function ApprovalsView() {
             </div>
           ) : pending.length === 0 ? (
             <div
-              className="bg-white rounded-xl px-6 py-8 text-center fade-in flex flex-col items-center gap-2"
-              style={{ border: '1px solid #e4e4e7' }}
+              className="bg-white dark:bg-zinc-900 rounded-xl px-6 py-8 text-center fade-in flex flex-col items-center gap-2 border border-zinc-200 dark:border-zinc-800"
             >
-              <div className="w-9 h-9 rounded-full bg-emerald-50 flex items-center justify-center mb-1" aria-hidden="true">
+              <div className="w-9 h-9 rounded-full bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center mb-1" aria-hidden="true">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#15803d" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <polyline points="20 6 9 17 4 12" />
                 </svg>
               </div>
-              <p className="text-[13.5px] font-medium text-zinc-600">All caught up</p>
-              <p className="text-[12px] text-zinc-400">No pending approvals at this time.</p>
+              <p className="text-[13.5px] font-medium text-zinc-600 dark:text-zinc-300">All caught up</p>
+              <p className="text-[12px] text-zinc-400 dark:text-zinc-500">No pending approvals at this time.</p>
             </div>
           ) : (
             <div className="flex flex-col gap-3 fade-in">
               {pending.map(a => (
                 <div
                   key={a.id}
-                  className="bg-white rounded-xl p-5"
-                  style={{ border: '1px solid #e4e4e7', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}
+                  className="bg-white dark:bg-zinc-900 rounded-xl p-5 border border-zinc-200 dark:border-zinc-800 shadow-sm"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 min-w-0">
                       {/* Tool name */}
                       <div className="flex items-center gap-2 mb-2">
-                        <code className="text-[12px] font-semibold bg-zinc-100 text-zinc-700 px-2 py-0.5 rounded">
+                        <code className="text-[12px] font-semibold bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 px-2 py-0.5 rounded">
                           {a.tool_name}
                         </code>
-                        <span className="text-[12px] text-zinc-400">{timeAgo(a.created_at)}</span>
+                        <span className="text-[12px] text-zinc-400 dark:text-zinc-500">{timeAgo(a.created_at)}</span>
                         {a.expires_at && (
-                          <span className="text-[11px] text-amber-600 bg-amber-50 px-1.5 py-px rounded-full ring-1 ring-amber-200/60">
+                          <span className="text-[11px] text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-1.5 py-px rounded-full ring-1 ring-amber-200/60 dark:ring-amber-500/30">
                             expires {timeAgo(a.expires_at)}
                           </span>
                         )}
@@ -152,7 +150,7 @@ export function ApprovalsView() {
         {/* ── History ──────────────────────────────────────────────────────── */}
         <section>
           <h2 className="text-[11px] font-semibold text-zinc-400 uppercase tracking-widest mb-4">History</h2>
-          <div className="bg-white rounded-xl overflow-hidden" style={{ border: '1px solid #e4e4e7' }}>
+          <div className="bg-white dark:bg-zinc-900 rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-800">
             {loading ? (
               <TableSkeleton rows={4} cols={5} />
             ) : history.length === 0 ? (
