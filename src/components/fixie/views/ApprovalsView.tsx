@@ -68,7 +68,7 @@ export function ApprovalsView() {
       </div>
 
       {/* ── Body ─────────────────────────────────────────────────────────────── */}
-      <div className="flex-1 overflow-y-auto p-6 md:p-8 flex flex-col gap-8" style={{ background: '#fafafa' }}>
+      <div className="flex-1 overflow-y-auto p-6 md:p-8 flex flex-col gap-8 bg-zinc-50 dark:bg-zinc-950">
 
         {/* ── Pending ──────────────────────────────────────────────────────── */}
         <section>
@@ -121,13 +121,12 @@ export function ApprovalsView() {
 
                       {/* Params */}
                       <div
-                        className="rounded-lg px-3 py-2.5 space-y-1.5"
-                        style={{ background: '#fafafa', border: '1px solid #f4f4f5' }}
+                        className="rounded-lg px-3 py-2.5 space-y-1.5 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700"
                       >
                         {Object.entries(a.tool_input).map(([k, v]) => (
                           <div key={k} className="flex gap-3 text-[12px]">
-                            <span className="text-zinc-400 font-medium w-24 shrink-0 truncate">{k}</span>
-                            <span className="text-zinc-700 break-all font-mono">{String(v)}</span>
+                            <span className="text-zinc-400 dark:text-zinc-500 font-medium w-24 shrink-0 truncate">{k}</span>
+                            <span className="text-zinc-700 dark:text-zinc-300 break-all font-mono">{String(v)}</span>
                           </div>
                         ))}
                       </div>
@@ -159,9 +158,9 @@ export function ApprovalsView() {
               <div className="overflow-x-auto fade-in">
                 <table className="w-full border-collapse">
                   <thead>
-                    <tr style={{ borderBottom: '1px solid #f4f4f5' }}>
+                    <tr className="border-b border-zinc-200 dark:border-zinc-800">
                       {['Tool', 'Status', 'Reviewed by', 'Date', 'Note'].map(h => (
-                        <th key={h} className="text-left text-[10.5px] font-semibold text-zinc-400 uppercase tracking-wider px-5 py-3 whitespace-nowrap">{h}</th>
+                        <th key={h} className="text-left text-[10.5px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider px-5 py-3 whitespace-nowrap">{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -169,22 +168,19 @@ export function ApprovalsView() {
                     {history.map(a => (
                       <tr
                         key={a.id}
-                        className="transition-colors"
-                        style={{ borderBottom: '1px solid #f9f9f9' }}
-                        onMouseEnter={e => (e.currentTarget.style.background = '#fafafa')}
-                        onMouseLeave={e => (e.currentTarget.style.background = '')}
+                        className="border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors"
                       >
                         <td className="px-5 py-3">
-                          <code className="text-[11.5px] bg-zinc-100 text-zinc-600 px-2 py-0.5 rounded">{a.tool_name}</code>
+                          <code className="text-[11.5px] bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 px-2 py-0.5 rounded">{a.tool_name}</code>
                         </td>
                         <td className="px-5 py-3">
                           <Pill variant={a.status === 'approved' ? 'green' : a.status === 'rejected' ? 'red' : 'gray'}>
                             {a.status}
                           </Pill>
                         </td>
-                        <td className="px-5 py-3 text-[12.5px] text-zinc-500">{a.reviewed_by ?? '—'}</td>
-                        <td className="px-5 py-3 text-[12.5px] text-zinc-400 whitespace-nowrap">{a.reviewed_at ? formatDate(a.reviewed_at) : '—'}</td>
-                        <td className="px-5 py-3 text-[12.5px] text-zinc-400">{a.reviewer_note ?? '—'}</td>
+                        <td className="px-5 py-3 text-[12.5px] text-zinc-500 dark:text-zinc-400">{a.reviewed_by ?? '—'}</td>
+                        <td className="px-5 py-3 text-[12.5px] text-zinc-400 dark:text-zinc-500 whitespace-nowrap">{a.reviewed_at ? formatDate(a.reviewed_at) : '—'}</td>
+                        <td className="px-5 py-3 text-[12.5px] text-zinc-400 dark:text-zinc-500">{a.reviewer_note ?? '—'}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -210,36 +206,32 @@ export function ApprovalsView() {
       >
         {reviewTarget && (
           <>
-            <code className="text-[13px] font-semibold text-zinc-900 bg-zinc-100 px-2 py-0.5 rounded block w-fit mb-1">
+            <code className="text-[13px] font-semibold text-zinc-900 dark:text-zinc-100 bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded block w-fit mb-1">
               {reviewTarget.tool_name}
             </code>
-            <p className="text-[12px] text-zinc-400 mb-4">Requested {timeAgo(reviewTarget.created_at)}</p>
+            <p className="text-[12px] text-zinc-400 dark:text-zinc-500 mb-4">Requested {timeAgo(reviewTarget.created_at)}</p>
 
-            <div className="rounded-lg overflow-hidden mb-4" style={{ border: '1px solid #e4e4e7' }}>
+            <div className="rounded-lg overflow-hidden mb-4 border border-zinc-200 dark:border-zinc-700">
               {Object.entries(reviewTarget.tool_input).map(([k, v], i, arr) => (
                 <div
                   key={k}
-                  className="flex gap-4 px-4 py-2.5 text-[12.5px]"
-                  style={{ borderBottom: i < arr.length - 1 ? '1px solid #f4f4f5' : 'none', background: i % 2 === 0 ? '#fff' : '#fafafa' }}
+                  className={`flex gap-4 px-4 py-2.5 text-[12.5px] ${i % 2 === 0 ? 'bg-white dark:bg-zinc-900' : 'bg-zinc-50 dark:bg-zinc-800'} ${i < arr.length - 1 ? 'border-b border-zinc-200 dark:border-zinc-700' : ''}`}
                 >
-                  <span className="font-semibold text-zinc-500 w-28 shrink-0">{k}</span>
-                  <span className="text-zinc-800 break-all">{String(v)}</span>
+                  <span className="font-semibold text-zinc-500 dark:text-zinc-400 w-28 shrink-0">{k}</span>
+                  <span className="text-zinc-800 dark:text-zinc-200 break-all">{String(v)}</span>
                 </div>
               ))}
             </div>
 
-            <label className="block text-[12px] font-semibold text-zinc-600 mb-1.5">
-              Reviewer note <span className="font-normal text-zinc-400">(optional)</span>
+            <label className="block text-[12px] font-semibold text-zinc-600 dark:text-zinc-300 mb-1.5">
+              Reviewer note <span className="font-normal text-zinc-400 dark:text-zinc-500">(optional)</span>
             </label>
             <textarea
               value={reviewNote}
               onChange={e => setReviewNote(e.target.value)}
               rows={2}
               placeholder="Reason for approval or rejection…"
-              className="w-full px-3 py-2.5 rounded-lg text-[13px] outline-none resize-none transition-all"
-              style={{ border: '1px solid #e4e4e7' }}
-              onFocus={e => { e.currentTarget.style.borderColor = '#a1a1aa'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(9,9,11,0.06)'; }}
-              onBlur={e => { e.currentTarget.style.borderColor = '#e4e4e7'; e.currentTarget.style.boxShadow = ''; }}
+              className="w-full px-3 py-2.5 rounded-lg text-[13px] bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 border border-zinc-300 dark:border-zinc-700 outline-none resize-none transition-all focus:border-zinc-400 dark:focus:border-zinc-600 focus:ring-2 focus:ring-zinc-100 dark:focus:ring-zinc-800"
             />
           </>
         )}
