@@ -5,6 +5,8 @@ import { useAuth } from "./hooks/useAuth";
 import LandingPage from "./pages/home/LandingPage";
 import Signup from "./pages/auth/Signup";
 import Login from "./pages/auth/Login";
+import ForgotPassword from "./pages/auth/ForgotPassword";
+import ResetPassword from "./pages/auth/ResetPassword";
 // import Dashboard from "./pages/dashboard/Dashboard";
 // import ServiceNowAlternative from "./pages/product/ServiceNowAlternative";
 // import EnterpriseITSM from "./pages/product/EnterpriseITSM";
@@ -59,6 +61,8 @@ function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/signupadmin" element={<SignupAdmin />} />
           <Route path="/demo" element={<DemoForm onBackToHome={() => window.location.href = '/'} />} />
           <Route path="/pricing" element={<PricingPage />} />

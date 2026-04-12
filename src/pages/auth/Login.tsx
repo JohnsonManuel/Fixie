@@ -19,11 +19,12 @@ import {
 } from "firebase/firestore";
 import { setPersistence, browserLocalPersistence, browserSessionPersistence } from "firebase/auth";
 import { auth } from "../../services/firebase";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import ThemeToggle from "../../components/layout/ThemeToggle";
 
 function Login({ onBackToHome }: LoginProps) {
   const navigate = useNavigate();
+  const location = useLocation();
   const db = getFirestore();
 
   const {
@@ -42,7 +43,17 @@ function Login({ onBackToHome }: LoginProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [formError, setFormError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
   const [rememberMe, setRememberMe] = useState(true); // Default to true for remember me
+
+  // Check for success message from password reset
+  React.useEffect(() => {
+    if (location.state?.message) {
+      setSuccessMessage(location.state.message);
+      // Clear the state so it doesn't show again on refresh
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -52,6 +63,7 @@ function Login({ onBackToHome }: LoginProps) {
     // Clear errors when user types
     if (error) clearError();
     if (formError) setFormError("");
+    if (successMessage) setSuccessMessage("");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -308,6 +320,13 @@ function Login({ onBackToHome }: LoginProps) {
               <div className="error-message mb-6 animate-shake text-xs sm:text-sm">{formError || error?.message}</div>
             )}
 
+            {/* Success Message */}
+            {successMessage && (
+              <div className="mb-6 text-center p-4 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 rounded-xl border border-green-100 dark:border-green-900/30 text-xs sm:text-sm font-semibold">
+                {successMessage}
+              </div>
+            )}
+
             {/* Social Logins First (Modern style) */}
             <div className="social-login gap-3 mb-6">
               <button
@@ -400,9 +419,13 @@ function Login({ onBackToHome }: LoginProps) {
                   </button>
                 </div>
                 <div className="mt-1.5 ml-1 flex items-center justify-between">
-                  <a href="#forgot-password" className="text-[10px] sm:text-xs font-bold text-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+                  <button
+                    type="button"
+                    onClick={() => navigate("/forgot-password")}
+                    className="text-[10px] sm:text-xs font-bold text-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                  >
                     Forgot password?
-                  </a>
+                  </button>
                 </div>
               </div>
 

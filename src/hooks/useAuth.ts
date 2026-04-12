@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { 
+import {
   User,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
@@ -7,6 +7,9 @@ import {
   signOut,
   onAuthStateChanged,
   sendEmailVerification,
+  sendPasswordResetEmail,
+  confirmPasswordReset,
+  verifyPasswordResetCode,
 } from 'firebase/auth';
 
 import { getFirestore, doc, setDoc, collection, query, where, getDocs } from "firebase/firestore";
@@ -171,7 +174,7 @@ export const useAuth = () => {
       if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') {
         throw err; // Re-throw without setting error state
       }
-      
+
       const authError: AuthError = {
         code: err.code,
         message: err.message
@@ -207,7 +210,7 @@ export const useAuth = () => {
     try {
       setError(null);
       await signOut(auth);
-      navigate("/"); 
+      navigate("/");
     } catch (err: any) {
       const authError: AuthError = {
         code: err.code,
@@ -222,6 +225,52 @@ export const useAuth = () => {
     setError(null);
   };
 
+  // Send password reset email
+  const sendPasswordReset = async (email: string) => {
+    try {
+      setError(null);
+      await sendPasswordResetEmail(auth, email);
+    } catch (err: any) {
+      const authError: AuthError = {
+        code: err.code,
+        message: err.message
+      };
+      setError(authError);
+      throw authError;
+    }
+  };
+
+  // Verify password reset code
+  const verifyPasswordResetCodeHandler = async (code: string): Promise<string> => {
+    try {
+      setError(null);
+      const email = await verifyPasswordResetCode(auth, code);
+      return email;
+    } catch (err: any) {
+      const authError: AuthError = {
+        code: err.code,
+        message: err.message
+      };
+      setError(authError);
+      throw authError;
+    }
+  };
+
+  // Confirm password reset with new password
+  const confirmPasswordResetHandler = async (code: string, newPassword: string) => {
+    try {
+      setError(null);
+      await confirmPasswordReset(auth, code, newPassword);
+    } catch (err: any) {
+      const authError: AuthError = {
+        code: err.code,
+        message: err.message
+      };
+      setError(authError);
+      throw authError;
+    }
+  };
+
   return {
     user,
     loading,
@@ -232,6 +281,9 @@ export const useAuth = () => {
     signInWithMicrosoft,
     logout,
     clearError,
-    signUpAdmin
+    signUpAdmin,
+    sendPasswordReset,
+    verifyPasswordResetCode: verifyPasswordResetCodeHandler,
+    confirmPasswordReset: confirmPasswordResetHandler,
   };
 };
